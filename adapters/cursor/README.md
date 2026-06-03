@@ -69,6 +69,15 @@ in `router.mdc` already provides the matching layer — the per-route files are
 there so each route is independently discoverable when Cursor surfaces rules
 by description, and so adding a new route is a one-file change.
 
+### Why per-route `.mdc` files?
+
+Cursor's rule-picker UI surfaces every `.mdc` file as a searchable entry by
+its `description`, so per-route files give each route an independently
+discoverable handle. `alwaysApply: false` keeps them out of the always-on
+context budget — they only enter context when Cursor matches them. Treat
+them as a discoverability layer in front of the consolidated router table in
+`.cursor/rules/router.mdc`, not as a parallel source of truth.
+
 ## Usage
 
 ```sh

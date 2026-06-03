@@ -380,9 +380,12 @@ function expandTarget(arg) {
 // ---------------------------------------------------------------------------
 // Template rendering — Mustache-style {{var}} substitution.
 // ---------------------------------------------------------------------------
-function render(tmpl, vars) {
+function render(tmpl, vars, templateName) {
   return tmpl.replace(/\{\{([\w_]+)\}\}/g, (m, k) => {
-    if (!(k in vars)) abort(`template variable not provided: {{${k}}}`);
+    if (!(k in vars)) {
+      const where = templateName ? ` in ${templateName}` : "";
+      abort(`template variable not provided: {{${k}}}${where}`);
+    }
     return vars[k];
   });
 }
@@ -407,6 +410,7 @@ function writeIfChanged(p, content) {
 function copyScript(src, dst) {
   const content = fs.readFileSync(src, "utf8");
   const result = writeIfChanged(dst, content);
+  // chmod is best-effort: no-op on Windows, may EPERM on locked-down POSIX — script still runs via bash
   try { fs.chmodSync(dst, 0o755); } catch (_) {}
   return result;
 }
@@ -525,7 +529,13 @@ function routeDescription(route) {
   }
   // Trim and avoid newlines in the frontmatter scalar.
   const summary = `${route.id}: ${triggers} → ${where}`;
-  return summary.replace(/\s+/g, " ").trim();
+  // Strip newlines/CRs (frontmatter scalar is single-line) then escape backslash
+  // and double-quote so the quoted YAML scalar in rule-route.mdc.tmpl stays valid.
+  return summary
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"');
 }
 
 function buildRouteLoad(route) {
@@ -556,7 +566,9 @@ function gitCheckpoint(target) {
     );
     const sha = execSync(`git -C "${target}" rev-parse HEAD`, { encoding: "utf8" }).trim();
     return sha;
-  } catch {
+  } catch (err) {
+    const msg = (err && err.message) ? err.message.split("\n")[0] : String(err);
+    console.warn(`[agentforge:cursor] git checkpoint failed: ${msg}`);
     return null;
   }
 }
@@ -592,7 +604,7 @@ function main() {
     SKILL_ROUTER: skillRouter,
     MEMORY_PROTOCOL: memoryProtocol,
     CONTEXT_DISCIPLINE: contextDiscipline,
-  });
+  }, "cursorrules.tmpl");
   results.push(writeIfChanged(path.join(target, ".cursorrules"), cursorrules));
 
   // 2. .cursor/rules/identity.mdc (alwaysApply: true).
@@ -602,14 +614,14 @@ function main() {
     STACK_BLOCK: stackBlock,
     EXECUTION_RULES: executionRules,
     MEMORY_PROTOCOL: memoryProtocol,
-  });
+  }, "rule-identity.mdc.tmpl");
   results.push(writeIfChanged(path.join(target, ".cursor", "rules", "identity.mdc"), identityMdc));
 
   // 3. .cursor/rules/router.mdc (alwaysApply: true).
   const routerTmpl = fs.readFileSync(path.join(TEMPLATES_DIR, "rule-router.mdc.tmpl"), "utf8");
   const routerMdc = render(routerTmpl, {
     SKILL_ROUTER: skillRouter,
-  });
+  }, "rule-router.mdc.tmpl");
   results.push(writeIfChanged(path.join(target, ".cursor", "rules", "router.mdc"), routerMdc));
 
   // 4. .cursor/rules/route-<id>.mdc — one rule per manual route.
@@ -624,7 +636,7 @@ function main() {
       ROUTE_ID: id,
       TRIGGERS: triggers,
       LOAD: buildRouteLoad(route),
-    });
+    }, "rule-route.mdc.tmpl");
     results.push(writeIfChanged(path.join(target, ".cursor", "rules", `route-${id}.mdc`), body));
   }
 
