@@ -31,14 +31,23 @@ You edit `spec/`. The adapters emit the right files for each platform. The subst
 # Install for Claude Code (writes to ~/.claude/)
 npx agentforge init claude-code
 
-# Install for Codex CLI (writes to ~/.codex/ + AGENTS.md)
+# Install for Codex CLI (writes to ~/.codex/)
 npx agentforge init codex
 
-# Install generic AGENTS.md for any other LLM-aware editor
-npx agentforge init generic
+# Install generic AGENTS.md anywhere (--dir is required for the generic adapter)
+npx agentforge init generic --dir ./my-agent-config
 ```
 
 Re-running is idempotent. Every install creates a git-tracked checkpoint so rollback is one command.
+
+Until the package is published to npm, install from a git checkout:
+
+```bash
+git clone https://github.com/KM-it-ops/AgentForge.git
+cd AgentForge
+npm install -g .
+agentforge init claude-code
+```
 
 ## What ports cleanly
 
