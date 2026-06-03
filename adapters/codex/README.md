@@ -68,6 +68,52 @@ After install, confirm:
 5. After a Codex session, `telemetry/prompts.jsonl` has at least one row.
 6. `bash scripts/dead-skills-report.sh` writes a report under `memory/feedback/`.
 
+### First-install verification — notify-event coverage
+
+Run one full Codex session of any length, then check whether every event
+classified into a named bucket:
+
+```bash
+# Should be empty after a representative session if your build passes event
+# kinds via the notify payload. Non-empty rows are unclassified events.
+tail -n 50 ~/.codex/telemetry/notify-generic.log
+```
+
+If `notify-generic.log` is **empty**, your `notify` dispatch is fully covered
+and skill-invocation counts are reliable. If it has rows, your installed
+Codex build is passing event payloads in a shape our dispatcher doesn't
+recognize — capture a sample row and file it upstream (see gap #1 below).
+The same check verifies session-end coverage (gap #3): the `session-end`
+event should never appear in `notify-generic.log` if the shell trap from
+`install-shell-trap.sh` is wired correctly.
+
+### Session-end coverage check
+
+After `bash scripts/install-shell-trap.sh` and opening a new shell,
+confirm the wrapper is live:
+
+```bash
+type codex
+# Expected output begins with: "codex is a function"
+# If it says "codex is /usr/local/bin/codex" or similar, the trap is NOT
+# active in this shell — re-source ~/.bashrc / ~/.zshrc or open a new shell.
+```
+
+Sanity-check that the trap fires by running `codex --version && ls -lt ~/.codex/telemetry/session-log.md | head -1` — the session-log mtime should
+be within the last few seconds. If it isn't, the trap installed but the
+session-end script isn't being invoked; verify `$AGENT_HOME` resolves
+correctly in `install-shell-trap.sh`.
+
+**Known bypasses** (no fix available, these are platform limitations):
+
+- VS Code's and JetBrains' bundled Codex extensions invoke the bare binary,
+  not the shell function, so they bypass the trap.
+- Scripts that call `command codex` or use `\codex` to escape aliases also
+  bypass it.
+- Aliases like `alias codex='codex --some-flag'` chain to the function, so
+  they preserve coverage — but only if the alias is defined *after* the
+  shell trap block in your rc file.
+
 ## Rollback
 
 Every emit writes into a target dir that is git-tracked. To undo the most recent emit:
