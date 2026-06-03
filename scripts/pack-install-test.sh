@@ -19,6 +19,7 @@ declare -A EXPECTED_FILES
 EXPECTED_FILES[claude-code]=13
 EXPECTED_FILES[codex]=20
 EXPECTED_FILES[generic]=7
+EXPECTED_FILES[cursor]=23
 
 fail() {
   echo "FAIL: $*" >&2
@@ -58,7 +59,7 @@ main() {
   echo "  installed binstub reports version: $ver"
 
   echo "=== emit each adapter via binstub ==="
-  for adapter in claude-code codex generic; do
+  for adapter in claude-code codex generic cursor; do
     local sandbox="$WORK/sandbox-$adapter"
     rm -rf "$sandbox"
     mkdir -p "$sandbox"
@@ -82,7 +83,7 @@ main() {
   done
 
   echo
-  echo "Pack + install + emit verified for all 3 adapters."
+  echo "Pack + install + emit verified for all 4 adapters."
 }
 
 main "$@"

@@ -9,7 +9,7 @@
 # Idempotency criteria (BOTH must hold on the second emit):
 #   - exit code 0
 #   - `git status --porcelain` is empty inside the sandbox
-#   - codex/generic adapters additionally emit JSON with files_changed: 0
+#   - codex/generic/cursor adapters additionally emit JSON with files_changed: 0
 #
 # Exit 0 on success, non-zero on any failure. Designed for CI.
 
@@ -17,7 +17,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SANDBOX_ROOT="${SANDBOX_ROOT:-${TMPDIR:-/tmp}/agentforge-roundtrip}"
-ADAPTERS=("claude-code" "codex" "generic")
+ADAPTERS=("claude-code" "codex" "generic" "cursor")
 
 fail() {
   echo "FAIL: $*" >&2
@@ -66,7 +66,7 @@ run_adapter() {
   fi
 
   # JSON-summary adapters: assert files_changed == 0 on the second run.
-  if [ "$adapter" = "codex" ] || [ "$adapter" = "generic" ]; then
+  if [ "$adapter" = "codex" ] || [ "$adapter" = "generic" ] || [ "$adapter" = "cursor" ]; then
     if ! grep -q '"files_changed": 0' "$log2"; then
       echo "--- second emit log ---" >&2
       cat "$log2" >&2

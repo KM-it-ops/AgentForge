@@ -6,6 +6,7 @@
 //   claude-code → ~/.claude
 //   codex       → ~/.codex
 //   generic     → must be supplied via --dir (no canonical default)
+//   cursor      → must be supplied via --dir (no canonical default)
 
 'use strict';
 
@@ -22,6 +23,7 @@ const ADAPTERS = {
   'claude-code': { defaultDir: path.join(os.homedir(), '.claude') },
   'codex':       { defaultDir: path.join(os.homedir(), '.codex') },
   'generic':     { defaultDir: null },
+  'cursor':      { defaultDir: null },
 };
 
 function pkgVersion() {
@@ -45,6 +47,7 @@ Adapters:
   claude-code   Emit a Claude Code config tree (default dir: ~/.claude)
   codex         Emit a Codex CLI config tree (default dir: ~/.codex)
   generic       Emit a portable AGENTS.md + memory skeleton (--dir required)
+  cursor        Emit a portable .cursorrules + .cursor/rules/*.mdc (--dir required)
 
 Examples:
   npx agentforge init claude-code
@@ -104,10 +107,11 @@ function runInit(argv) {
   }
 
   const cfg = ADAPTERS[adapter];
-  const target = path.resolve(expandTilde(dir) || cfg.defaultDir || '');
-  if (!target) {
+  const resolvedDir = expandTilde(dir) || cfg.defaultDir;
+  if (!resolvedDir) {
     fail(`adapter "${adapter}" has no default directory; pass --dir <path>`);
   }
+  const target = path.resolve(resolvedDir);
 
   const emit = path.join(ADAPTERS_DIR, adapter, 'emit.js');
   if (!fs.existsSync(emit)) {
