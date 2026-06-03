@@ -36,17 +36,17 @@ manual_routes:
       [security, threat model, vulnerability, OWASP, RLS, pentest, SOC, NIST]
     target:
       kind: plugin_or_skill
-      claude_code: 'security-scanning plugin / security-engineering skill'
-      codex: security-engineering skill (system prompt block)
+      claude_code: '`security-scanning` plugin / `security-engineering` skill'
+      codex: '`security-engineering` skill (system prompt block)'
       generic: 'security baseline rules in AGENTS.md'
 
   - id: code-quality
     triggers: [code review, PR review, TDD, test, refactor, coverage, quality]
     target:
       kind: plugin_or_skill
-      claude_code: 'superpowers:test-driven-development / code-quality skill'
-      codex: tdd skill (system prompt block)
-      generic: tdd rules in AGENTS.md
+      claude_code: '`superpowers:test-driven-development` / `code-quality` skill'
+      codex: '`tdd` skill (system prompt block)'
+      generic: 'tdd rules in AGENTS.md'
 
   - id: scaffold
     triggers:
@@ -61,70 +61,70 @@ manual_routes:
       ]
     target:
       kind: plugin_or_skill
-      claude_code: 'backend-development / ui-design plugins'
-      codex: stack-defaults skill
-      generic: stack-defaults rules in AGENTS.md
+      claude_code: '`backend-development` / `ui-design` plugins'
+      codex: '`stack-defaults` skill'
+      generic: 'stack-defaults rules in AGENTS.md'
 
   - id: database
     triggers:
       [database, schema, migration, PostgreSQL, performance, 'dep audit']
     target:
       kind: plugin_or_skill
-      claude_code: 'data-engineering / database-design patterns'
-      codex: database skill
-      generic: database rules in AGENTS.md
+      claude_code: '`data-engineering` / `database-design` patterns'
+      codex: '`database` skill'
+      generic: 'database rules in AGENTS.md'
 
   - id: cicd
     triggers:
       [CI/CD, GitHub Actions, deploy, pipeline, observability]
     target:
       kind: plugin_or_skill
-      claude_code: 'git-pr-workflows plugin'
-      codex: cicd skill
-      generic: cicd rules in AGENTS.md
+      claude_code: '`git-pr-workflows` plugin'
+      codex: '`cicd` skill'
+      generic: 'cicd rules in AGENTS.md'
 
   - id: design
     triggers:
       [design system, accessibility, UX, persona, journey map]
     target:
       kind: plugin_or_skill
-      claude_code: 'ui-design plugin'
-      codex: design skill
-      generic: design rules in AGENTS.md
+      claude_code: '`ui-design` plugin'
+      codex: '`design` skill'
+      generic: 'design rules in AGENTS.md'
 
   - id: product
     triggers:
       [PRD, OKR, RICE, roadmap, prioritize, product strategy]
     target:
       kind: plugin_or_skill
-      claude_code: 'product-management (on-demand install)'
-      codex: product-management skill
-      generic: product rules in AGENTS.md
+      claude_code: '`product-management` (on-demand install)'
+      codex: '`product-management` skill'
+      generic: 'product rules in AGENTS.md'
 
   - id: integrations
     triggers:
       [LemonSqueezy, MCP server build, RAG, webhook]
     target:
       kind: plugin_or_skill
-      claude_code: 'integrations skill / claude-api skill'
-      codex: integrations skill
-      generic: integrations rules in AGENTS.md
+      claude_code: '`integrations` skill / `claude-api` skill'
+      codex: '`integrations` skill'
+      generic: 'integrations rules in AGENTS.md'
 
   - id: handoff
     triggers: ['compact handoff between agents/sessions']
     target:
       kind: plugin_or_skill
-      claude_code: 'superpowers:handoff'
-      codex: handoff skill
-      generic: handoff procedure in AGENTS.md
+      claude_code: '`superpowers:handoff`'
+      codex: '`handoff` skill'
+      generic: 'handoff procedure in AGENTS.md'
 
   - id: debug
     triggers: [stuck bug, regression, root cause hunt]
     target:
       kind: plugin_or_skill
-      claude_code: 'superpowers:systematic-debugging'
-      codex: diagnose skill
-      generic: diagnose procedure in AGENTS.md
+      claude_code: '`superpowers:systematic-debugging`'
+      codex: '`diagnose` skill'
+      generic: 'diagnose procedure in AGENTS.md'
 
 # Auto-managed routes — local skills self-register via universal/lib/sync-local-skill-router.js
 # This block is regenerated each time a SKILL.md is written.
