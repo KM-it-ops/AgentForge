@@ -121,10 +121,14 @@ Findings from building this adapter — input for the round-trip / audit report:
   manual ritual (matches the generic adapter posture). The identity rule's
   memory pointer documents the protocol so the agent knows where to write
   by hand.
-- **No scheduled-task primitive.** Cursor cannot run weekly prunes. The
-  `dead-skills-report.sh` script is the same byte-identical portable copy
-  the generic adapter ships; the user wires it into cron / Task Scheduler
-  / launchd / systemd timer per OS.
+- **No scheduled-task primitive.** Cursor still cannot run weekly *prunes*
+  (no headless binary to spawn), but **as of v0.3** the adapter ships
+  `scripts/install-cron.sh` (thin wrapper) + `scripts/cursor-weekly-report.sh`
+  that schedule `dead-skills-report.sh` weekly and append the output to
+  `memory/feedback/dead-skills-report-<date>.md`. The wrapper delegates to
+  `scripts/installers/install-cron.sh` (cron on Unix, Task Scheduler on
+  Windows). Review the appended report on your next session and archive
+  unused skills by hand.
 - **No auto-router sync.** When you add or edit a `skills/<name>/SKILL.md`,
   re-run `node adapters/cursor/emit.js <target>` to regenerate the router
   rules. The adapter has no on-write file watcher.

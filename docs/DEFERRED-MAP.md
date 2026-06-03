@@ -24,7 +24,7 @@
 | ~~`codex-auto-approve-flags-unverified`~~ | ~~adapter-fix~~ | ~~M~~ | **closed** `391e070` + `fc039c1` | — |
 | ~~`codex-no-sessionstart-router-refresh`~~ | ~~adapter-fix~~ | ~~M~~ | **closed** `b770a77` + `fc039c1` | — |
 | `codex-skill-unknown` | upstream-only | S | P2 | upstream Codex CLI feature |
-| `codex-windows-cron-not-executed` | adapter-fix | M | P2 | `universal/lib/installers/` |
+| ~~`codex-windows-cron-not-executed`~~ | ~~adapter-fix~~ | ~~M~~ | **closed (v0.3 installers)** | — |
 
 ### cursor gap items
 
@@ -33,7 +33,7 @@
 | `cursor-no-telemetry` | docs-only (optional MCP stub for v0.3) | S | P2 | — |
 | `cursor-no-skill-loader` | docs-only | S | P2 | — |
 | `cursor-no-lifecycle-hooks` | docs-only | S | P2 | — |
-| `cursor-no-scheduled-task` | adapter-fix candidate | S | P2 | `universal/lib/installers/` |
+| ~~`cursor-no-scheduled-task`~~ | ~~adapter-fix candidate~~ | ~~S~~ | **closed (v0.3 installers)** | — |
 | `cursor-no-auto-router-sync` | adapter-fix candidate | M | P2 | `watch-skills.js` |
 | `cursor-cursorrules-deprecated` | docs-only (re-eval v0.3) | S | P2 | upstream Cursor removing legacy support |
 
@@ -50,7 +50,7 @@
 
 | Item | Where it lives (proposed) | Effort | Priority | Unblocks |
 |---|---|---|---|---|
-| `universal/lib/installers/` (cron + Task Scheduler + launchd module) | new dir | M | P2 | `codex-windows-cron-not-executed`, `cursor-no-scheduled-task` |
+| ~~`universal/lib/installers/`~~ | `universal/lib/installers/` | ~~M~~ | **shipped (v0.3)** | closed `codex-windows-cron-not-executed`, `cursor-no-scheduled-task`; claude-code refactor to use it = follow-up |
 | `scripts/watch-skills.js` (file-watcher fallback for sync-local-skill-router.js) | per-adapter `scripts/` initially | M | P2 | `cursor-no-auto-router-sync`, Gemini/Aider auto-sync |
 | Unified JSON summary shape across all 4 adapters | per-adapter `emit.js` | S | P2 | downstream tooling that parses receipts |
 | macOS CI matrix row (`macos-latest`) | `.github/workflows/round-trip.yml` | S | P2 | catches launchd/`/tmp` differences before users hit them |
@@ -65,6 +65,7 @@
 | Round-trip CI | post-v0.1.0 (commit `79257f6`) | matrix ubuntu+windows × node 20+22 |
 | `cli-init-cwd-footgun` | v0.2 (commit `a80964d`) | found during Task 2, fixed in-scope |
 | P1 codex cleanup batch (4 items) | v0.2.1 (`1ae6935` → `fc039c1`) | codex coverage ~85% → ~95%; backstop review applied 2 Important fixes (`set -e` defense + word-bounded flag regex) |
+| `universal/lib/installers/` shared module | v0.3 (this batch) | closed `codex-windows-cron-not-executed` + `cursor-no-scheduled-task` simultaneously; thin-wrapper pattern documented in `universal/lib/installers/README.md` |
 
 ## Topographic map
 
@@ -97,14 +98,14 @@ flowchart LR
     C4["codex-auto-approve-flags-unverified<br/>(closed 391e070+fc039c1)"]:::shipped
     C5["codex-no-sessionstart-router-refresh<br/>(closed b770a77+fc039c1)"]:::shipped
     C2["codex-skill-unknown"]:::upstream
-    C6["codex-windows-cron-not-executed"]:::p2
+    C6["codex-windows-cron-not-executed<br/>(closed v0.3 installers)"]:::shipped
   end
 
   subgraph Cursor["cursor gap items"]
     U1["cursor-no-telemetry"]:::p2
     U2["cursor-no-skill-loader"]:::p2
     U3["cursor-no-lifecycle-hooks"]:::p2
-    U4["cursor-no-scheduled-task"]:::p2
+    U4["cursor-no-scheduled-task<br/>(closed v0.3 installers)"]:::shipped
     U5["cursor-no-auto-router-sync"]:::p2
     U6["cursor-cursorrules-deprecated"]:::upstream
   end
@@ -122,7 +123,7 @@ flowchart LR
   end
 
   subgraph Shared["Shared infrastructure candidates (v0.3)"]
-    INST["universal/lib/installers/<br/>cron + Task Scheduler + launchd"]:::shared
+    INST["universal/lib/installers/<br/>cron + Task Scheduler<br/>(shipped — closed C6 & U4)"]:::shipped
     WATCH["scripts/watch-skills.js<br/>file-watcher fallback"]:::shared
     JSON["unified JSON receipt shape<br/>across 4 emitters"]:::shared
     MAC["macOS CI matrix row"]:::shared
@@ -172,7 +173,7 @@ flowchart LR
 ## Suggested order of operations
 
 1. ~~**P1 codex cleanup batch**~~ — **done** (v0.2.1, commits `1ae6935` → `fc039c1`). Codex coverage ~85% → ~95%.
-2. **Build `universal/lib/installers/`** (~half a day). Then ship `codex-windows-cron-not-executed` and `cursor-no-scheduled-task` against it in the same PR — that's the consolidated approach `docs/PLATFORM-GAPS.md` § "Rationale for the cut line" recommends.
+2. ~~**Build `universal/lib/installers/`**~~ — **done** (v0.3). Both dependent gaps (`codex-windows-cron-not-executed`, `cursor-no-scheduled-task`) closed in the same commit batch.
 3. **Build `scripts/watch-skills.js`** (~half a day). Closes `cursor-no-auto-router-sync` and removes the blocker for Gemini/Aider adapters.
 4. **Gemini CLI adapter or Aider adapter** (~1–2 days each). At this point both have all shared infrastructure available.
 5. **Unify JSON receipt shape** (~1 hour). One-time rename in codex emitter to match generic/cursor. Cheap insurance for downstream tooling.

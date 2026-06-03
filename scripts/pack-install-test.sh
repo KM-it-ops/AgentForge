@@ -17,9 +17,9 @@ WORK="${TMPDIR:-/tmp}/agentforge-pack-test"
 
 declare -A EXPECTED_FILES
 EXPECTED_FILES[claude-code]=13
-EXPECTED_FILES[codex]=21
+EXPECTED_FILES[codex]=24
 EXPECTED_FILES[generic]=7
-EXPECTED_FILES[cursor]=23
+EXPECTED_FILES[cursor]=28
 
 fail() {
   echo "FAIL: $*" >&2
