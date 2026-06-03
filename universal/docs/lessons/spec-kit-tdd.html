@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Spec-Kit + TDD — A Course Lesson</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'dark', themeVariables: { primaryColor: '#0ea5e9', primaryTextColor: '#f1f5f9', lineColor: '#64748b', fontSize: '15px' } });
+</script>
+<style>
+  body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  pre code { font-family: ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace; }
+  .kbd { display: inline-block; padding: 2px 7px; border-radius: 4px; background: #1e293b; border: 1px solid #334155; font-family: ui-monospace, monospace; font-size: 0.85em; color: #f1f5f9; }
+  .step-num { background: linear-gradient(135deg, #0ea5e9, #6366f1); }
+  .anchor-link:target { background-color: rgba(14, 165, 233, 0.1); transition: background-color 0.3s; }
+  details > summary { cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::before { content: '▸'; display: inline-block; margin-right: 0.5em; transition: transform 0.2s; }
+  details[open] > summary::before { transform: rotate(90deg); }
+  .prompt-block { background: #0f172a; border-left: 4px solid #0ea5e9; }
+  .gotcha { background: #2c1a0d; border-left: 4px solid #f59e0b; }
+  .win { background: #0c1f0c; border-left: 4px solid #22c55e; }
+  .toc-link:hover { color: #0ea5e9; }
+</style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased">
+
+<!-- HERO -->
+<header class="border-b border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+  <div class="max-w-5xl mx-auto px-6 py-16">
+    <div class="text-sm uppercase tracking-widest text-sky-400 mb-3">Claude-Brain Course Lesson · 01</div>
+    <h1 class="text-5xl font-bold mb-4 leading-tight">Spec-Kit + TDD<br/><span class="text-sky-400">The Highest-Success-Rate Workflow in Claude Code</span></h1>
+    <p class="text-xl text-slate-300 max-w-3xl">A 7-step pipeline that turns a vague feature idea into shipped, tested code without the usual hour-3 rework. Pair it with red-green-refactor and your "success on first run" rate goes up sharply.</p>
+    <div class="mt-8 flex flex-wrap gap-3">
+      <span class="px-3 py-1 rounded-full bg-slate-800 text-sm">~25 min read</span>
+      <span class="px-3 py-1 rounded-full bg-slate-800 text-sm">Hands-on</span>
+      <span class="px-3 py-1 rounded-full bg-slate-800 text-sm">Worked example included</span>
+    </div>
+  </div>
+</header>
+
+<!-- TOC -->
+<nav class="sticky top-0 z-10 bg-slate-950/95 backdrop-blur border-b border-slate-800">
+  <div class="max-w-5xl mx-auto px-6 py-3 flex flex-wrap gap-x-6 gap-y-2 text-sm">
+    <a href="#why" class="toc-link text-slate-400">1. Why spec-first</a>
+    <a href="#pipeline" class="toc-link text-slate-400">2. The pipeline</a>
+    <a href="#commands" class="toc-link text-slate-400">3. The 7 commands</a>
+    <a href="#tdd" class="toc-link text-slate-400">4. TDD inside implement</a>
+    <a href="#example" class="toc-link text-slate-400">5. Worked example</a>
+    <a href="#pitfalls" class="toc-link text-slate-400">6. Pitfalls</a>
+    <a href="#cheatsheet" class="toc-link text-slate-400">7. Cheat sheet</a>
+  </div>
+</nav>
+
+<main class="max-w-5xl mx-auto px-6 py-12 space-y-20">
+
+<!-- ============================================================ -->
+<!-- LESSON 1: WHY -->
+<!-- ============================================================ -->
+<section id="why" class="anchor-link scroll-mt-20">
+  <div class="flex items-center gap-4 mb-8">
+    <div class="step-num w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-white">1</div>
+    <h2 class="text-3xl font-bold">Why spec-first?</h2>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-red-950/40 border border-red-900/50 rounded-xl p-6">
+      <div class="text-red-400 text-xs uppercase tracking-wider mb-2">Without spec-kit</div>
+      <h3 class="text-xl font-semibold mb-3">"Just build it"</h3>
+      <pre class="text-sm text-slate-300 whitespace-pre-wrap">User: add a digest email feature
+Agent: [writes 600 lines]
+User: wait, what about unsubscribes?
+Agent: [refactors 200 lines]
+User: also it needs to skip
+   free users
+Agent: [refactors again]
+User: this is taking forever</pre>
+      <p class="mt-4 text-sm text-red-300">~3 hours wasted. Code is half-right because requirements arrived in pieces.</p>
+    </div>
+    <div class="bg-emerald-950/40 border border-emerald-900/50 rounded-xl p-6">
+      <div class="text-emerald-400 text-xs uppercase tracking-wider mb-2">With spec-kit</div>
+      <h3 class="text-xl font-semibold mb-3">"Specify first"</h3>
+      <pre class="text-sm text-slate-300 whitespace-pre-wrap">User: /speckit.specify <feature>
+Agent: [writes spec.md]
+User: [reads, edits 4 lines]
+User: /speckit.clarify
+Agent: [asks 3 questions]
+User: [answers]
+User: /speckit.implement task 1
+Agent: [test, code, green, commit]</pre>
+      <p class="mt-4 text-sm text-emerald-300">~30 minutes of thinking. Then code that matches the actual intent. One pass.</p>
+    </div>
+  </div>
+
+  <div class="prompt-block p-6 rounded-lg">
+    <div class="text-sky-400 text-xs uppercase tracking-wider mb-2">The core insight</div>
+    <p class="text-lg">The most expensive 10 minutes of any feature are spent at the keyboard <em>after</em> you discover what you actually wanted. Spec-kit moves those 10 minutes to the front, before any code exists.</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- LESSON 2: PIPELINE DIAGRAM -->
+<!-- ============================================================ -->
+<section id="pipeline" class="anchor-link scroll-mt-20">
+  <div class="flex items-center gap-4 mb-8">
+    <div class="step-num w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-white">2</div>
+    <h2 class="text-3xl font-bold">The pipeline at a glance</h2>
+  </div>
+
+  <p class="text-slate-300 mb-6">Spec-kit is a directed pipeline. Each step's output is the next step's input. You can re-enter at any earlier step if you realize something's off.</p>
+
+  <div class="bg-slate-900 rounded-xl p-8 border border-slate-800">
+<pre class="mermaid">
+flowchart LR
+  C[/"📜 constitution<br/>project principles"/]:::const
+  S[/"📝 specify<br/>what + why"/]:::spec
+  CL[/"❓ clarify<br/>resolve holes"/]:::clarify
+  P[/"🗺️ plan<br/>technical approach"/]:::plan
+  T[/"✅ tasks<br/>decompose"/]:::tasks
+  A[/"🔍 analyze<br/>drift check"/]:::analyze
+  I[/"🛠️ implement<br/>TDD loop"/]:::impl
+
+  C ==>|once per project| S
+  S ==> CL
+  CL ==> P
+  P ==> T
+  T ==> A
+  A ==> I
+  I -.->|"if scope shifted"| S
+  A -.->|"misalignment"| P
+
+  classDef const fill:#1e3a8a,stroke:#3b82f6,color:#fff
+  classDef spec fill:#581c87,stroke:#a855f7,color:#fff
+  classDef clarify fill:#7c2d12,stroke:#f97316,color:#fff
+  classDef plan fill:#134e4a,stroke:#14b8a6,color:#fff
+  classDef tasks fill:#365314,stroke:#84cc16,color:#fff
+  classDef analyze fill:#7c2d12,stroke:#f97316,color:#fff
+  classDef impl fill:#14532d,stroke:#22c55e,color:#fff
+</pre>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8 text-xs">
+    <div class="bg-slate-900 p-3 rounded border border-slate-800"><div class="text-sky-400">SOLID lines</div>normal forward flow</div>
+    <div class="bg-slate-900 p-3 rounded border border-slate-800"><div class="text-amber-400">DOTTED lines</div>re-entry when scope shifts</div>
+    <div class="bg-slate-900 p-3 rounded border border-slate-800"><div class="text-emerald-400">Each step</div>writes a real file you can read</div>
+    <div class="bg-slate-900 p-3 rounded border border-slate-800"><div class="text-purple-400">All files</div>live in <code>.specify/</code></div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- LESSON 3: THE 7 COMMANDS -->
+<!-- ============================================================ -->
+<section id="commands" class="anchor-link scroll-mt-20">
+  <div class="flex items-center gap-4 mb-8">
+    <div class="step-num w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-white">3</div>
+    <h2 class="text-3xl font-bold">The 7 commands</h2>
+  </div>
+
+  <div class="space-y-4">
+
+    <!-- constitution -->
+    <details class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+      <summary class="px-6 py-4 flex items-center gap-3 hover:bg-slate-800/50">
+        <code class="text-blue-400 font-mono">/speckit.constitution</code>
+        <span class="text-slate-400 text-sm">— project principles (write once, edit rarely)</span>
+      </summary>
+      <div class="px-6 pb-6 pt-2 border-t border-slate-800">
+        <p class="text-slate-300 mb-4"><strong>What it writes:</strong> <code>.specify/memory/constitution.md</code></p>
+        <p class="text-slate-300 mb-4"><strong>What it captures:</strong> the rules every feature must obey — stack defaults, security baselines, "we never log PII", "every endpoint validates with zod first".</p>
+        <p class="text-slate-300 mb-2"><strong>When to invoke:</strong> once when the project is born. Edit between features when you learn something new. Never during a feature build.</p>
+      </div>
+    </details>
+
+    <!-- specify -->
+    <details open class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+      <summary class="px-6 py-4 flex items-center gap-3 hover:bg-slate-800/50">
+        <code class="text-purple-400 font-mono">/speckit.specify</code>
+        <span class="text-slate-400 text-sm">— what + why (the most important prompt)</span>
+      </summary>
+      <div class="px-6 pb-6 pt-2 border-t border-slate-800">
+        <p class="text-slate-300 mb-4"><strong>What it writes:</strong> <code>.specify/specs/&lt;feature&gt;/spec.md</code></p>
+        <div class="grid md:grid-cols-2 gap-4 mb-4">
+          <div class="bg-emerald-950/30 border border-emerald-900/50 p-4 rounded">
+            <div class="text-emerald-400 text-xs uppercase mb-1">DO include</div>
+            <ul class="text-sm text-slate-300 space-y-1 list-disc list-inside">
+              <li>User outcome (a specific person, specific moment)</li>
+              <li>Why now (the actual business reason)</li>
+              <li>Non-goals (what we're explicitly NOT doing)</li>
+              <li>Constraints (auth, limits, deps)</li>
+              <li>Acceptance signals (3-5 testable conditions)</li>
+            </ul>
+          </div>
+          <div class="bg-red-950/30 border border-red-900/50 p-4 rounded">
+            <div class="text-red-400 text-xs uppercase mb-1">DON'T include</div>
+            <ul class="text-sm text-slate-300 space-y-1 list-disc list-inside">
+              <li>Implementation details (those go in /plan)</li>
+              <li>File names or table schemas</li>
+              <li>"Should be performant" without a number</li>
+              <li>"Nice to have" features (they're scope creep)</li>
+              <li>Anything you're not sure about (use /clarify)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- clarify -->
+    <details class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+      <summary class="px-6 py-4 flex items-center gap-3 hover:bg-slate-800/50">
+        <code class="text-orange-400 font-mono">/speckit.clarify</code>
+        <span class="text-slate-400 text-sm">— hole-finder; answer every question honestly</span>
+      </summary>
+      <div class="px-6 pb-6 pt-2 border-t border-slate-800">
+        <p class="text-slate-300 mb-4"><strong>What it does:</strong> agent re-reads your spec and asks 3-5 questions about ambiguity it found. Edge cases, failure modes, "what if X is empty?".</p>
+        <p class="text-slate-300 mb-4"><strong>What it writes:</strong> appends Q&amp;A to <code>spec.md</code>.</p>
+        <div class="gotcha p-4 rounded">
+          <strong class="text-amber-400">Discipline rule:</strong> if you find yourself answering "we'll figure it out later," you just identified your next /clarify question. Answer it now or it becomes hour-3 rework.
+        </div>
+      </div>
+    </details>
+
+    <!-- plan -->
+    <details class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+      <summary class="px-6 py-4 flex items-center gap-3 hover:bg-slate-800/50">
+        <code class="text-teal-400 font-mono">/speckit.plan</code>
+        <span class="text-slate-400 text-sm">— technical approach (read it before continuing)</span>
+      </summary>
+      <div class="px-6 pb-6 pt-2 border-t border-slate-800">
+        <p class="text-slate-300 mb-4"><strong>What it writes:</strong> <code>.specify/specs/&lt;feature&gt;/plan.md</code></p>
+        <p class="text-slate-300 mb-2"><strong>What's in it:</strong> tables, RLS policies, Inngest function shapes, API contracts, library choices, the unsubscribe route, the test strategy.</p>
+        <p class="text-slate-300 mt-3"><strong>Your job:</strong> read it. If something's wrong, say: <em>"Plan is good except change point 4 to use a materialized view instead of per-user joins. Update the plan."</em> Don't proceed with a wrong plan.</p>
+      </div>
+    </details>
+
+    <!-- tasks -->
+    <details class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+      <summary class="px-6 py-4 flex items-center gap-3 hover:bg-slate-800/50">
+        <code class="text-lime-400 font-mono">/speckit.tasks</code>
+        <span class="text-slate-400 text-sm">— decompose plan into 8-15 testable units</span>
+      </summary>
+      <div class="px-6 pb-6 pt-2 border-t border-slate-800">
+        <p class="text-slate-300 mb-2"><strong>What it writes:</strong> <code>.specify/specs/&lt;feature&gt;/tasks.md</code> — numbered list, each independently testable.</p>
+        <p class="text-slate-300"><strong>Good task shape:</strong> "Create <code>digest_subscribers</code> table with RLS allowing user-own SELECT and admin SELECT/UPDATE. Schema + migration + RLS policy + 2 tests."</p>
+      </div>
+    </details>
+
+    <!-- analyze -->
+    <details class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+      <summary class="px-6 py-4 flex items-center gap-3 hover:bg-slate-800/50">
+        <code class="text-orange-400 font-mono">/speckit.analyze</code>
+        <span class="text-slate-400 text-sm">— drift check (always run before implement)</span>
+      </summary>
+      <div class="px-6 pb-6 pt-2 border-t border-slate-800">
+        <p class="text-slate-300 mb-2"><strong>What it does:</strong> agent cross-reads spec ↔ plan ↔ tasks and flags inconsistencies.</p>
+        <div class="win p-4 rounded mt-3">
+          <strong class="text-emerald-400">Why this matters:</strong> if you edited the plan but didn't regenerate tasks, analyze catches it. Five seconds of checking saves an hour of building the wrong thing.
+        </div>
+      </div>
+    </details>
+
+    <!-- implement -->
+    <details open class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+      <summary class="px-6 py-4 flex items-center gap-3 hover:bg-slate-800/50">
+        <code class="text-green-400 font-mono">/speckit.implement</code>
+        <span class="text-slate-400 text-sm">— execute task-by-task with TDD</span>
+      </summary>
+      <div class="px-6 pb-6 pt-2 border-t border-slate-800">
+        <p class="text-slate-300 mb-4"><strong>Invocation:</strong> <code>/speckit.implement task N</code> — runs one task at a time.</p>
+        <p class="text-slate-300 mb-2"><strong>What happens automatically:</strong> tests-first, fail-then-pass, conventional commit when green.</p>
+        <p class="text-slate-300"><strong>What you add:</strong> "Use the <code>superpowers:test-driven-development</code> skill. Show me the failing test before the implementation." — this pins the discipline.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- LESSON 4: TDD INSIDE IMPLEMENT -->
+<!-- ============================================================ -->
+<section id="tdd" class="anchor-link scroll-mt-20">
+  <div class="flex items-center gap-4 mb-8">
+    <div class="step-num w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-white">4</div>
+    <h2 class="text-3xl font-bold">TDD inside implement — the red/green/refactor loop</h2>
+  </div>
+
+  <p class="text-slate-300 mb-6">Implement runs TDD by default, but the magic prompt makes the discipline visible. Every cycle has exactly three phases. If any phase is skipped, you don't have TDD — you have wishful thinking.</p>
+
+  <div class="bg-slate-900 rounded-xl p-8 border border-slate-800 mb-8">
+<pre class="mermaid">
+flowchart TB
+  A([Task N starts]):::start
+  R[🔴 RED<br/>Write a failing test<br/>Run it. See it fail.]:::red
+  G[🟢 GREEN<br/>Write minimum code<br/>to make it pass]:::green
+  F[♻️ REFACTOR<br/>Improve structure<br/>Tests still pass]:::refactor
+  C([Conventional commit]):::commit
+  N([Task N+1]):::next
+
+  A --> R
+  R --> G
+  G --> F
+  F --> C
+  C --> N
+
+  R -.->|"if test passes immediately"| W[⚠️ Test isn't testing what you think.<br/>Rewrite the test.]:::warn
+  W -.-> R
+
+  classDef start fill:#1e293b,color:#fff,stroke:#64748b
+  classDef red fill:#7f1d1d,color:#fff,stroke:#ef4444
+  classDef green fill:#14532d,color:#fff,stroke:#22c55e
+  classDef refactor fill:#1e3a8a,color:#fff,stroke:#3b82f6
+  classDef commit fill:#581c87,color:#fff,stroke:#a855f7
+  classDef next fill:#1e293b,color:#fff,stroke:#64748b
+  classDef warn fill:#7c2d12,color:#fff,stroke:#f59e0b
+</pre>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="bg-red-950/30 border border-red-900/50 rounded-lg p-5">
+      <div class="text-red-400 font-bold mb-2">🔴 RED</div>
+      <p class="text-sm text-slate-300">Write the test for behavior that doesn't exist yet. Run the test suite. You should see it fail in a specific way.</p>
+      <p class="text-xs text-slate-400 mt-3 italic">If it passes immediately, your test is wrong, not your code.</p>
+    </div>
+    <div class="bg-emerald-950/30 border border-emerald-900/50 rounded-lg p-5">
+      <div class="text-emerald-400 font-bold mb-2">🟢 GREEN</div>
+      <p class="text-sm text-slate-300">Write the smallest amount of code that makes the failing test pass. Don't generalize. Don't add features.</p>
+      <p class="text-xs text-slate-400 mt-3 italic">If you find yourself writing more than needed, stop. That's the refactor phase.</p>
+    </div>
+    <div class="bg-blue-950/30 border border-blue-900/50 rounded-lg p-5">
+      <div class="text-blue-400 font-bold mb-2">♻️ REFACTOR</div>
+      <p class="text-sm text-slate-300">Tests are green. Now improve structure: extract functions, rename, remove duplication. Re-run tests after each change.</p>
+      <p class="text-xs text-slate-400 mt-3 italic">If tests fail during refactor, you went too far. Revert to last green.</p>
+    </div>
+  </div>
+
+  <div class="prompt-block p-6 rounded-lg mt-8">
+    <div class="text-sky-400 text-xs uppercase tracking-wider mb-2">The magic prompt</div>
+    <pre class="text-sm text-slate-200 whitespace-pre-wrap">/speckit.implement task 1
+
+Use the superpowers:test-driven-development skill. Red-green-refactor.
+Show me the failing test before the implementation.</pre>
+    <p class="text-sm text-slate-400 mt-3">That second paragraph is what flips the agent from "write code that probably works" to "prove each step." Skip it and you'll get fast-but-fragile output.</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- LESSON 5: WORKED EXAMPLE -->
+<!-- ============================================================ -->
+<section id="example" class="anchor-link scroll-mt-20">
+  <div class="flex items-center gap-4 mb-8">
+    <div class="step-num w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-white">5</div>
+    <h2 class="text-3xl font-bold">Worked example — weekly digest email</h2>
+  </div>
+
+  <p class="text-slate-300 mb-8">A real feature, end to end. Same shape you'd use for any non-trivial work in a Next.js + Supabase + LemonSqueezy SaaS.</p>
+
+  <div class="space-y-6">
+
+    <!-- step 0 -->
+    <div class="border border-slate-800 rounded-xl overflow-hidden">
+      <div class="bg-slate-900 px-6 py-3 flex items-center gap-3">
+        <span class="text-xs px-2 py-1 bg-slate-700 rounded">Step 0</span>
+        <span class="font-semibold">One-time per project</span>
+      </div>
+      <div class="bg-slate-950 p-6">
+        <p class="text-slate-300 mb-3">In your project root:</p>
+        <pre class="prompt-block p-4 rounded text-sm text-slate-200">specify init . --integration claude</pre>
+        <p class="text-slate-400 text-sm mt-3">Drops <code>.specify/</code> with all 7 slash commands. Skip if already initialized.</p>
+      </div>
+    </div>
+
+    <!-- step 1 -->
+    <div class="border border-slate-800 rounded-xl overflow-hidden">
+      <div class="bg-slate-900 px-6 py-3 flex items-center gap-3">
+        <span class="text-xs px-2 py-1 bg-blue-700 rounded">Step 1</span>
+        <code class="text-blue-400">/speckit.constitution</code>
+        <span class="text-slate-400 text-sm">(only once in project lifetime)</span>
+      </div>
+      <div class="bg-slate-950 p-6">
+        <p class="text-slate-300 mb-3">Your exact prompt:</p>
+        <pre class="prompt-block p-4 rounded text-sm text-slate-200 whitespace-pre-wrap">/speckit.constitution
+
+We're a solo-dev SaaS on Next.js App Router + Supabase + LemonSqueezy.
+
+Principles:
+- Strict TypeScript, no `any`
+- RLS on every table
+- Functional patterns, named exports
+- Tests before merge
+- Conventional commits
+
+Hard rules:
+- Never log PII
+- Never send unbounded emails
+- Every cron job has a kill switch
+
+Release blockers (any one of these and we don't ship):
+- Failing type-check
+- Failing RLS test
+- Missing migration
+- Secret in diff</pre>
+      </div>
+    </div>
+
+    <!-- step 2 -->
+    <div class="border border-slate-800 rounded-xl overflow-hidden">
+      <div class="bg-slate-900 px-6 py-3 flex items-center gap-3">
+        <span class="text-xs px-2 py-1 bg-purple-700 rounded">Step 2</span>
+        <code class="text-purple-400">/speckit.specify</code>
+        <span class="text-slate-400 text-sm">— the prompt that matters most</span>
+      </div>
+      <div class="bg-slate-950 p-6">
+        <pre class="prompt-block p-4 rounded text-sm text-slate-200 whitespace-pre-wrap">/speckit.specify
+
+Feature: weekly email digest of new threat-intel articles
+for opted-in users.
+
+USER OUTCOME:
+A subscriber who opted in to "Weekly Digest" gets one email every
+Monday 8 AM ET with the top 10 articles tagged in their followed
+categories from the past 7 days. They click any article title to
+open it. They unsubscribe in one click.
+
+WHY NOW:
+40% of our churn is "I forgot the product exists." Digest brings
+them back.
+
+NON-GOALS:
+- Real-time alerts (separate feature)
+- Personalization beyond category follow (v2)
+- Mobile push (v2)
+
+CONSTRAINTS:
+- Resend for delivery
+- LemonSqueezy plan gate (Pro+ only)
+- Single Inngest cron, idempotent if retried
+- Must respect unsubscribe within 24h per CAN-SPAM
+- No PII in logs
+
+ACCEPTANCE SIGNALS:
+- A test user with 3 followed categories receives exactly one
+  email Monday morning, containing exactly 10 article rows
+- An unsubscribed user receives zero emails
+- Re-running the cron in the same hour produces zero duplicate sends</pre>
+        <div class="win p-4 rounded mt-4">
+          <strong class="text-emerald-400">Spec shape:</strong> outcome → why → non-goals → constraints → acceptance. That's the floor. Every section answered. No "TBD."
+        </div>
+      </div>
+    </div>
+
+    <!-- step 3 -->
+    <div class="border border-slate-800 rounded-xl overflow-hidden">
+      <div class="bg-slate-900 px-6 py-3 flex items-center gap-3">
+        <span class="text-xs px-2 py-1 bg-orange-700 rounded">Step 3</span>
+        <code class="text-orange-400">/speckit.clarify</code>
+      </div>
+      <div class="bg-slate-950 p-6">
+        <p class="text-slate-300 mb-3">Just run it. The agent comes back with questions like:</p>
+        <div class="bg-slate-900 border border-slate-700 rounded p-4 text-sm space-y-2">
+          <div class="text-amber-300">❓ "What if a user follows zero categories — send empty digest, skip them, or send a re-engagement variant?"</div>
+          <div class="text-amber-300">❓ "If Resend returns 429, do we retry now or skip this week?"</div>
+          <div class="text-amber-300">❓ "Does 'top 10' mean by recency, by views, or by some score?"</div>
+        </div>
+        <p class="text-slate-300 mt-4">Answer each one. Don't hand-wave. Every unclarified question is hour-3 rework.</p>
+      </div>
+    </div>
+
+    <!-- step 4-6 condensed -->
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="border border-slate-800 rounded-xl bg-slate-950 p-5">
+        <div class="text-xs px-2 py-1 bg-teal-700 rounded inline-block mb-2">Step 4</div>
+        <code class="text-teal-400 block mb-2">/speckit.plan</code>
+        <p class="text-sm text-slate-300">Writes <code>plan.md</code>. Read it. Tweak with: <em>"Change point 4: use materialized view, not per-user join."</em></p>
+      </div>
+      <div class="border border-slate-800 rounded-xl bg-slate-950 p-5">
+        <div class="text-xs px-2 py-1 bg-lime-700 rounded inline-block mb-2">Step 5</div>
+        <code class="text-lime-400 block mb-2">/speckit.tasks</code>
+        <p class="text-sm text-slate-300">Decomposes into ~10 tasks. Each independently testable. No prompt needed.</p>
+      </div>
+      <div class="border border-slate-800 rounded-xl bg-slate-950 p-5">
+        <div class="text-xs px-2 py-1 bg-orange-700 rounded inline-block mb-2">Step 6</div>
+        <code class="text-orange-400 block mb-2">/speckit.analyze</code>
+        <p class="text-sm text-slate-300">Drift check. Always run before implement. Catches spec ↔ plan misalignment.</p>
+      </div>
+    </div>
+
+    <!-- step 7 -->
+    <div class="border border-slate-800 rounded-xl overflow-hidden">
+      <div class="bg-slate-900 px-6 py-3 flex items-center gap-3">
+        <span class="text-xs px-2 py-1 bg-green-700 rounded">Step 7</span>
+        <code class="text-green-400">/speckit.implement task 1</code>
+        <span class="text-slate-400 text-sm">— TDD enters here</span>
+      </div>
+      <div class="bg-slate-950 p-6">
+        <pre class="prompt-block p-4 rounded text-sm text-slate-200 whitespace-pre-wrap">/speckit.implement task 1
+
+Use the superpowers:test-driven-development skill. Red-green-refactor.
+Show me the failing test before the implementation.</pre>
+
+        <div class="mt-6 space-y-3">
+          <div class="flex gap-3 items-start">
+            <div class="bg-red-950 text-red-300 px-3 py-1 rounded text-xs font-mono mt-1">RED</div>
+            <div class="text-slate-300 text-sm flex-1">Agent writes <code>test/digest/eligibility.test.ts</code>, runs it. Output: <code class="text-red-400">FAIL — getEligibleSubscribers is not defined</code>. Confirms RED.</div>
+          </div>
+          <div class="flex gap-3 items-start">
+            <div class="bg-emerald-950 text-emerald-300 px-3 py-1 rounded text-xs font-mono mt-1">GREEN</div>
+            <div class="text-slate-300 text-sm flex-1">Agent writes the minimum <code>src/digest/eligibility.ts</code>. Re-runs test. Output: <code class="text-emerald-400">PASS</code>. Confirms GREEN.</div>
+          </div>
+          <div class="flex gap-3 items-start">
+            <div class="bg-blue-950 text-blue-300 px-3 py-1 rounded text-xs font-mono mt-1">REFACTOR</div>
+            <div class="text-slate-300 text-sm flex-1">Agent extracts a helper, renames variables, re-runs test. Still PASS.</div>
+          </div>
+          <div class="flex gap-3 items-start">
+            <div class="bg-purple-950 text-purple-300 px-3 py-1 rounded text-xs font-mono mt-1">COMMIT</div>
+            <div class="text-slate-300 text-sm flex-1"><code>feat(digest): add subscriber eligibility check (task 1/10)</code></div>
+          </div>
+          <div class="flex gap-3 items-start">
+            <div class="bg-slate-800 text-slate-300 px-3 py-1 rounded text-xs font-mono mt-1">NEXT</div>
+            <div class="text-slate-300 text-sm flex-1">Agent says: <em>"Task 1 complete. Ready for task 2?"</em> You say yes. Repeat.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- LESSON 6: PITFALLS -->
+<!-- ============================================================ -->
+<section id="pitfalls" class="anchor-link scroll-mt-20">
+  <div class="flex items-center gap-4 mb-8">
+    <div class="step-num w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-white">6</div>
+    <h2 class="text-3xl font-bold">Pitfalls (the real ones)</h2>
+  </div>
+
+  <div class="space-y-4">
+    <div class="gotcha p-5 rounded-lg">
+      <strong class="text-amber-400 block mb-1">🪤 "It's a small feature, I'll skip the spec"</strong>
+      <p class="text-slate-300 text-sm">It's never small. Even a 1-hour change gets a 5-line spec. The spec is the floor, not the ceiling. Skipping it is how 1-hour changes become 5-hour rewrites.</p>
+    </div>
+    <div class="gotcha p-5 rounded-lg">
+      <strong class="text-amber-400 block mb-1">🪤 Editing constitution mid-feature</strong>
+      <p class="text-slate-300 text-sm">The constitution is supposed to be stable. If you want to change it during a feature build, write the change into the next spec instead. Revisit constitution after the feature ships.</p>
+    </div>
+    <div class="gotcha p-5 rounded-lg">
+      <strong class="text-amber-400 block mb-1">🪤 Implementing without /analyze</strong>
+      <p class="text-slate-300 text-sm">You edited the plan but didn't regenerate tasks. Now /implement is building from stale tasks. Analyze catches this in 10 seconds; without it, you find out at task 6.</p>
+    </div>
+    <div class="gotcha p-5 rounded-lg">
+      <strong class="text-amber-400 block mb-1">🪤 Skipping the TDD prompt addendum</strong>
+      <p class="text-slate-300 text-sm"><code>/speckit.implement task 1</code> alone gets you fast code. The "Show me the failing test before the implementation" line is what pins the loop. Without it, the agent will sometimes write code first and test second — which is not TDD.</p>
+    </div>
+    <div class="gotcha p-5 rounded-lg">
+      <strong class="text-amber-400 block mb-1">🪤 Not reading the artifacts</strong>
+      <p class="text-slate-300 text-sm"><code>spec.md</code>, <code>plan.md</code>, <code>tasks.md</code> are real files. If you don't open them, the agent's hallucinations become law. Five minutes of reading saves hours of fixing.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- LESSON 7: CHEAT SHEET -->
+<!-- ============================================================ -->
+<section id="cheatsheet" class="anchor-link scroll-mt-20">
+  <div class="flex items-center gap-4 mb-8">
+    <div class="step-num w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-white">7</div>
+    <h2 class="text-3xl font-bold">Cheat sheet (print this)</h2>
+  </div>
+
+  <div class="bg-slate-900 border border-slate-800 rounded-xl p-8">
+    <table class="w-full text-sm">
+      <thead class="text-slate-400 border-b border-slate-700">
+        <tr>
+          <th class="text-left py-3 pr-4">Command</th>
+          <th class="text-left py-3 pr-4">When</th>
+          <th class="text-left py-3">Output</th>
+        </tr>
+      </thead>
+      <tbody class="text-slate-200 divide-y divide-slate-800">
+        <tr><td class="py-3 pr-4"><code class="text-blue-400">specify init . --integration claude</code></td><td class="py-3 pr-4">Once per project</td><td class="py-3"><code>.specify/</code> + 7 commands</td></tr>
+        <tr><td class="py-3 pr-4"><code class="text-blue-400">/speckit.constitution</code></td><td class="py-3 pr-4">Project birth + rare edits</td><td class="py-3"><code>constitution.md</code></td></tr>
+        <tr><td class="py-3 pr-4"><code class="text-purple-400">/speckit.specify</code></td><td class="py-3 pr-4">Start every feature</td><td class="py-3"><code>spec.md</code></td></tr>
+        <tr><td class="py-3 pr-4"><code class="text-orange-400">/speckit.clarify</code></td><td class="py-3 pr-4">Right after specify</td><td class="py-3">Q&amp;A appended to <code>spec.md</code></td></tr>
+        <tr><td class="py-3 pr-4"><code class="text-teal-400">/speckit.plan</code></td><td class="py-3 pr-4">After clarify (read result!)</td><td class="py-3"><code>plan.md</code></td></tr>
+        <tr><td class="py-3 pr-4"><code class="text-lime-400">/speckit.tasks</code></td><td class="py-3 pr-4">After plan is right</td><td class="py-3"><code>tasks.md</code></td></tr>
+        <tr><td class="py-3 pr-4"><code class="text-orange-400">/speckit.analyze</code></td><td class="py-3 pr-4">Always, before implement</td><td class="py-3">Drift report</td></tr>
+        <tr><td class="py-3 pr-4"><code class="text-green-400">/speckit.implement task N</code></td><td class="py-3 pr-4">Per task, in order</td><td class="py-3">Test + code + commit</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mt-8 grid md:grid-cols-2 gap-4">
+    <div class="win p-5 rounded-lg">
+      <div class="text-emerald-400 font-bold mb-2">✓ The two prompts that matter</div>
+      <p class="text-sm text-slate-300 mb-3">If you only remember two prompts, remember these:</p>
+      <pre class="text-xs bg-slate-950 p-3 rounded text-slate-200 whitespace-pre-wrap mb-2">/speckit.specify
+[outcome + why + non-goals + constraints + acceptance]</pre>
+      <pre class="text-xs bg-slate-950 p-3 rounded text-slate-200 whitespace-pre-wrap">/speckit.implement task N
+
+Use the superpowers:test-driven-development skill. Red-green-refactor.
+Show me the failing test before the implementation.</pre>
+    </div>
+    <div class="prompt-block p-5 rounded-lg">
+      <div class="text-sky-400 font-bold mb-2">⚡ Bug-fix variant</div>
+      <p class="text-sm text-slate-300 mb-3">Spec-kit isn't only for features. For a non-trivial bug:</p>
+      <pre class="text-xs bg-slate-950 p-3 rounded text-slate-200 whitespace-pre-wrap">/speckit.specify
+
+Bug: [one line]
+Reproduce: [exact steps]
+Root cause hypothesis: [your best guess]
+Acceptance: [the regression test that should exist after fix]</pre>
+      <p class="text-xs text-slate-400 mt-3">Then clarify → plan → implement (with TDD). The TDD pass forces a regression test, so the same bug can't return.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="border-t border-slate-800 mt-20">
+  <div class="max-w-5xl mx-auto px-6 py-8 text-sm text-slate-400 flex flex-wrap justify-between gap-4">
+    <div>Claude-Brain · Lesson 01 · Built 2026-06-02</div>
+    <div>Saved at <code>~/.claude/docs/lessons/spec-kit-tdd.html</code></div>
+  </div>
+</footer>
+
+</body>
+</html>

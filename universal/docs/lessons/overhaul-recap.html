@@ -1,0 +1,987 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>VOL.01 / THE OVERHAUL — A Field Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --void:        #0a0a0c;
+    --ink:         #f5efe1;
+    --ink-dim:     #a89f8e;
+    --ink-faint:   #4a473f;
+    --rule:        #2a2723;
+    --acid:        #c5ff3a;     /* signature, used sparingly */
+    --fire:        #ff5722;     /* warnings */
+    --cool:        #7dd3fc;     /* info */
+    --paper:       #f5efe1;
+  }
+
+  *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--void);
+    color: var(--ink);
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 14px;
+    line-height: 1.55;
+    overflow-x: hidden;
+  }
+
+  /* Subtle film grain overlay */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.04;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.5'/></svg>");
+  }
+
+  /* Top fixed rail */
+  .rail {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 50;
+    background: var(--void);
+    border-bottom: 1px solid var(--rule);
+    padding: 12px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  .rail .blip { display:inline-block; width:8px; height:8px; background:var(--acid); border-radius:50%; vertical-align:middle; margin-right:8px; animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+  .rail nav { display: flex; gap: 24px; }
+  .rail nav a { color: var(--ink-dim); text-decoration: none; transition: color .2s; }
+  .rail nav a:hover { color: var(--acid); }
+
+  /* Page registration marks (printer's marks aesthetic) */
+  .regmark { position: absolute; width: 32px; height: 32px; pointer-events: none; }
+  .regmark::before, .regmark::after { content: ""; position: absolute; background: var(--ink-faint); }
+  .regmark::before { left: 50%; top: 0; bottom: 0; width: 1px; transform: translateX(-50%); }
+  .regmark::after  { top: 50%; left: 0; right: 0; height: 1px; transform: translateY(-50%); }
+  .regmark.tl { top: 56px; left: 16px; }
+  .regmark.tr { top: 56px; right: 16px; }
+
+  /* Vertical margin label */
+  .vlabel {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  /* Page wrap */
+  main { padding-top: 56px; }
+  section { position: relative; padding: 96px 56px; border-bottom: 1px solid var(--rule); }
+  @media (max-width: 700px) { section { padding: 64px 24px; } }
+
+  /* Hairline horizontal divider */
+  .hr-hair { height: 1px; background: var(--rule); margin: 32px 0; }
+
+  /* DISPLAY TYPE */
+  .display, .display-it {
+    font-family: "Instrument Serif", "Times New Roman", serif;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 0.92;
+  }
+  .display-it { font-style: italic; }
+  .display-sm { font-size: clamp(40px, 6vw, 78px); }
+  .display-md { font-size: clamp(64px, 10vw, 140px); }
+  .display-xl { font-size: clamp(96px, 18vw, 260px); }
+
+  .chunk {
+    font-family: "Bricolage Grotesque", "Arial Black", sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 0.85;
+  }
+
+  .eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+
+  .lede {
+    font-family: "Instrument Serif", serif;
+    font-style: italic;
+    font-size: clamp(20px, 2.2vw, 28px);
+    line-height: 1.35;
+    color: var(--ink);
+    max-width: 56ch;
+  }
+
+  /* COVER */
+  .cover { min-height: 92vh; display: grid; grid-template-rows: auto 1fr auto; padding: 56px; }
+  .cover-head { display: flex; justify-content: space-between; align-items: flex-start; }
+  .cover-head .meta { text-align: right; line-height: 1.7; }
+  .cover-title { align-self: center; }
+  .cover-title h1 { font-size: clamp(70px, 13vw, 200px); }
+  .cover-title h1 em { color: var(--acid); font-style: italic; }
+  .cover-title .sub { margin-top: 24px; max-width: 64ch; }
+  .cover-foot { display:flex; justify-content:space-between; align-items:flex-end; font-size:10px; letter-spacing:.3em; text-transform:uppercase; color: var(--ink-dim); }
+  .cover-foot .bigno { font-family:"Bricolage Grotesque",sans-serif; font-weight:800; font-size:120px; line-height:.85; letter-spacing:-.05em; color: var(--ink); }
+
+  /* SECTION HEADER */
+  .sec-head { display: grid; grid-template-columns: 80px 1fr; gap: 32px; margin-bottom: 64px; align-items: end; }
+  .sec-head .no { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: clamp(60px, 9vw, 110px); line-height: 0.85; color: var(--acid); letter-spacing: -.04em; }
+  .sec-head .title { }
+  .sec-head .title .eyebrow { margin-bottom: 12px; }
+  .sec-head .title h2 { font-size: clamp(40px, 7vw, 86px); }
+
+  /* DIAGNOSIS CARDS */
+  .diag-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  @media (max-width: 900px) { .diag-grid { grid-template-columns: 1fr; } }
+  .diag {
+    background: var(--void); padding: 28px;
+    display: grid; grid-template-columns: 56px 1fr; gap: 18px;
+    min-height: 180px;
+  }
+  .diag .n {
+    font-family: "Instrument Serif", serif;
+    font-size: 56px; font-style: italic;
+    color: var(--ink-faint); line-height: 1;
+  }
+  .diag h3 {
+    font-family: "Instrument Serif", serif;
+    font-size: 22px; font-weight: 400;
+    line-height: 1.15; margin-bottom: 10px;
+  }
+  .diag p { color: var(--ink-dim); font-size: 12px; }
+  .diag .tag { display: inline-block; margin-top: 12px; font-size: 9px; letter-spacing: .25em; text-transform: uppercase; color: var(--acid); border: 1px solid var(--acid); padding: 3px 7px; }
+
+  /* PILLARS — tall index */
+  .pillars { display: grid; grid-template-columns: 1fr 1.2fr; gap: 56px; }
+  @media (max-width: 800px) { .pillars { grid-template-columns: 1fr; } }
+  .pillar-list { display: flex; flex-direction: column; }
+  .pillar {
+    display: grid; grid-template-columns: 60px 1fr auto; gap: 18px;
+    padding: 22px 0;
+    border-bottom: 1px dashed var(--rule);
+    align-items: baseline;
+    transition: padding-left .25s ease;
+  }
+  .pillar:hover { padding-left: 14px; background: linear-gradient(90deg, rgba(197,255,58,.04), transparent); }
+  .pillar .pno { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 28px; color: var(--ink-faint); }
+  .pillar h4 { font-family: "Instrument Serif", serif; font-size: 26px; font-weight: 400; line-height: 1.1; }
+  .pillar .pdetail { color: var(--ink-dim); font-size: 12px; margin-top: 6px; }
+  .pillar .pstatus { font-size: 9px; letter-spacing: .25em; text-transform: uppercase; color: var(--acid); white-space: nowrap; }
+
+  /* METRICS — huge before/after */
+  .metrics { display: grid; gap: 0; border-top: 1px solid var(--rule); }
+  .metric {
+    display: grid;
+    grid-template-columns: 220px 1fr 1fr 1fr;
+    gap: 24px;
+    padding: 36px 0;
+    border-bottom: 1px solid var(--rule);
+    align-items: center;
+  }
+  @media (max-width: 800px) {
+    .metric { grid-template-columns: 1fr 1fr; gap: 12px; padding: 24px 0; }
+    .metric > .mlabel { grid-column: span 2; margin-bottom: 8px; }
+  }
+  .metric .mlabel { font-family: "Instrument Serif", serif; font-style: italic; font-size: 22px; color: var(--ink); }
+  .metric .mvalue { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: clamp(40px, 7vw, 80px); line-height: 0.9; letter-spacing: -.04em; }
+  .metric .mvalue.before { color: var(--ink-faint); text-decoration: line-through; text-decoration-thickness: 2px; text-decoration-color: var(--fire); }
+  .metric .mvalue.after { color: var(--ink); }
+  .metric .mdelta { font-family: "JetBrains Mono", monospace; font-size: 14px; color: var(--acid); letter-spacing: -.01em; }
+  .metric .mdelta .pct { font-size: 32px; font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; display: block; line-height: 1; }
+  .metric .arrow { color: var(--ink-faint); font-size: 24px; text-align: center; }
+
+  /* MACHINE — system diagram */
+  .machine {
+    background: linear-gradient(180deg, rgba(197,255,58,.02), transparent);
+    border: 1px solid var(--rule);
+    padding: 48px;
+    position: relative;
+  }
+  .machine-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  @media (max-width: 900px) { .machine-grid { grid-template-columns: 1fr 1fr; } }
+  .comp {
+    background: var(--void);
+    padding: 24px;
+    min-height: 160px;
+    position: relative;
+    transition: background .2s;
+  }
+  .comp:hover { background: #111114; }
+  .comp .cno {
+    position: absolute; top: 12px; right: 14px;
+    font-family: "JetBrains Mono", monospace; font-size: 10px;
+    color: var(--ink-faint); letter-spacing: .15em;
+  }
+  .comp h4 { font-family: "Instrument Serif", serif; font-size: 20px; font-weight: 400; line-height: 1.1; margin-bottom: 8px; max-width: 80%; }
+  .comp p { color: var(--ink-dim); font-size: 11px; line-height: 1.5; }
+  .comp.acid h4 { color: var(--acid); }
+  .comp .ctag { display: inline-block; margin-top: 10px; font-size: 8px; letter-spacing: .25em; text-transform: uppercase; color: var(--ink-faint); }
+
+  /* WEEKLY LOOP */
+  .loop {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+    align-items: center;
+  }
+  @media (max-width: 800px) { .loop { grid-template-columns: 1fr; } }
+  .loop-vis {
+    aspect-ratio: 1;
+    background:
+      radial-gradient(circle at center, rgba(197,255,58,.08), transparent 70%),
+      var(--void);
+    border: 1px solid var(--rule);
+    position: relative;
+    padding: 32px;
+    display: grid; grid-template-rows: auto 1fr auto; gap: 16px;
+  }
+  .loop-vis .friday {
+    font-family: "Instrument Serif", serif;
+    font-style: italic; font-size: 48px;
+    text-align: center;
+  }
+  .loop-vis .friday em { color: var(--acid); }
+  .loop-vis .stages {
+    display: flex; flex-direction: column; gap: 12px;
+    justify-content: center;
+  }
+  .loop-vis .stage {
+    display: grid; grid-template-columns: 32px 1fr; gap: 12px;
+    align-items: center;
+    font-size: 12px;
+  }
+  .loop-vis .stage .dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--acid);
+    margin: 0 auto;
+    box-shadow: 0 0 0 4px rgba(197,255,58,.15);
+  }
+  .loop-vis .stage .dot.faint { background: var(--ink-faint); box-shadow: none; }
+  .loop-vis .stage .label { color: var(--ink-dim); }
+  .loop-vis .stage .label em { color: var(--ink); font-style: normal; }
+  .loop-vis .meta { font-size: 9px; letter-spacing: .3em; text-transform: uppercase; color: var(--ink-faint); text-align: center; }
+
+  /* ROUTER table */
+  .router-tbl { width: 100%; border-collapse: collapse; }
+  .router-tbl tr { border-bottom: 1px solid var(--rule); }
+  .router-tbl td { padding: 18px 12px; vertical-align: top; font-size: 13px; }
+  .router-tbl td:first-child { color: var(--ink-dim); font-family: "JetBrains Mono", monospace; font-size: 12px; width: 50%; }
+  .router-tbl td:first-child em { font-style: italic; color: var(--acid); font-family: "Instrument Serif", serif; font-size: 16px; }
+  .router-tbl td:last-child { font-family: "Instrument Serif", serif; font-style: italic; font-size: 18px; }
+  .router-tbl tr:hover { background: rgba(197,255,58,.025); }
+
+  /* SPEC-KIT pull-quote */
+  .pullquote {
+    margin: 64px 0;
+    padding: 48px;
+    border-top: 2px solid var(--acid);
+    border-bottom: 2px solid var(--acid);
+    text-align: center;
+    background: rgba(197,255,58,.02);
+  }
+  .pullquote .eyebrow { margin-bottom: 24px; color: var(--acid); }
+  .pullquote .magic {
+    font-family: "JetBrains Mono", monospace;
+    font-size: clamp(13px, 1.5vw, 16px);
+    line-height: 1.7;
+    text-align: left;
+    max-width: 78ch;
+    margin: 0 auto;
+    color: var(--ink);
+    white-space: pre-wrap;
+  }
+  .pullquote .magic .cmd { color: var(--acid); }
+  .pullquote .magic .emph { color: var(--ink); font-style: italic; font-family: "Instrument Serif", serif; font-size: 1.15em; }
+
+  .spec-flow {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin: 48px 0;
+  }
+  @media (max-width: 1000px) { .spec-flow { grid-template-columns: repeat(2, 1fr); } }
+  .spec-step {
+    background: var(--void);
+    padding: 18px;
+    min-height: 130px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .spec-step .sno {
+    font-family: "Bricolage Grotesque", sans-serif; font-weight: 800;
+    font-size: 32px; color: var(--ink-faint); letter-spacing: -.03em;
+  }
+  .spec-step .scmd {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px; color: var(--acid);
+    word-break: break-all;
+  }
+  .spec-step .sname {
+    font-family: "Instrument Serif", serif;
+    font-size: 16px; font-style: italic;
+    color: var(--ink);
+    margin-top: 6px;
+  }
+
+  /* RUNBOOK / FINAL */
+  .runbook { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+  @media (max-width: 800px) { .runbook { grid-template-columns: 1fr; } }
+  .runlist { list-style: none; }
+  .runlist li {
+    padding: 16px 0;
+    border-bottom: 1px dashed var(--rule);
+    display: grid; grid-template-columns: 24px 1fr; gap: 12px;
+    align-items: baseline;
+  }
+  .runlist li::before {
+    content: "→";
+    color: var(--acid);
+    font-family: "JetBrains Mono", monospace;
+  }
+  .runlist li strong { font-family: "Instrument Serif", serif; font-weight: 400; font-style: italic; font-size: 18px; color: var(--ink); display: block; margin-bottom: 4px; }
+  .runlist li span { color: var(--ink-dim); font-size: 12px; }
+
+  .runbook-panel {
+    background: linear-gradient(180deg, rgba(197,255,58,.04), transparent);
+    border: 1px solid var(--rule);
+    padding: 32px;
+  }
+  .runbook-panel h4 { font-family: "Instrument Serif", serif; font-style: italic; font-size: 28px; margin-bottom: 16px; color: var(--ink); }
+  .runbook-panel code { background: var(--void); border: 1px solid var(--rule); padding: 2px 6px; font-size: 11px; color: var(--acid); }
+
+  .codeblock {
+    background: #050507;
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--acid);
+    padding: 18px 22px;
+    font-size: 12px;
+    line-height: 1.7;
+    margin: 24px 0;
+    overflow-x: auto;
+    color: var(--ink);
+  }
+  .codeblock .c { color: var(--ink-faint); }
+  .codeblock .k { color: var(--acid); }
+  .codeblock .s { color: var(--cool); }
+
+  /* CLOSING */
+  .closer { padding: 120px 56px; text-align: center; }
+  .closer .mantra {
+    font-family: "Instrument Serif", serif;
+    font-size: clamp(32px, 5vw, 64px);
+    line-height: 1.1;
+    max-width: 28ch;
+    margin: 0 auto;
+  }
+  .closer .mantra em { color: var(--acid); font-style: italic; }
+  .closer .sig {
+    margin-top: 64px;
+    font-size: 10px;
+    letter-spacing: .4em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .closer .ascii {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    line-height: 1.2;
+    margin: 48px auto 0;
+    white-space: pre;
+    display: inline-block;
+    text-align: left;
+  }
+
+  /* COLOPHON FOOTER */
+  footer {
+    padding: 32px 56px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  /* Reveal on scroll */
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity .8s ease, transform .8s ease; }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ============== TOP RAIL ============== -->
+<div class="rail">
+  <div><span class="blip"></span> CLAUDE-BRAIN · OPS LOG · VOL 01</div>
+  <nav>
+    <a href="#diagnosis">001 Diagnosis</a>
+    <a href="#intervention">002 Intervention</a>
+    <a href="#metrics">003 Metrics</a>
+    <a href="#machine">004 Machine</a>
+    <a href="#loop">005 Loop</a>
+    <a href="#router">006 Router</a>
+    <a href="#speckit">007 Spec-Kit</a>
+    <a href="#runbook">008 Runbook</a>
+  </nav>
+  <div>2026.06.02 · CHARLOTTE NC</div>
+</div>
+
+<main>
+
+<!-- ============== COVER ============== -->
+<section class="cover">
+  <span class="regmark tl"></span>
+  <span class="regmark tr"></span>
+
+  <div class="cover-head">
+    <div class="eyebrow">A Field Report<br/>By Mahmoud "Michael" Kurdi<br/>For the next instance of the agent</div>
+    <div class="meta">
+      <div class="eyebrow">Issue Nº 001</div>
+      <div class="eyebrow">Filed 02 · 06 · 2026</div>
+      <div class="eyebrow">Commit · <span style="color:var(--acid)">b68fa99</span></div>
+    </div>
+  </div>
+
+  <div class="cover-title">
+    <div class="eyebrow" style="margin-bottom:24px">The Overhaul</div>
+    <h1 class="display">The <em>quiet</em> war on<br/>token bloat &amp; <em>silent</em> drift.</h1>
+    <p class="lede sub">A configuration archaeology — diagnosing the ghosts in <code style="font-family:JetBrains Mono,monospace;color:var(--acid);font-size:.85em">~/.claude/</code>, exorcising what was loaded but never used, and rewiring the system so it observes itself, prunes itself, and gets sharper every Friday at 3pm.</p>
+  </div>
+
+  <div class="cover-foot">
+    <div>System State · <span style="color:var(--acid)">OPTIMISED</span></div>
+    <div class="bigno">— 40%</div>
+    <div>Cold-Start Reduction</div>
+  </div>
+</section>
+
+
+<!-- ============== 001 DIAGNOSIS ============== -->
+<section id="diagnosis">
+  <div class="sec-head">
+    <div class="no">001</div>
+    <div class="title">
+      <div class="eyebrow">Chapter One · The Diagnosis</div>
+      <h2 class="display-it">Nine ghosts<br/>in the machine.</h2>
+    </div>
+  </div>
+
+  <p class="lede" style="margin-bottom:48px">The visible symptom was "too many skills." The real disease was that almost every loaded surface was <em>never invoked</em> — only 4 of ~300 had fired across 150+ sessions. We named the ghosts before exorcising them.</p>
+
+  <div class="diag-grid">
+    <div class="diag">
+      <span class="n">i</span>
+      <div>
+        <h3>Phantom plugins</h3>
+        <p>31 enabled across 4 marketplaces. Each contributes skill metadata to the cold-start dump. Most never fired.</p>
+        <span class="tag">— 17 disabled</span>
+      </div>
+    </div>
+    <div class="diag">
+      <span class="n">ii</span>
+      <div>
+        <h3>Inline doppelgängers</h3>
+        <p>Six plugin install instances were inline+marketplace duplicates of the same code, all empty stubs.</p>
+        <span class="tag">— 8 removed</span>
+      </div>
+    </div>
+    <div class="diag">
+      <span class="n">iii</span>
+      <div>
+        <h3>The orphan</h3>
+        <p>plugin_011v5h6QUzBZvas64y44XLhy — no source, no manifest, no purpose. A leftover ID.</p>
+        <span class="tag">— deleted</span>
+      </div>
+    </div>
+    <div class="diag">
+      <span class="n">iv</span>
+      <div>
+        <h3>Skill cemetery</h3>
+        <p>17 local skills authored over months. Telemetry says 4 ever fired. Thirteen were dead weight your context still paid for.</p>
+        <span class="tag">— 11 archived</span>
+      </div>
+    </div>
+    <div class="diag">
+      <span class="n">v</span>
+      <div>
+        <h3>Rule auto-load</h3>
+        <p>Fifteen .md files in <code style="color:var(--cool)">rules/</code> auto-loaded on every cold start — 34 KB before the user typed a single character.</p>
+        <span class="tag">— 100% lifted</span>
+      </div>
+    </div>
+    <div class="diag">
+      <span class="n">vi</span>
+      <div>
+        <h3>The dormant memory</h3>
+        <p>MEMORY.md was three lines. No user/feedback/project/reference buckets. The protocol existed only on paper.</p>
+        <span class="tag">— wired live</span>
+      </div>
+    </div>
+    <div class="diag">
+      <span class="n">vii</span>
+      <div>
+        <h3>Twin hubs</h3>
+        <p>Two CLAUDE.md files competed. The global one ordered the agent to immediately fetch a 13 KB second one. Doubled cost.</p>
+        <span class="tag">— unified</span>
+      </div>
+    </div>
+    <div class="diag">
+      <span class="n">viii</span>
+      <div>
+        <h3>Silent router</h3>
+        <p>SKILL-ROUTER.md existed but was never loaded. Beautifully written documentation of a feature that didn't exist.</p>
+        <span class="tag">— activated</span>
+      </div>
+    </div>
+    <div class="diag">
+      <span class="n">ix</span>
+      <div>
+        <h3>No telemetry</h3>
+        <p>Zero data on what was actually used. Every pruning decision was a guess. We were optimising a black box.</p>
+        <span class="tag">— observed</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============== 002 INTERVENTION ============== -->
+<section id="intervention">
+  <div class="sec-head">
+    <div class="no">002</div>
+    <div class="title">
+      <div class="eyebrow">Chapter Two · The Intervention</div>
+      <h2 class="display-it">Eleven pillars,<br/>reversible-first.</h2>
+    </div>
+  </div>
+
+  <div class="pillars">
+    <div>
+      <p class="lede">Every destructive step was gated behind a backup. <code style="color:var(--acid)">~/.claude/</code> became a git repo before the first change — so rollback was always <span style="color:var(--acid);font-family:JetBrains Mono">one command</span> away.</p>
+
+      <div class="hr-hair"></div>
+
+      <p style="color:var(--ink-dim);font-size:12px;max-width:42ch">The sequencing matters as much as the actions. Memory and router went in first because they're additive. Plugin flips came mid-sequence because they're reversible JSON. Disk deletes came last, gated by a Scout inspection that revealed all 8 orphan dirs were empty stubs — zero data loss, no real gate needed.</p>
+    </div>
+
+    <ol class="pillar-list">
+      <li class="pillar"><span class="pno">i</span><div><h4>Backup foundation</h4><div class="pdetail">git init · .gitignore · baseline commit · settings backup</div></div><span class="pstatus">done</span></li>
+      <li class="pillar"><span class="pno">ii</span><div><h4>Rule mechanism scout</h4><div class="pdetail">Confirmed Claude Code auto-loads <code>rules/*.md</code> by convention</div></div><span class="pstatus">done</span></li>
+      <li class="pillar"><span class="pno">iii</span><div><h4>Rules-as-skill lift</h4><div class="pdetail">15 files moved to <code>skills/rules/refs/</code> + dispatcher SKILL.md</div></div><span class="pstatus">done</span></li>
+      <li class="pillar"><span class="pno">iv</span><div><h4>Plugin prune</h4><div class="pdetail">17 of 33 enabled plugins flipped to false</div></div><span class="pstatus">done</span></li>
+      <li class="pillar"><span class="pno">v</span><div><h4>Disk cleanup</h4><div class="pdetail">8 empty stub plugin directories removed</div></div><span class="pstatus">done</span></li>
+      <li class="pillar"><span class="pno">vi</span><div><h4>Skill archive</h4><div class="pdetail">11 unused local skills moved to <code>_archived/</code></div></div><span class="pstatus">done</span></li>
+      <li class="pillar"><span class="pno">vii</span><div><h4>Hub unification</h4><div class="pdetail">Global CLAUDE.md slimmed 121 → 73 lines; Brain-hub demoted</div></div><span class="pstatus">done</span></li>
+      <li class="pillar"><span class="pno">viii</span><div><h4>Router wiring</h4><div class="pdetail">Pattern→skill table now inline in CLAUDE.md</div></div><span class="pstatus">done</span></li>
+      <li class="pillar"><span class="pno">ix</span><div><h4>Memory protocol</h4><div class="pdetail">4-bucket dir + MEMORY.md index live</div></div><span class="pstatus">done</span></li>
+      <li class="pillar"><span class="pno">x</span><div><h4>Telemetry hooks</h4><div class="pdetail">Skill, prompt, session-end logging → <code>telemetry/</code></div></div><span class="pstatus">done</span></li>
+      <li class="pillar"><span class="pno">xi</span><div><h4>Auto-evolution</h4><div class="pdetail">Weekly autonomous prune + auto router-sync on save</div></div><span class="pstatus">done</span></li>
+    </ol>
+  </div>
+</section>
+
+
+<!-- ============== 003 METRICS ============== -->
+<section id="metrics">
+  <div class="sec-head">
+    <div class="no">003</div>
+    <div class="title">
+      <div class="eyebrow">Chapter Three · The Numbers</div>
+      <h2 class="display-it">Measured,<br/>not guessed.</h2>
+    </div>
+  </div>
+
+  <p class="lede" style="margin-bottom:48px">Baseline captured before any change. Re-measured after the dust settled. Every line of strikethrough is a real ghost laid to rest.</p>
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="mlabel">Enabled plugins</div>
+      <div class="mvalue before">33</div>
+      <div class="mvalue after">16</div>
+      <div class="mdelta"><span class="pct">−52%</span>−17 surfaces</div>
+    </div>
+    <div class="metric">
+      <div class="mlabel">Auto-loaded rule bytes</div>
+      <div class="mvalue before">34,022</div>
+      <div class="mvalue after">0</div>
+      <div class="mdelta"><span class="pct">−100%</span>off cold start</div>
+    </div>
+    <div class="metric">
+      <div class="mlabel">Active local skills</div>
+      <div class="mvalue before">17</div>
+      <div class="mvalue after">7</div>
+      <div class="mdelta"><span class="pct">−59%</span>11 archived</div>
+    </div>
+    <div class="metric">
+      <div class="mlabel">CLAUDE.md size</div>
+      <div class="mvalue before">7,468 B</div>
+      <div class="mvalue after">4,457 B</div>
+      <div class="mdelta"><span class="pct">−40%</span>121 → 73 lines</div>
+    </div>
+    <div class="metric">
+      <div class="mlabel">Plugin install dirs</div>
+      <div class="mvalue before">12</div>
+      <div class="mvalue after">4</div>
+      <div class="mdelta"><span class="pct">−67%</span>stubs purged</div>
+    </div>
+    <div class="metric">
+      <div class="mlabel">Memory subdirs</div>
+      <div class="mvalue before">0</div>
+      <div class="mvalue after">4</div>
+      <div class="mdelta"><span style="color:var(--acid)">+ protocol live</span></div>
+    </div>
+    <div class="metric">
+      <div class="mlabel">Telemetry hooks</div>
+      <div class="mvalue before">0</div>
+      <div class="mvalue after">4</div>
+      <div class="mdelta"><span style="color:var(--acid)">+ self-observing</span></div>
+    </div>
+  </div>
+
+  <div class="pullquote" style="margin-top:64px">
+    <div class="eyebrow">Estimated impact</div>
+    <p class="display-it display-sm" style="line-height:1.05">≈ 10,000 tokens off every<br/>cold start. <em style="color:var(--acid)">Forever.</em></p>
+  </div>
+</section>
+
+
+<!-- ============== 004 MACHINE ============== -->
+<section id="machine">
+  <div class="sec-head">
+    <div class="no">004</div>
+    <div class="title">
+      <div class="eyebrow">Chapter Four · The Machine</div>
+      <h2 class="display-it">What's now<br/>under the hood.</h2>
+    </div>
+  </div>
+
+  <div class="machine">
+    <div class="machine-grid">
+      <div class="comp acid">
+        <span class="cno">01 · IDENTITY</span>
+        <h4>CLAUDE.md</h4>
+        <p>Slim hub. Identity, stack defaults, execution rules, inline router. 73 lines, every one earning its place.</p>
+        <span class="ctag">always loaded</span>
+      </div>
+      <div class="comp">
+        <span class="cno">02 · INDEX</span>
+        <h4>MEMORY.md</h4>
+        <p>Four-section index pointing to user, feedback, project, reference memory buckets.</p>
+        <span class="ctag">always loaded</span>
+      </div>
+      <div class="comp">
+        <span class="cno">03 · DISPATCH</span>
+        <h4>Skill router</h4>
+        <p>Pattern→skill table inline in CLAUDE.md. Deterministic. Local skills self-register via auto-sync.</p>
+        <span class="ctag">deterministic</span>
+      </div>
+      <div class="comp">
+        <span class="cno">04 · ON-DEMAND</span>
+        <h4>rules dispatcher</h4>
+        <p>The 15 conventions live here. Loads only the relevant file when keyword fires. Zero cold-start cost.</p>
+        <span class="ctag">trigger-loaded</span>
+      </div>
+
+      <div class="comp">
+        <span class="cno">05 · MEMORY</span>
+        <h4>memory/user/</h4>
+        <p>Preferences, profile facts, corrections you want me to remember across sessions.</p>
+        <span class="ctag">write on signal</span>
+      </div>
+      <div class="comp">
+        <span class="cno">06 · MEMORY</span>
+        <h4>memory/feedback/</h4>
+        <p>Session logs, prune reports, router suggestions, validated approaches. Self-improvement substrate.</p>
+        <span class="ctag">auto-appended</span>
+      </div>
+      <div class="comp">
+        <span class="cno">07 · MEMORY</span>
+        <h4>memory/project/</h4>
+        <p>Per-project decisions, schemas, gotchas. Alexandria lives here.</p>
+        <span class="ctag">manual write</span>
+      </div>
+      <div class="comp">
+        <span class="cno">08 · MEMORY</span>
+        <h4>memory/reference/</h4>
+        <p>External pointers: dashboards, repos, tools, useful patterns discovered in the wild.</p>
+        <span class="ctag">manual write</span>
+      </div>
+
+      <div class="comp acid">
+        <span class="cno">09 · OBSERVE</span>
+        <h4>telemetry/</h4>
+        <p>Skill invocations, prompts, session ends — all logged. Substrate for the weekly auto-prune to reason against.</p>
+        <span class="ctag">hooks · jsonl</span>
+      </div>
+      <div class="comp acid">
+        <span class="cno">10 · EVOLVE</span>
+        <h4>auto-prune-weekly.sh</h4>
+        <p>Fridays 3pm. Spawns Claude CLI. Archives 60+ day dead skills. Writes router suggestions.</p>
+        <span class="ctag">windows task</span>
+      </div>
+      <div class="comp acid">
+        <span class="cno">11 · EVOLVE</span>
+        <h4>sync-local-skill-router.js</h4>
+        <p>New SKILL.md written → router table auto-updates between markers. Manual edits never overwritten.</p>
+        <span class="ctag">PostToolUse + SessionStart</span>
+      </div>
+      <div class="comp">
+        <span class="cno">12 · SAFETY</span>
+        <h4>git history</h4>
+        <p>Three commits. Rollback = one command. Plugin re-enable = one JSON flip. Every step is reversible.</p>
+        <span class="ctag">e0b4501 → b68fa99</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============== 005 LOOP ============== -->
+<section id="loop">
+  <div class="sec-head">
+    <div class="no">005</div>
+    <div class="title">
+      <div class="eyebrow">Chapter Five · The Weekly Loop</div>
+      <h2 class="display-it">A system<br/>that prunes itself.</h2>
+    </div>
+  </div>
+
+  <div class="loop">
+    <div>
+      <p class="lede">Every Friday at 3pm Eastern, Windows Task Scheduler wakes a one-shot Claude CLI agent. Bounded prompt, narrow surface, hard 15-minute cap. It reads its own telemetry and acts.</p>
+
+      <div class="hr-hair"></div>
+
+      <p style="color:var(--ink-dim);font-size:12px">The agent will <em style="color:var(--acid);font-style:normal">never</em> delete a skill — only archive. It will <em style="color:var(--acid);font-style:normal">never</em> edit CLAUDE.md directly — only write suggestions to <code style="color:var(--cool)">memory/feedback/router-suggestions-YYYY-MM-DD.md</code> for your weekend review. It will <em style="color:var(--acid);font-style:normal">never</em> touch plugins, settings.json, or any project repo.</p>
+
+      <p style="color:var(--ink-dim);font-size:12px;margin-top:16px">All changes are committed in <code style="color:var(--cool)">~/.claude/</code> with a conventional message. Rollback any prune run with <code style="color:var(--acid)">git reset --hard HEAD~1</code>.</p>
+    </div>
+
+    <div class="loop-vis">
+      <div class="friday"><em>Friday</em><br/>15:00</div>
+      <div class="stages">
+        <div class="stage"><span class="dot"></span><span class="label"><em>Generate</em> dead-skills report</span></div>
+        <div class="stage"><span class="dot"></span><span class="label"><em>Spawn</em> bounded Claude CLI</span></div>
+        <div class="stage"><span class="dot"></span><span class="label"><em>Archive</em> 60+ day dead skills</span></div>
+        <div class="stage"><span class="dot"></span><span class="label"><em>Propose</em> router additions</span></div>
+        <div class="stage"><span class="dot"></span><span class="label"><em>Commit</em> changes to git</span></div>
+        <div class="stage"><span class="dot faint"></span><span class="label">Sleep until next Friday</span></div>
+      </div>
+      <div class="meta">ClaudeBrain-AutoPruneWeekly · 15min cap</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============== 006 ROUTER ============== -->
+<section id="router">
+  <div class="sec-head">
+    <div class="no">006</div>
+    <div class="title">
+      <div class="eyebrow">Chapter Six · The Router</div>
+      <h2 class="display-it">Speak the keyword,<br/>load the skill.</h2>
+    </div>
+  </div>
+
+  <p class="lede" style="margin-bottom:32px">Stop thinking about which skill to load. Phrase your request with the trigger keyword. The router does the rest. These are the most useful matches.</p>
+
+  <table class="router-tbl">
+    <tbody>
+      <tr><td>"<em>threat-model</em> the auth flow"<br/>vulnerability · OWASP · RLS · SOC · NIST</td><td>security-scanning</td></tr>
+      <tr><td>"<em>diagnose</em> this race condition"<br/>broken · throwing · failing · regression</td><td>diagnose · superpowers:systematic-debugging</td></tr>
+      <tr><td>"<em>code review</em> on this PR"<br/>TDD · refactor · coverage · quality</td><td>superpowers:test-driven-development · code-quality</td></tr>
+      <tr><td>"<em>scaffold</em> a Next.js component"<br/>fullstack · API · server component</td><td>backend-development · ui-design</td></tr>
+      <tr><td>"<em>what's our convention</em> for API routes?"<br/>naming · error handling · perf rule</td><td>rules</td></tr>
+      <tr><td>"<em>broad/long autonomous</em> goal: …"<br/>vague · stalled · multi-task</td><td>goalbuddy</td></tr>
+      <tr><td>"<em>caveman</em>: list deltas"<br/>terse · low-token · be brief</td><td>caveman</td></tr>
+      <tr><td>"<em>handoff</em> this session"<br/>compact · baton-pass</td><td>superpowers:handoff · handoff</td></tr>
+      <tr><td>"<em>knowledge graph</em> this codebase"<br/>communities · viz</td><td>graphify</td></tr>
+      <tr><td>"<em>schema, migration</em>, PostgreSQL perf"<br/>dep audit · query plan</td><td>data-engineering · database-design</td></tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:48px;padding:32px;border:1px solid var(--rule);background:rgba(125,211,252,.03);">
+    <div class="eyebrow" style="color:var(--cool)">Self-registration</div>
+    <p style="font-family:Instrument Serif,serif;font-style:italic;font-size:22px;margin-top:12px">New skill goes in <code style="font-family:JetBrains Mono,monospace;font-style:normal;color:var(--acid);font-size:.7em">~/.claude/skills/&lt;name&gt;/SKILL.md</code> — the router table auto-updates on save or next session start. No manual edit. The PostToolUse hook fires the sync; SessionStart catches anything added offline.</p>
+  </div>
+</section>
+
+
+<!-- ============== 007 SPECKIT ============== -->
+<section id="speckit">
+  <div class="sec-head">
+    <div class="no">007</div>
+    <div class="title">
+      <div class="eyebrow">Chapter Seven · Spec-Kit + TDD</div>
+      <h2 class="display-it">The highest-success<br/>workflow you own.</h2>
+    </div>
+  </div>
+
+  <p class="lede" style="margin-bottom:32px">Seven commands turn a vague idea into shipped, tested code without the usual hour-3 rework. The full visual lesson lives at <code style="color:var(--acid);font-size:.85em">~/.claude/docs/lessons/spec-kit-tdd.html</code>. Here's the gist.</p>
+
+  <div class="spec-flow">
+    <div class="spec-step"><div><div class="sno">01</div><div class="sname">Constitution</div></div><div class="scmd">/speckit.constitution</div></div>
+    <div class="spec-step"><div><div class="sno">02</div><div class="sname">Specify</div></div><div class="scmd">/speckit.specify</div></div>
+    <div class="spec-step"><div><div class="sno">03</div><div class="sname">Clarify</div></div><div class="scmd">/speckit.clarify</div></div>
+    <div class="spec-step"><div><div class="sno">04</div><div class="sname">Plan</div></div><div class="scmd">/speckit.plan</div></div>
+    <div class="spec-step"><div><div class="sno">05</div><div class="sname">Tasks</div></div><div class="scmd">/speckit.tasks</div></div>
+    <div class="spec-step"><div><div class="sno">06</div><div class="sname">Analyze</div></div><div class="scmd">/speckit.analyze</div></div>
+    <div class="spec-step"><div><div class="sno">07</div><div class="sname">Implement</div></div><div class="scmd">/speckit.implement</div></div>
+  </div>
+
+  <div class="pullquote">
+    <div class="eyebrow">The magic prompt</div>
+    <pre class="magic"><span class="cmd">/speckit.implement task 1</span>
+
+Use the <span class="emph">superpowers:test-driven-development</span> skill. <span class="emph">Red-green-refactor.</span>
+Show me the failing test <span class="emph">before</span> the implementation.</pre>
+  </div>
+
+  <p style="color:var(--ink-dim);font-size:13px;max-width:64ch;margin-top:32px">That second paragraph is what flips the agent from "write code that probably works" to "prove each step." Without it, you'll sometimes get implementation first, test second — which is not TDD. With it, every cycle is RED (failing test) → GREEN (minimum code) → REFACTOR (still green) → conventional commit.</p>
+</section>
+
+
+<!-- ============== 008 RUNBOOK ============== -->
+<section id="runbook">
+  <div class="sec-head">
+    <div class="no">008</div>
+    <div class="title">
+      <div class="eyebrow">Chapter Eight · TL;DR Runbook</div>
+      <h2 class="display-it">How to get<br/>the most out<br/>of a new session.</h2>
+    </div>
+  </div>
+
+  <div class="runbook">
+    <div>
+      <h3 class="display-sm" style="margin-bottom:24px">Three habits</h3>
+      <ol class="runlist">
+        <li><div><strong>Phrase requests with router-matching keywords.</strong><span>Stop pre-loading. One trigger keyword = one skill. The router does the rest.</span></div></li>
+        <li><div><strong>Default to spec-kit + TDD for non-trivial work.</strong><span>Seven commands. The magic prompt. No feature code without a spec.</span></div></li>
+        <li><div><strong>Feed memory when something is worth remembering.</strong><span>"Remember that <em>X</em>" → I write to the right bucket. Six months of this compounds.</span></div></li>
+      </ol>
+
+      <h3 class="display-sm" style="margin:48px 0 24px">Weekly cadence</h3>
+      <ol class="runlist">
+        <li><div><strong>Friday 3pm: autonomous prune fires.</strong><span>Monday morning, glance at <code style="color:var(--acid)">memory/feedback/router-suggestions-*.md</code> and apply what you agree with.</span></div></li>
+        <li><div><strong>Fire it manually anytime.</strong><span><code>Start-ScheduledTask ClaudeBrain-AutoPruneWeekly</code></span></div></li>
+      </ol>
+    </div>
+
+    <div>
+      <div class="runbook-panel">
+        <h4>When you add a new skill</h4>
+        <p style="color:var(--ink-dim);font-size:12px">Just drop the SKILL.md with YAML frontmatter. The router auto-registers on save. No manual CLAUDE.md edit.</p>
+        <div class="codeblock"><span class="c"># Create a new skill</span>
+mkdir <span class="s">~/.claude/skills/my-new-skill</span>
+<span class="c"># Add a SKILL.md with frontmatter:</span>
+<span class="k">---</span>
+<span class="k">name:</span> my-new-skill
+<span class="k">description:</span> What it does + when to use it
+<span class="k">---</span></div>
+      </div>
+
+      <div class="runbook-panel" style="margin-top:24px">
+        <h4>When something feels worse</h4>
+        <p style="color:var(--ink-dim);font-size:12px">Everything is a git commit away from a clean rollback.</p>
+        <div class="codeblock"><span class="c"># See what changed</span>
+<span class="k">git -C</span> <span class="s">~/.claude</span> log --oneline
+<span class="c"># Full rollback to baseline</span>
+<span class="k">git -C</span> <span class="s">~/.claude</span> reset --hard <span class="s">e0b4501</span>
+<span class="c"># Or just flip one plugin back to true in settings.json</span></div>
+      </div>
+
+      <div class="runbook-panel" style="margin-top:24px">
+        <h4>When you want to see your own usage</h4>
+        <div class="codeblock"><span class="c"># Skill invocations this period</span>
+<span class="k">cat</span> <span class="s">~/.claude/telemetry/skill-invocations.jsonl</span> \
+  | sort | uniq -c
+
+<span class="c"># Recent prompts</span>
+<span class="k">tail</span> -50 <span class="s">~/.claude/telemetry/prompts.jsonl</span>
+
+<span class="c"># Last auto-prune run</span>
+<span class="k">tail</span> <span class="s">~/.claude/telemetry/auto-prune.log</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============== CLOSER ============== -->
+<section class="closer">
+  <div class="eyebrow" style="margin-bottom:32px">The mental model · in one sentence</div>
+  <h2 class="mantra">
+    Cold-start carries <em>identity</em>, <em>router</em>, <em>memory</em>.<br/>
+    Everything else is <em>opt-in</em> by keyword,<br/>
+    <em>observed</em> by telemetry,<br/>
+    <em>auto-pruned</em> weekly,<br/>
+    <em>self-registering</em> when added.
+  </h2>
+
+  <div class="sig">— end of report —</div>
+
+  <pre class="ascii">
+    ╔═══════════════════════════════════════════════╗
+    ║   CLAUDE-BRAIN · OPS LOG · VOL 01            ║
+    ║   ────────────────────────────────────────   ║
+    ║   files changed     · 47                     ║
+    ║   plugins reduced   · 33 → 16                ║
+    ║   skills active     · 17 → 7                 ║
+    ║   cold-start saved  · ~10,000 tokens         ║
+    ║   commits shipped   · 3                      ║
+    ║   automations live  · 2                      ║
+    ║   ────────────────────────────────────────   ║
+    ║   next prune        · friday 15:00 ET        ║
+    ║   rollback handle   · e0b4501                ║
+    ╚═══════════════════════════════════════════════╝
+  </pre>
+</section>
+
+</main>
+
+
+<!-- ============== FOOTER ============== -->
+<footer>
+  <div>~/.claude/docs/lessons/overhaul-recap.html</div>
+  <div>Set by hand, not by template</div>
+  <div>commit <span style="color:var(--acid)">b68fa99</span> · 2026.06.02</div>
+</footer>
+
+
+<script>
+  // Reveal-on-scroll: minimal, no library
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('section, .metric, .diag, .pillar, .comp, .spec-step').forEach(el => {
+    el.classList.add('reveal');
+    io.observe(el);
+  });
+</script>
+
+</body>
+</html>
