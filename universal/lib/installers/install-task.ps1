@@ -49,6 +49,14 @@ if (-not (Test-Path $Script)) {
   exit 1
 }
 
+# Reject UNC paths up front. The drive-letter regex below cannot translate
+# \\server\share\... into a POSIX path Git Bash understands; we'd silently
+# produce a malformed argument instead of failing loudly.
+if ($Script -like '\\\\*') {
+  Write-Error "UNC paths are not supported (got: $Script). Map the share to a drive letter first."
+  exit 2
+}
+
 # Find bash.exe (Git Bash preferred).
 $bashExe = $null
 $candidates = @(
@@ -109,6 +117,12 @@ $dowMap = @{
 
 if ($dow -ne "*" -and $dowMap.ContainsKey($dow.ToUpper())) {
   $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek $dowMap[$dow.ToUpper()] -At $atString
+} elseif ($dow -ne "*" -and ($dow -match '[,/-]')) {
+  # Multi-day patterns (5,6 or 1-5 or */2) would silently fall through to
+  # Daily under the old logic — wrong, and the user wouldn't notice until
+  # the task fired on the wrong day. Refuse explicitly.
+  Write-Error "Unsupported day-of-week expression: '$dow'. The Windows backend only handles a single day (0-7 or MON..SUN). Register manually in Task Scheduler for multi-day schedules."
+  exit 2
 } elseif ($dom -ne "*") {
   # Monthly on a single day-of-month.
   $trigger = New-ScheduledTaskTrigger -Daily -At $atString
