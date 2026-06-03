@@ -19,10 +19,10 @@
 
 | Gap ID | Type | Effort | Priority | Blocked by |
 |---|---|---|---|---|
-| `codex-notify-coarse` | docs-only | S | **P1** | — |
-| `codex-session-end-shell-only` | docs-only + 1-line script edit | S | **P1** | — |
-| `codex-auto-approve-flags-unverified` | adapter-fix | M | **P1** | — |
-| `codex-no-sessionstart-router-refresh` | adapter-fix | M | **P1** | — |
+| ~~`codex-notify-coarse`~~ | ~~docs-only~~ | ~~S~~ | **closed** `1ae6935` | — |
+| ~~`codex-session-end-shell-only`~~ | ~~docs-only + 1-line script edit~~ | ~~S~~ | **closed** `1ae6935` | — |
+| ~~`codex-auto-approve-flags-unverified`~~ | ~~adapter-fix~~ | ~~M~~ | **closed** `391e070` + `fc039c1` | — |
+| ~~`codex-no-sessionstart-router-refresh`~~ | ~~adapter-fix~~ | ~~M~~ | **closed** `b770a77` + `fc039c1` | — |
 | `codex-skill-unknown` | upstream-only | S | P2 | upstream Codex CLI feature |
 | `codex-windows-cron-not-executed` | adapter-fix | M | P2 | `universal/lib/installers/` |
 
@@ -64,6 +64,7 @@
 | `npx agentforge` wrapper | v0.1.1 (commit `e2dbaee`) | bin/agentforge.js + pack-install CI |
 | Round-trip CI | post-v0.1.0 (commit `79257f6`) | matrix ubuntu+windows × node 20+22 |
 | `cli-init-cwd-footgun` | v0.2 (commit `a80964d`) | found during Task 2, fixed in-scope |
+| P1 codex cleanup batch (4 items) | v0.2.1 (`1ae6935` → `fc039c1`) | codex coverage ~85% → ~95%; backstop review applied 2 Important fixes (`set -e` defense + word-bounded flag regex) |
 
 ## Topographic map
 
@@ -91,10 +92,10 @@ flowchart LR
   end
 
   subgraph Codex["codex gap items"]
-    C1["codex-notify-coarse"]:::p1
-    C3["codex-session-end-shell-only"]:::p1
-    C4["codex-auto-approve-flags-unverified"]:::p1
-    C5["codex-no-sessionstart-router-refresh"]:::p1
+    C1["codex-notify-coarse<br/>(closed 1ae6935)"]:::shipped
+    C3["codex-session-end-shell-only<br/>(closed 1ae6935)"]:::shipped
+    C4["codex-auto-approve-flags-unverified<br/>(closed 391e070+fc039c1)"]:::shipped
+    C5["codex-no-sessionstart-router-refresh<br/>(closed b770a77+fc039c1)"]:::shipped
     C2["codex-skill-unknown"]:::upstream
     C6["codex-windows-cron-not-executed"]:::p2
   end
@@ -170,7 +171,7 @@ flowchart LR
 
 ## Suggested order of operations
 
-1. **P1 codex cleanup batch** (~5 hours, no blockers). Closes 4 rows and gets codex to ~95%.
+1. ~~**P1 codex cleanup batch**~~ — **done** (v0.2.1, commits `1ae6935` → `fc039c1`). Codex coverage ~85% → ~95%.
 2. **Build `universal/lib/installers/`** (~half a day). Then ship `codex-windows-cron-not-executed` and `cursor-no-scheduled-task` against it in the same PR — that's the consolidated approach `docs/PLATFORM-GAPS.md` § "Rationale for the cut line" recommends.
 3. **Build `scripts/watch-skills.js`** (~half a day). Closes `cursor-no-auto-router-sync` and removes the blocker for Gemini/Aider adapters.
 4. **Gemini CLI adapter or Aider adapter** (~1–2 days each). At this point both have all shared infrastructure available.
