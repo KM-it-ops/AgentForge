@@ -9,6 +9,7 @@ set -u
 
 AGENT_HOME="$(cd "$(dirname "$0")/.." && pwd)"
 TRAP_SCRIPT="$AGENT_HOME/scripts/log-session-end.sh"
+SYNC_SCRIPT="$AGENT_HOME/scripts/sync-local-skill-router.js"
 MARKER="# >>> AgentForge-codex session-end trap >>>"
 END_MARKER="# <<< AgentForge-codex session-end trap <<<"
 
@@ -25,9 +26,15 @@ fi
 # The function wraps `codex` so the trap fires only on Codex exit, not every
 # shell exit. Users invoking codex via the wrapper get session-end logging;
 # users invoking the bare binary do not (documented gap).
+#
+# Before exec'ing codex, the wrapper also runs sync-local-skill-router.js so
+# the AUTO-LOCAL-SKILLS block in AGENTS.md reflects the current state of
+# skills/ for every session. This compensates for Codex having no
+# SessionStart hook analog.
 {
   printf '\n%s\n' "$MARKER"
   printf '%s\n' "codex() {"
+  printf '%s\n' "  command -v node >/dev/null 2>&1 && node \"$SYNC_SCRIPT\" >/dev/null 2>&1 || true"
   printf '%s\n' "  command codex \"\$@\""
   printf '%s\n' "  local rc=\$?"
   printf '%s\n' "  \"$TRAP_SCRIPT\" >/dev/null 2>&1 || true"

@@ -17,7 +17,7 @@ WORK="${TMPDIR:-/tmp}/agentforge-pack-test"
 
 declare -A EXPECTED_FILES
 EXPECTED_FILES[claude-code]=13
-EXPECTED_FILES[codex]=20
+EXPECTED_FILES[codex]=21
 EXPECTED_FILES[generic]=7
 EXPECTED_FILES[cursor]=23
 
