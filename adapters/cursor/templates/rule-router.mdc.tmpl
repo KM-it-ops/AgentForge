@@ -1,0 +1,17 @@
+---
+description: Skill router — match user intent against triggers and load one skill on demand
+globs: "**/*"
+alwaysApply: true
+---
+
+# Skill Router
+
+Match user intent against triggers; load **one** skill on demand. Don't pre-load.
+
+{{SKILL_ROUTER}}
+
+**Priority:** explicit `/slash` invocation wins. Else first-match wins. Else, no skill load.
+
+The per-route `.cursor/rules/route-<id>.mdc` files carry the same routing
+intent, scoped to make each route discoverable on its own. This file is the
+consolidated table.

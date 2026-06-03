@@ -1,0 +1,36 @@
+# .cursorrules — AgentForge consolidated rules (legacy single-file view)
+
+> Emitted by AgentForge's `cursor` adapter. This is the legacy single-file rule
+> format. Cursor also reads the modular `.cursor/rules/*.mdc` files in this
+> repo — those are the source of truth for newer Cursor versions. Keep both in
+> sync (re-run `node adapters/cursor/emit.js <target>` to regenerate).
+
+## Identity
+
+{{IDENTITY_BLOCK}}
+
+## Stack Defaults
+
+{{STACK_BLOCK}}
+
+## Execution Rules
+
+{{EXECUTION_RULES}}
+
+## Skill Router
+
+Match user intent against triggers; load **one** skill on demand. Don't pre-load.
+
+{{SKILL_ROUTER}}
+
+**Priority:** explicit `/slash` invocation wins. Else first-match wins. Else, no skill load.
+
+## Memory Protocol
+
+See `MEMORY.md` for the always-loaded index. Bucket files under `memory/{user,feedback,project,reference}/` are loaded on demand by topic.
+
+{{MEMORY_PROTOCOL}}
+
+## Context Discipline
+
+{{CONTEXT_DISCIPLINE}}

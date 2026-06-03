@@ -1,0 +1,139 @@
+# cursor adapter
+
+AgentForge adapter for [Cursor](https://cursor.com). Emits the modular
+`.cursor/rules/*.mdc` rule tree (current format) plus a `.cursorrules` legacy
+single-file mirror, the universal memory skeleton, and the portable
+`dead-skills-report.sh` script.
+
+More structured than the `generic` adapter (Cursor has a real rule system) but
+the same "context-only, no automation" posture — Cursor exposes no native
+telemetry, lifecycle hooks, scheduled tasks, or memory primitive.
+
+## What it emits
+
+Given a target directory, `emit.js` writes:
+
+```
+<target>/
+├── .cursorrules                       # legacy single-file body
+├── .cursor/
+│   └── rules/
+│       ├── identity.mdc               # alwaysApply: true
+│       ├── router.mdc                 # alwaysApply: true
+│       └── route-<id>.mdc             # one per spec.router.manual_routes
+├── MEMORY.md                          # memory index with manual-write protocol
+├── memory/
+│   ├── user/.gitkeep
+│   ├── feedback/
+│   │   ├── .gitkeep
+│   │   └── session-log.md             # seeded per spec.memory
+│   ├── project/.gitkeep
+│   └── reference/.gitkeep
+├── skills/
+│   └── README.md                      # manual-add convention for SKILL.md dirs
+├── telemetry/
+│   └── README.md                      # honest gap doc (Cursor has no telemetry)
+└── scripts/
+    └── dead-skills-report.sh          # byte-identical copy from adapters/generic/
+```
+
+Re-running is idempotent. If the target dir is a git repo with pending
+changes, the emitter creates an `agentforge: pre-emit checkpoint (cursor
+adapter)` commit so a rollback is one `git reset --hard HEAD~1` away. If the
+target is not a git repo, the checkpoint step is skipped (the emitter does
+**not** `git init` the target).
+
+## Cursor rule model — what we emit and why
+
+Cursor's rule system (current):
+
+- `.cursor/rules/*.mdc` — modular rule files. Each has YAML frontmatter:
+  - `description` — human-readable summary (Cursor uses it for rule selection).
+  - `globs` — file glob(s) that activate the rule; we default to `**/*`.
+  - `alwaysApply` — when `true`, the rule is always in context.
+- `.cursorrules` — legacy single-file rule body at the project root. Still
+  supported by Cursor; deprecated but useful for tools that haven't been
+  updated to the modular format.
+
+Our mapping:
+
+| Emitted file | `alwaysApply` | Purpose |
+|---|---|---|
+| `.cursor/rules/identity.mdc` | `true` | Identity + stack defaults + execution rules + memory pointer |
+| `.cursor/rules/router.mdc` | `true` | Full skill router table from `spec.router.manual_routes` |
+| `.cursor/rules/route-<id>.mdc` | `false` | One per route — triggers + load target, discoverable on its own |
+| `.cursorrules` | n/a | Consolidated legacy view (identity + execution + router + memory pointer) |
+
+Per-route rules are emitted with `alwaysApply: false` because the router table
+in `router.mdc` already provides the matching layer — the per-route files are
+there so each route is independently discoverable when Cursor surfaces rules
+by description, and so adding a new route is a one-file change.
+
+## Usage
+
+```sh
+# Emit into a target dir
+node adapters/cursor/emit.js /path/to/project
+
+# Or into the user's home directory (tilde is expanded)
+node adapters/cursor/emit.js ~/agent-home
+
+# Run the dead-skills report (after you have telemetry)
+bash /path/to/project/scripts/dead-skills-report.sh
+```
+
+The emit script prints a JSON receipt: paths written, which ones changed, and
+the git checkpoint SHA (if any).
+
+## Idempotency contract
+
+- Same spec + same target → byte-identical output on every run.
+- The emitter only writes files whose content has actually changed
+  (`writeIfChanged`).
+- Re-emit prints `"files_changed": 0` and `git status --porcelain` stays empty
+  inside a git-repo target.
+- Memory bucket dirs and seeded files (`session-log.md`) are created once; the
+  emitter never overwrites them on subsequent runs.
+
+## Platform gaps
+
+Findings from building this adapter — input for the round-trip / audit report:
+
+- **No telemetry primitive.** Cursor has no PreToolUse / UserPromptSubmit /
+  SessionEnd equivalents. `telemetry/skill-invocations.jsonl` exists only if
+  the user wires an external watcher (MCP server, shell wrapper, IDE
+  extension). Documented in `telemetry/README.md`.
+- **No skill-loader concept.** Cursor doesn't have a `skills/` directory
+  contract. The adapter ships a `skills/README.md` describing the SKILL.md
+  frontmatter convention so the router rules can point at curated skills,
+  but Cursor itself won't auto-load them — the rule system is the
+  routing layer.
+- **No lifecycle hooks.** No SessionEnd hook means memory writes are a
+  manual ritual (matches the generic adapter posture). The identity rule's
+  memory pointer documents the protocol so the agent knows where to write
+  by hand.
+- **No scheduled-task primitive.** Cursor cannot run weekly prunes. The
+  `dead-skills-report.sh` script is the same byte-identical portable copy
+  the generic adapter ships; the user wires it into cron / Task Scheduler
+  / launchd / systemd timer per OS.
+- **No auto-router sync.** When you add or edit a `skills/<name>/SKILL.md`,
+  re-run `node adapters/cursor/emit.js <target>` to regenerate the router
+  rules. The adapter has no on-write file watcher.
+- **`.cursorrules` is deprecated but kept.** We emit both the legacy file and
+  the modular `.mdc` tree because Cursor still respects `.cursorrules` and
+  some integrations (and older Cursor builds) read only that file. The two
+  views are kept in sync by the emitter.
+
+## Where the cursor adapter sits vs. the others
+
+| Adapter | Hooks | Telemetry | Skill loader | Scheduler | Idempotent |
+|---|---|---|---|---|---|
+| `claude-code` | ✅ PreToolUse + UserPromptSubmit + SessionEnd | ✅ jsonl sinks | ✅ auto-router | ✅ Windows Task | ✅ |
+| `codex` | ⚠️ notify-event hook | ⚠️ jsonl, granularity caveat | ⚠️ on disk, no auto-loader | ⚠️ cron entry | ✅ |
+| `cursor` | ❌ none | ❌ user-instrumented only | ❌ rules layer only | ❌ user-wired | ✅ |
+| `generic` | ❌ none | ❌ user-instrumented only | ❌ manual | ❌ user-wired | ✅ |
+
+The cursor adapter sits between `generic` and `codex` in posture: it has
+real *structure* (the `.mdc` rule tree) but no *automation*. If you want
+Claude-Code-grade coverage inside Cursor today, you need an external MCP
+server to bridge the gaps documented above.
