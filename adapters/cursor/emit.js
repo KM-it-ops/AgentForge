@@ -29,6 +29,7 @@ const REPO_ROOT = path.resolve(ADAPTER_DIR, "..", "..");
 const SPEC_DIR = path.join(REPO_ROOT, "spec");
 const TEMPLATES_DIR = path.join(ADAPTER_DIR, "templates");
 const SCRIPTS_DIR = path.join(ADAPTER_DIR, "scripts");
+const UNIVERSAL_INSTALLERS_DIR = path.join(REPO_ROOT, "universal", "lib", "installers");
 
 // ---------------------------------------------------------------------------
 // YAML loading — js-yaml when available, miniYaml fallback otherwise.
@@ -711,13 +712,28 @@ function main() {
   ].join("\n");
   results.push(writeIfChanged(path.join(target, "telemetry", "README.md"), telemetryReadme));
 
-  // 9. scripts/dead-skills-report.sh — verbatim copy from generic adapter.
-  results.push(
-    copyScript(
-      path.join(SCRIPTS_DIR, "dead-skills-report.sh"),
-      path.join(target, "scripts", "dead-skills-report.sh")
-    )
-  );
+  // 9. scripts/* — verbatim copy of every file in adapters/cursor/scripts/.
+  //    Currently: dead-skills-report.sh (from generic), install-cron.sh
+  //    (thin wrapper around the universal installer), cursor-weekly-report.sh
+  //    (scheduled by install-cron.sh).
+  ensureDir(path.join(target, "scripts"));
+  for (const f of fs.readdirSync(SCRIPTS_DIR)) {
+    const src = path.join(SCRIPTS_DIR, f);
+    if (!fs.statSync(src).isFile()) continue;
+    results.push(copyScript(src, path.join(target, "scripts", f)));
+  }
+
+  // 10. scripts/installers/* — byte-identical copies of universal/lib/installers/.
+  //     Closes cursor-no-scheduled-task by giving install-cron.sh a sibling
+  //     to delegate to.
+  if (fs.existsSync(UNIVERSAL_INSTALLERS_DIR)) {
+    ensureDir(path.join(target, "scripts", "installers"));
+    for (const f of fs.readdirSync(UNIVERSAL_INSTALLERS_DIR)) {
+      const src = path.join(UNIVERSAL_INSTALLERS_DIR, f);
+      if (!fs.statSync(src).isFile()) continue;
+      results.push(copyScript(src, path.join(target, "scripts", "installers", f)));
+    }
+  }
 
   // ---------------------------------------------------------------------------
   // JSON summary.

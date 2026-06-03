@@ -55,7 +55,7 @@ The adapter is honest about where Codex differs from Claude Code. Document the a
 
 5. **Local skill auto-discovery.** Claude Code's `sync-local-skill-router.js` rewrites the router table on `PostToolUse` and `SessionStart`. Codex has no analog for `SessionStart`. **v0.2 mitigation:** the shell wrapper installed by `install-shell-trap.sh` now invokes `node $AGENT_HOME/scripts/sync-local-skill-router.js` before exec'ing Codex on every wrapped call, so the AUTO-LOCAL-SKILLS block stays current per session. Bypasses (bare binary, IDE extensions) still skip the sync — same surface as gap #3. The sync script is byte-identical to the generic adapter's copy and is safe to invoke on every call (best-effort, errors swallowed).
 
-6. **Windows scheduling.** `install-cron.sh` prints a `Register-ScheduledTask` snippet rather than executing it directly, since registering a scheduled task may require elevation. Run the snippet manually in an elevated PowerShell.
+6. **Windows scheduling.** ~~`install-cron.sh` prints a `Register-ScheduledTask` snippet rather than executing it directly.~~ **Closed in v0.3.** `install-cron.sh` is now a thin wrapper that delegates to `<target>/scripts/installers/install-cron.sh` (shipped from `universal/lib/installers/`). On Windows the universal installer execs `install-task.ps1` directly via `powershell -ExecutionPolicy Bypass`; Windows may still prompt for elevation depending on policy.
 
 ## Verification
 

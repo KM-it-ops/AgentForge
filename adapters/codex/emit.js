@@ -29,6 +29,7 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const SPEC_DIR = path.join(REPO_ROOT, 'spec');
 const TEMPLATES_DIR = path.join(__dirname, 'templates');
 const ADAPTER_SCRIPTS_DIR = path.join(__dirname, 'scripts');
+const UNIVERSAL_INSTALLERS_DIR = path.join(REPO_ROOT, 'universal', 'lib', 'installers');
 
 const SPEC_SCHEMA_VERSION = 1;
 
@@ -574,6 +575,22 @@ function copyScripts(targetDir) {
   return results;
 }
 
+function copyUniversalInstallers(targetDir) {
+  // Copy universal/lib/installers/* into <target>/scripts/installers/ byte-identical.
+  // The adapter's scripts/install-cron.sh wrapper invokes the universal one.
+  const results = [];
+  if (!fs.existsSync(UNIVERSAL_INSTALLERS_DIR)) return results;
+  const outDir = path.join(targetDir, 'scripts', 'installers');
+  ensureDir(outDir);
+  for (const f of fs.readdirSync(UNIVERSAL_INSTALLERS_DIR)) {
+    const src = path.join(UNIVERSAL_INSTALLERS_DIR, f);
+    if (!fs.statSync(src).isFile()) continue;
+    const content = fs.readFileSync(src, 'utf8');
+    results.push(writeIfChangedExec(path.join(outDir, f), content));
+  }
+  return results;
+}
+
 function writeCronEntry(spec, targetDir) {
   const a = spec.automation.weekly_prune;
   const cronLine =
@@ -668,6 +685,7 @@ function main() {
   results.push(...writeMemoryStructure(spec, targetDir));
   results.push(...writeTelemetrySinks(targetDir));
   results.push(...copyScripts(targetDir));
+  results.push(...copyUniversalInstallers(targetDir));
   results.push(writeCronEntry(spec, targetDir));
 
   const checkpoint = gitCheckpoint(targetDir);

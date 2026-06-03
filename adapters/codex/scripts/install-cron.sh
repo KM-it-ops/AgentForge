@@ -1,55 +1,26 @@
 #!/usr/bin/env bash
-# install-cron.sh — install the Fridays 3pm weekly auto-prune.
-# Unix: appends to crontab if not already present.
-# Windows (when run under Git Bash / WSL detects MSYS): prints a PowerShell
-# snippet the user can run in an elevated shell instead.
+# adapters/codex/scripts/install-cron.sh — thin wrapper around the universal
+# installer. Schedules the weekly auto-prune for the codex adapter.
 #
-# Idempotent: re-running with the same entry leaves crontab unchanged.
+# Delegates to <target>/scripts/installers/install-cron.sh (copied from
+# universal/lib/installers/ by emit.js), which handles cron on Unix and
+# Task Scheduler on Windows. Closes gap codex-windows-cron-not-executed.
+#
+# Forward any extra args (notably --unregister) to the universal installer.
 
 set -u
 
 AGENT_HOME="$(cd "$(dirname "$0")/.." && pwd)"
-WRAPPER="$AGENT_HOME/scripts/auto-prune-weekly.sh"
-TAG="# AgentForge-AutoPruneWeekly"
-CRON_LINE="0 15 * * 5 $WRAPPER $TAG"
+UNIVERSAL="$AGENT_HOME/scripts/installers/install-cron.sh"
 
-is_windows() {
-  case "${OS:-}" in
-    Windows_NT) return 0 ;;
-  esac
-  case "$(uname -s 2>/dev/null)" in
-    MINGW*|MSYS*|CYGWIN*) return 0 ;;
-  esac
-  return 1
-}
-
-install_unix() {
-  # Read current crontab (might be empty).
-  CURRENT="$(crontab -l 2>/dev/null || true)"
-  if printf '%s\n' "$CURRENT" | grep -Fq "$TAG"; then
-    echo "[install-cron] entry already present — leaving crontab unchanged."
-    return 0
-  fi
-  { printf '%s\n' "$CURRENT"; printf '%s\n' "$CRON_LINE"; } | crontab -
-  echo "[install-cron] installed weekly cron entry: $CRON_LINE"
-}
-
-install_windows() {
-  cat <<'PS'
-[install-cron] Windows detected. Run this in an elevated PowerShell to register the scheduled task:
-
-    $action  = New-ScheduledTaskAction -Execute 'bash.exe' -Argument '"REPLACE_WITH_WRAPPER_PATH"'
-    $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Friday -At 3pm
-    Register-ScheduledTask -TaskName 'AgentForge-AutoPruneWeekly' -Action $action -Trigger $trigger -Description 'AgentForge weekly auto-prune (codex adapter)'
-
-Replace REPLACE_WITH_WRAPPER_PATH with:
-PS
-  echo "    $WRAPPER"
-}
-
-if is_windows; then
-  install_windows
-else
-  install_unix
+if [ ! -f "$UNIVERSAL" ]; then
+  echo "[install-cron] universal installer not found at $UNIVERSAL." >&2
+  echo "                Run 'node adapters/codex/emit.js <target>' first to populate scripts/installers/." >&2
+  exit 1
 fi
-exit 0
+
+exec "$UNIVERSAL" \
+  --script   "$AGENT_HOME/scripts/auto-prune-weekly.sh" \
+  --schedule "0 15 * * 5" \
+  --tag      "AgentForge-AutoPruneWeekly" \
+  "$@"
