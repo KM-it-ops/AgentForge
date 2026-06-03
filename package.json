@@ -1,0 +1,44 @@
+{
+  "name": "agentforge",
+  "version": "0.1.1",
+  "description": "A configuration framework for agentic AI coding assistants. One spec. Many adapters. The same posture in any agent.",
+  "keywords": [
+    "agent",
+    "claude",
+    "claude-code",
+    "codex",
+    "cursor",
+    "ai-coding",
+    "llm",
+    "config",
+    "skills"
+  ],
+  "license": "MIT",
+  "author": "Mahmoud Kurdi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KM-it-ops/AgentForge.git"
+  },
+  "homepage": "https://github.com/KM-it-ops/AgentForge#readme",
+  "bugs": {
+    "url": "https://github.com/KM-it-ops/AgentForge/issues"
+  },
+  "bin": {
+    "agentforge": "bin/agentforge.js"
+  },
+  "main": "bin/agentforge.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "bin/",
+    "spec/",
+    "universal/",
+    "adapters/",
+    "bootstrap/",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "bash scripts/round-trip-test.sh"
+  }
+}
