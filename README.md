@@ -3,7 +3,7 @@
 > A configuration framework for agentic AI coding assistants.
 > One spec. Many adapters. The same posture in any agent.
 
-**Status:** v0.1.0 in progress (see `docs/PLAN.md`).
+**Status:** v0.1.0 shipped (Claude Code + Codex + Generic). v0.2 adds Cursor + the `npx agentforge` CLI + round-trip CI. See [`docs/VERIFICATION-v0.1.0.md`](docs/VERIFICATION-v0.1.0.md) and [`docs/PLATFORM-GAPS.md`](docs/PLATFORM-GAPS.md).
 
 ## The problem
 
@@ -19,8 +19,10 @@ universal/      ← copied verbatim by every adapter (skills, memory, lessons)
 adapters/       ← per-platform emitters
   ├── claude-code/
   ├── codex/
+  ├── cursor/    ← .cursorrules + .cursor/rules/*.mdc
   └── generic/   ← lowest common denominator AGENTS.md
 bootstrap/      ← platform-detect installer
+bin/            ← `npx agentforge` CLI
 ```
 
 You edit `spec/`. The adapters emit the right files for each platform. The substance stays canonical; only the plumbing adapts.
@@ -33,6 +35,9 @@ npx agentforge init claude-code
 
 # Install for Codex CLI (writes to ~/.codex/)
 npx agentforge init codex
+
+# Install Cursor rules (.cursorrules + .cursor/rules/*.mdc — --dir required)
+npx agentforge init cursor --dir ./my-cursor-config
 
 # Install generic AGENTS.md anywhere (--dir is required for the generic adapter)
 npx agentforge init generic --dir ./my-agent-config
@@ -72,9 +77,10 @@ agentforge init claude-code
 | Target | Coverage | Notes |
 |---|---:|---|
 | Claude Code | 100% | Hand-built adapter; round-trips against the original `~/.claude/` |
-| Codex CLI | ~85% | Hand-built adapter; weaker lifecycle hooks |
+| Codex CLI | ~85% | Hand-built adapter; weaker lifecycle hooks. See `docs/PLATFORM-GAPS.md` |
+| Cursor | ~55% | Modern `.cursor/rules/*.mdc` + legacy `.cursorrules`; no hooks/telemetry primitives (`alwaysApply: true` for identity + router, per-route discoverability rules) |
 | Generic (any LLM-aware editor) | ~40% | AGENTS.md + manual setup docs |
-| Cursor / Gemini CLI / Aider | — | Community adapters via PR |
+| Gemini CLI / Aider | — | Community adapters via PR |
 | Devin / cloud agents | — | Out of scope (closed runtime) |
 
 ## Philosophy
@@ -87,8 +93,8 @@ Three rules from the source posture, preserved across all adapters:
 
 ## Status
 
-This README is a stake in the ground. The first working adapter (Claude Code) is being built now. See `docs/PLAN.md` for the execution plan.
+v0.1.0 shipped four adapters (Claude Code, Codex, Generic) plus round-trip CI on `ubuntu-latest` + `windows-latest` × node 20+22. v0.2 adds the Cursor adapter, the `npx agentforge` CLI, and `docs/PLATFORM-GAPS.md` — a single audit of every documented platform gap with concrete remediation paths.
 
 ## License
 
-MIT (planned at v0.1.0 tag).
+MIT.
