@@ -1,0 +1,73 @@
+# automation.yaml — weekly auto-prune loop bounds + safety rules.
+# Adapters wire the schedule into the platform's native cron-like mechanism
+# (Windows Task Scheduler, Unix crontab, systemd timer).
+#
+# Lift origin: ~/.claude/hooks/scripts/auto-prune-weekly.sh + ClaudeBrain-AutoPruneWeekly task.
+
+schema_version: 1
+
+# The weekly autonomous prune. Spawns the platform's CLI agent with a bounded prompt.
+weekly_prune:
+  name: AgentForge-AutoPruneWeekly
+  schedule:
+    cron_local: '0 15 * * 5'  # Fridays 3pm local
+    timezone: America/New_York
+    timeout_minutes: 15
+
+  agent_invocation:
+    mode: non_interactive
+    flag_per_platform:
+      claude_code: '--print --dangerously-skip-permissions'
+      codex: '--non-interactive --auto-approve'  # adjust to actual Codex flags
+      generic: 'user-supplied; documented in adapter README'
+
+  # Bounded prompt. Adapter renders this verbatim into the wrapper script.
+  prompt_template: |
+    You are running as a scheduled weekly maintenance agent for {agent_home}.
+    Your one job: act on the latest dead-skills report at {latest_report_path}.
+
+    Steps you MUST take in order:
+    1. Read {latest_report_path}.
+    2. Read {telemetry_skills_path} to determine the AGE of each unused skill.
+    3. For EACH local skill listed as having zero invocations:
+       - If the skill directory is older than {grace_period_days} days (mtime),
+         move it to {agent_home}/skills/_archived/<name>/.
+       - If younger, leave it alone (grace period).
+    4. Read the identity file and identify the Skill Router table.
+    5. Read the last ~200 lines of {telemetry_prompts_path}. Look for repeated phrasings
+       that are not currently routed. Propose (do NOT apply) up to 3 router-table additions.
+       Write proposals to {agent_home}/memory/feedback/router-suggestions-{date}.md.
+    6. If you archived any skills, commit the changes:
+       git add -A && git commit -m 'chore: weekly auto-prune (N skills archived after {grace_period_days}d zero use)'
+    7. Print a one-paragraph summary of what you did. Exit.
+
+    Hard rules:
+    - Never delete; only move to _archived/.
+    - Never modify the identity file directly in this run; only WRITE router suggestions for human review.
+    - Never touch platform plugins or settings.
+    - Stay inside {agent_home}. Do not modify any project repo.
+
+# Safety bounds for the autonomous agent.
+safety:
+  grace_period_days: 60
+  max_archives_per_run: 10  # circuit breaker: if more than this would archive, abort
+  never_touch:
+    - 'platform plugin manifests / settings files'
+    - 'identity file (CLAUDE.md, AGENTS.md, etc.)'
+    - 'any directory outside {agent_home}'
+  rollback: git -C {agent_home} reset --hard HEAD~1
+  output_log: telemetry/auto-prune.log
+
+# Generation rule for new local skills — sync-local-skill-router.js triggers.
+router_sync:
+  source_script: universal/lib/sync-local-skill-router.js
+  triggers:
+    - kind: post_tool_use
+      tool_matcher: 'FileWriteTool|FileEditTool'
+      path_pattern: 'skills/[^/]+/SKILL\.md$'
+    - kind: session_start
+      reason: 'catch skills added outside the agent CLI'
+  adapter_notes:
+    claude_code: 'Both triggers supported via settings.json hooks'
+    codex: 'session_start via shell rc; post_tool_use via notify hook if granular'
+    generic: 'manual user run OR file-watcher process'

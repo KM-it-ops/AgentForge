@@ -1,0 +1,81 @@
+# identity.yaml — who the user is, their stack, their execution rules.
+# Adapters render this into platform-native identity files (CLAUDE.md, AGENTS.md, etc.)
+#
+# Lift origin: ~/.claude/CLAUDE.md sections: Identity, Stack Defaults, Execution Rules,
+#                                            Context Discipline, Project Conventions, Self-Healing.
+
+schema_version: 1
+
+user:
+  name: 'Mahmoud ("Michael") Kurdi'
+  address_as: Boss
+  location: Charlotte, NC
+  os: Windows 11 + Linux dual-boot
+  base_path: 'C:\AI'
+  role: AI Systems Architect + Cybersecurity Professional
+  certifications:
+    - CompTIA Security+
+
+# Stack defaults. The agentic-prompt-architect skill is authoritative for any non-trivial build.
+# This block is the casual shorthand surfaced in the identity file.
+stack:
+  authoritative_skill: agentic-prompt-architect
+  baseline_score: 96/100
+  baseline_doctrine: Universal Core + Domain Adapter Matrix
+  shorthand:
+    frontend: Next.js App Router (TS, no `any`)
+    backend: Supabase (PG + Auth + RLS, Drizzle + drizzle-zod, tRPC)
+    styling: Tailwind + shadcn/ui
+    state:
+      server: TanStack Query
+      ui: Zustand
+    background_jobs: Inngest
+    email: Resend
+    cache: Upstash Redis
+    observability:
+      - Sentry
+      - pino
+      - PostHog
+    payments: LemonSqueezy
+    deployment: Vercel
+    commits: conventional commits, squash merge
+
+# Hard execution rules. Adapters render these into the platform's identity file
+# as numbered imperatives.
+execution_rules:
+  - act_first: Complete solutions, no outlines.
+  - strict_typescript: 'No `any`. Named exports. Functional patterns.'
+  - secrets: 'Never commit `.env` or secrets.'
+  - confidence_rule: Ask follow-ups until 95% confident before non-trivial changes.
+  - time_format: AM/PM with precise ranges.
+  - db_rls: 'Supabase PG with RLS on every table; shared instance, table prefixes.'
+
+# Context discipline. Defensive rules learned from token-waste sessions.
+context_discipline:
+  - compact_threshold: '/compact at >60% used. /clear only when switching domains.'
+  - skill_load_cap: Max 2 full skills + 1 summary. Never bulk-load.
+  - file_mentions: Prefer @file mentions over broad codebase searches.
+  - no_duplicate_calls: 'Duplicate tool calls re-bill output — avoid.'
+  - no_risky_batches: Risky Bash + Edits/Reads in one message risks sibling cancel.
+  - python_quoting: 'python -c: single-quote OUTER; for non-trivial use a temp .py.'
+  - long_jobs: Background + ONE completion signal. No per-line polling.
+
+# Project conventions. Loaded but overridable per-repo (docs/agents/*.md takes precedence).
+project_conventions:
+  override_path: docs/agents/*.md
+  issue_tracker: GitHub Issues via gh
+  triage_labels: canonical five-role
+  domain_docs:
+    single: 'CONTEXT.md + docs/adr/ at repo root'
+    monorepo: 'CONTEXT-MAP.md'
+
+# Self-healing protocol — rules for keeping per-repo CLAUDE.md healthy.
+self_healing:
+  per_repo_target_lines: 150
+  required_sections:
+    - Live State
+    - Gotchas
+  end_of_session_protocol:
+    - handoff
+    - memory entry
+    - Live State pass

@@ -1,0 +1,46 @@
+# memory.yaml — memory bucket structure and protocol.
+# Adapters create the directory structure + MEMORY.md index per platform.
+#
+# Lift origin: ~/.claude/MEMORY.md + ~/.claude/memory/ + CLAUDE.md ## Memory Protocol.
+
+schema_version: 1
+
+# Buckets — each becomes a directory and a section in MEMORY.md.
+buckets:
+  - name: user
+    purpose: Preferences, profile facts, corrections the agent should remember across sessions
+    seed: false  # don't pre-populate
+  - name: feedback
+    purpose: Session logs, prune reports, validated approaches, router suggestions
+    seed: true
+    seeded_files:
+      - name: session-log.md
+        template: |
+          # Session log
+
+          Auto-appended by the SessionEnd hook.
+  - name: project
+    purpose: Per-project decisions, schemas, gotchas, Live State
+    seed: false
+  - name: reference
+    purpose: External system pointers (dashboards, repos, tools, patterns)
+    seed: false
+
+# Protocol for memory writes (rendered into identity file).
+protocol:
+  always_loaded: MEMORY.md (index only)
+  load_on_demand: bucket files referenced by user intent or task
+  write_triggers:
+    - 'Significant session learnings → write one file per genuine learning'
+    - 'No duplicate entries — verify before writing'
+    - 'Verify a recalled fact against current state before acting on it'
+
+# Index file (MEMORY.md) template.
+# Adapter substitutes {bucket_links} with per-bucket markdown.
+index_template: |
+  # Memory Index
+
+  Index for the auto-memory protocol. Entries are one line, under ~150 chars.
+  Memory files live in `memory/{user,feedback,project,reference}/`.
+
+  {bucket_sections}

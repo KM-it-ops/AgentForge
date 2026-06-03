@@ -1,0 +1,62 @@
+# telemetry.yaml — what to observe + jsonl schemas.
+# Adapters wire the listed events into the platform's hook mechanism (or file-watcher fallback).
+#
+# Lift origin: ~/.claude/hooks/scripts/log-*.sh + settings.json hooks block.
+
+schema_version: 1
+
+# Telemetry events. Each event has a trigger (when it fires) and a sink (where it lands).
+# Adapters map trigger → platform-specific hook type. If the platform lacks a hook for a
+# given trigger, the adapter MUST document the gap in its post-install README.
+events:
+  - id: skill_invocation
+    trigger:
+      kind: pre_tool_use
+      tool_matcher: Skill
+    sink:
+      path: telemetry/skill-invocations.jsonl
+      schema:
+        ts: ISO-8601 timestamp
+        skill: skill name extracted from tool input
+    purpose: Surface dead skills for the weekly auto-prune
+
+  - id: user_prompt
+    trigger:
+      kind: user_prompt_submit
+    sink:
+      path: telemetry/prompts.jsonl
+      schema:
+        ts: ISO-8601 timestamp
+        prompt: first 80 chars of prompt
+    purpose: Routing-pattern analysis; informs router-suggestions feedback
+
+  - id: session_end
+    trigger:
+      kind: session_end
+    sink:
+      path: memory/feedback/session-log.md
+      schema:
+        line: '- {ts} session ended'
+    purpose: Lightweight session count and audit trail
+
+# Sink file conventions.
+sinks:
+  jsonl_files_under: telemetry/
+  markdown_logs_under: memory/feedback/
+  rotation: none in v1; rely on weekly auto-prune to summarize then truncate (future)
+
+# Cross-platform notes.
+adapter_notes:
+  claude_code:
+    skill_invocation: PreToolUse hook with matcher "Skill"
+    user_prompt: UserPromptSubmit hook
+    session_end: SessionEnd hook
+    gap: none — full lifecycle coverage
+  codex:
+    skill_invocation: notify hook on tool-call event
+    user_prompt: notify hook on user-message event
+    session_end: shell trap on Codex CLI exit
+    gap: granularity of notify events may not isolate Skill-tool calls; document in README
+  generic:
+    all: file-watcher fallback OR manual user instrumentation
+    gap: no automatic telemetry without an explicit watcher process; document this honestly
