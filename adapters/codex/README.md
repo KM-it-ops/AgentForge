@@ -51,7 +51,7 @@ The adapter is honest about where Codex differs from Claude Code. Document the a
 
 3. **Session-end coverage.** Codex itself does not emit a lifecycle session-end event. The shell-rc trap installed by `install-shell-trap.sh` wraps the `codex` function in your shell, so exit triggers logging — but **only** when you invoke `codex` via the wrapped function. If you alias around it or call the bare binary from a script, the log won't fire.
 
-4. **Auto-approve flags.** `spec/automation.yaml` specifies `--non-interactive --auto-approve` for the prune. Adjust to your Codex build's actual flags if different. `auto-prune-weekly.sh` reads the flags inline; spec changes flow on next emit.
+4. **Auto-approve flags.** `spec/automation.yaml` specifies `--non-interactive --auto-approve` for the prune. `auto-prune-weekly.sh` now runs a pre-flight `codex --help | grep -E -- '--non-interactive|--auto-approve'` and aborts with an actionable error if either flag is missing, so a Codex CLI upgrade that drops or renames a flag fails loudly into `telemetry/auto-prune.log` instead of silently producing no prune work. If the pre-flight aborts, run `codex --help` yourself, find the new equivalents, then update `spec/automation.yaml` and re-emit. Verified against Codex CLI builds that expose both flags as of v0.2 ship; older builds may not.
 
 5. **Local skill auto-discovery.** Claude Code's `sync-local-skill-router.js` rewrites the router table on `PostToolUse` and `SessionStart`. Codex has no analog for `SessionStart`. The Codex adapter only refreshes the auto-registered block when the emitter is re-run. Plan: invoke the sync script from the shell-rc trap on session start (future work; not in v0.1.0).
 

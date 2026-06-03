@@ -50,13 +50,37 @@ EOF
 )"
 
 # 3. Spawn Codex non-interactively with a 15-minute hard timeout.
-#    NOTE: actual Codex CLI flag names may differ across builds; --non-interactive
-#    and --auto-approve are placeholders matching spec/automation.yaml. Adjust
-#    here AND in spec/automation.yaml if your installed Codex uses different flags.
+#    Codex CLI flag names may drift across builds; --non-interactive and
+#    --auto-approve are inherited from spec/automation.yaml. The pre-flight
+#    below verifies both flags exist in the installed Codex binary's --help
+#    output. If either is missing, abort with an actionable message instead
+#    of silently failing with an unrecognized-flag error.
 CODEX_BIN="${CODEX_BIN:-codex}"
 if ! command -v "$CODEX_BIN" >/dev/null 2>&1; then
   echo "codex binary not found on PATH ($CODEX_BIN); aborting" >> "$LOG"
   echo "=== $(date -u +%FT%TZ) auto-prune abort (no codex) ===" >> "$LOG"
+  exit 0
+fi
+
+# Pre-flight: confirm both flags exist. `codex --help` may write to stdout
+# or stderr depending on build; capture both. If we cannot run --help at
+# all, fall through (the actual invocation will surface a useful error).
+HELP_OUT="$("$CODEX_BIN" --help 2>&1 || true)"
+MISSING_FLAGS=""
+if ! printf '%s' "$HELP_OUT" | grep -qE -- '--non-interactive'; then
+  MISSING_FLAGS="$MISSING_FLAGS --non-interactive"
+fi
+if ! printf '%s' "$HELP_OUT" | grep -qE -- '--auto-approve'; then
+  MISSING_FLAGS="$MISSING_FLAGS --auto-approve"
+fi
+if [ -n "$MISSING_FLAGS" ]; then
+  {
+    echo "auto-prune abort: installed Codex build does not expose:$MISSING_FLAGS"
+    echo "  fix: run '$CODEX_BIN --help' yourself, find the equivalent flags,"
+    echo "       then update spec/automation.yaml and re-emit, OR override"
+    echo "       this script directly. See adapters/codex/README.md gap #4."
+  } >> "$LOG"
+  echo "=== $(date -u +%FT%TZ) auto-prune abort (flags unsupported) ===" >> "$LOG"
   exit 0
 fi
 
