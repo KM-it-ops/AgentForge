@@ -67,10 +67,13 @@ fi
 # all, fall through (the actual invocation will surface a useful error).
 HELP_OUT="$("$CODEX_BIN" --help 2>&1 || true)"
 MISSING_FLAGS=""
-if ! printf '%s' "$HELP_OUT" | grep -qE -- '--non-interactive'; then
+# Word-bounded matches: --non-interactive must NOT match --non-interactive-mode.
+# Boundary characters before/after are anything not in the flag-name character
+# class [-A-Za-z0-9], plus start/end of line.
+if ! printf '%s' "$HELP_OUT" | grep -qE -- '(^|[^-A-Za-z0-9])--non-interactive([^-A-Za-z0-9]|$)'; then
   MISSING_FLAGS="$MISSING_FLAGS --non-interactive"
 fi
-if ! printf '%s' "$HELP_OUT" | grep -qE -- '--auto-approve'; then
+if ! printf '%s' "$HELP_OUT" | grep -qE -- '(^|[^-A-Za-z0-9])--auto-approve([^-A-Za-z0-9]|$)'; then
   MISSING_FLAGS="$MISSING_FLAGS --auto-approve"
 fi
 if [ -n "$MISSING_FLAGS" ]; then

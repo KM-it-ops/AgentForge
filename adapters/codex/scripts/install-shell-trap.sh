@@ -34,9 +34,9 @@ fi
 {
   printf '\n%s\n' "$MARKER"
   printf '%s\n' "codex() {"
+  printf '%s\n' "  local rc=0"
   printf '%s\n' "  command -v node >/dev/null 2>&1 && node \"$SYNC_SCRIPT\" >/dev/null 2>&1 || true"
-  printf '%s\n' "  command codex \"\$@\""
-  printf '%s\n' "  local rc=\$?"
+  printf '%s\n' "  command codex \"\$@\" || rc=\$?"
   printf '%s\n' "  \"$TRAP_SCRIPT\" >/dev/null 2>&1 || true"
   printf '%s\n' "  return \$rc"
   printf '%s\n' "}"
