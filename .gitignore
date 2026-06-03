@@ -1,0 +1,24 @@
+# Sandbox profiles for round-trip testing
+.claude.test/
+.codex.test/
+.test-output/
+
+# Build artifacts
+node_modules/
+dist/
+*.tgz
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+*.tmp
+
+# Local secrets (we have none, but defense in depth)
+.env
+.env.*
+!.env.example
