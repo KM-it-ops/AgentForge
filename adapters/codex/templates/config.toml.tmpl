@@ -1,0 +1,29 @@
+# ~/.codex/config.toml — emitted by AgentForge codex adapter on {{date}}.
+# Re-running the adapter is idempotent: this file is overwritten byte-identical
+# unless spec/*.yaml changed.
+#
+# Telemetry wiring:
+#   - skill_invocation  -> notify hook on tool-call event (see GAP note below)
+#   - user_prompt       -> notify hook on user-message event
+#   - session_end       -> handled out-of-band via shell rc trap (see scripts/install-shell-trap.sh)
+#
+# GAP: Codex `notify` is a single coarse-grained hook fired for several event kinds.
+# The wrapper script `scripts/codex-notify-dispatch.sh` reads the event payload on stdin
+# and routes per-event to the right log script. If your Codex build doesn't pass the
+# event kind via stdin/env, fall back to logging every notification to a generic sink
+# and audit the gap in adapters/codex/README.md.
+
+# The single notify hook Codex supports. We dispatch internally.
+notify = ["bash", "{agent_home}/scripts/codex-notify-dispatch.sh"]
+
+# Telemetry sink paths (read by the dispatch script).
+[telemetry]
+skill_invocations_path = "{telemetry_skills_path}"
+prompts_path           = "{telemetry_prompts_path}"
+
+# Approval / auto-run posture for the weekly prune.
+# The weekly prune wrapper invokes codex with `{codex_noninteractive_flags}` so this
+# block matters only for interactive sessions.
+[approvals]
+# Conservative default for interactive sessions; override per-project as needed.
+mode = "ask"

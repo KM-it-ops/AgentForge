@@ -1,0 +1,95 @@
+# AgentForge — Codex CLI adapter
+
+Emits a Codex CLI-native posture from the universal AgentForge spec.
+
+## What it emits
+
+Running `node adapters/codex/emit.js <target-dir>` writes the following into `<target-dir>` (intended to be `~/.codex/`):
+
+| File | Source | Purpose |
+|---|---|---|
+| `AGENTS.md` | `spec/identity.yaml` + `spec/router.yaml` | Identity, stack, execution rules, skill router, memory protocol. Codex auto-loads this as system context. |
+| `config.toml` | `spec/telemetry.yaml` | Single `notify` hook that dispatches to per-event log scripts. |
+| `MEMORY.md` | `spec/memory.yaml` | Memory index (always-loaded). |
+| `memory/{user,feedback,project,reference}/` | `spec/memory.yaml` | Bucket directories; `memory/feedback/session-log.md` seeded. |
+| `telemetry/*.jsonl` + `telemetry/auto-prune.log` | `spec/telemetry.yaml` | Append-only sinks. Created empty if missing; existing data preserved. |
+| `scripts/codex-notify-dispatch.sh` | (adapter) | Dispatches the single `notify` event to per-event log scripts. |
+| `scripts/log-skill-invocation.sh` | `spec/telemetry.yaml` event `skill_invocation` | jsonl writer. |
+| `scripts/log-user-prompt.sh` | `spec/telemetry.yaml` event `user_prompt` | jsonl writer. |
+| `scripts/log-session-end.sh` | `spec/telemetry.yaml` event `session_end` | Markdown appender. |
+| `scripts/dead-skills-report.sh` | (adapter) | Generates the dead-skills report consumed by the weekly prune. |
+| `scripts/auto-prune-weekly.sh` | `spec/automation.yaml` | Wrapper that spawns Codex non-interactively with the bounded prune prompt. |
+| `scripts/install-cron.sh` | `spec/automation.yaml` | Installs the Fridays 3pm schedule (Unix crontab or Windows Scheduled Task). |
+| `scripts/install-shell-trap.sh` | `spec/telemetry.yaml` event `session_end` | Wraps `codex` in a shell function so exit triggers session-end logging. |
+| `crontab.entry` | `spec/automation.yaml` | Standalone copy of the cron line for manual install. |
+
+Re-running the emitter is **idempotent**: identical inputs produce zero file diff (excluding the "Last updated" comment in `AGENTS.md` only when the spec changes). A git checkpoint is created on first emit; subsequent emits commit only real diffs.
+
+## How to install
+
+```bash
+# 1. Generate the posture into ~/.codex/ (or any dir).
+node adapters/codex/emit.js ~/.codex
+
+# 2. Wire the weekly auto-prune schedule.
+bash ~/.codex/scripts/install-cron.sh
+
+# 3. Wire the session-end trap (appends to ~/.bashrc or ~/.zshrc).
+bash ~/.codex/scripts/install-shell-trap.sh
+# Open a new shell so the wrapper function takes effect.
+```
+
+That's the whole install. From there, Codex auto-loads `AGENTS.md` on every session, the `notify` hook routes events to the log scripts, and crontab triggers the auto-prune every Friday at 3pm.
+
+## Known gaps (verify on a real Codex install)
+
+The adapter is honest about where Codex differs from Claude Code. Document the actual behavior of your installed Codex build against these items, then file an upstream fix or amend `spec/telemetry.yaml`.
+
+1. **`notify` granularity.** Claude Code's `PreToolUse` hook with matcher `"Skill"` fires precisely when the agent invokes a Skill tool. Codex's `notify` is a single hook fired for several event kinds; we extract the kind from the payload in `codex-notify-dispatch.sh` (best-effort: scans for `"type":"…"`). If your Codex build does not pass the event kind via stdin/env, the dispatch falls through to `telemetry/notify-generic.log` and the skill-invocation count will under-report. **Verify on first install** by reviewing `telemetry/notify-generic.log` after a representative session.
+
+2. **Skill-tool isolation.** Even when the event kind is `tool-call`, the payload may not include a `"skill"` field — Codex has no native YAML-frontmatter skill system, so "Skill" is not a first-class tool category. The router table in `AGENTS.md` is the activation mechanism. When the user types an explicit `/slash` skill name, the dispatch heuristic picks up the name from the call payload; for keyword-routed skills, the log row will read `"skill":"unknown"`. This is a Codex platform limitation, not a spec gap.
+
+3. **Session-end coverage.** Codex itself does not emit a lifecycle session-end event. The shell-rc trap installed by `install-shell-trap.sh` wraps the `codex` function in your shell, so exit triggers logging — but **only** when you invoke `codex` via the wrapped function. If you alias around it or call the bare binary from a script, the log won't fire.
+
+4. **Auto-approve flags.** `spec/automation.yaml` specifies `--non-interactive --auto-approve` for the prune. Adjust to your Codex build's actual flags if different. `auto-prune-weekly.sh` reads the flags inline; spec changes flow on next emit.
+
+5. **Local skill auto-discovery.** Claude Code's `sync-local-skill-router.js` rewrites the router table on `PostToolUse` and `SessionStart`. Codex has no analog for `SessionStart`. The Codex adapter only refreshes the auto-registered block when the emitter is re-run. Plan: invoke the sync script from the shell-rc trap on session start (future work; not in v0.1.0).
+
+6. **Windows scheduling.** `install-cron.sh` prints a `Register-ScheduledTask` snippet rather than executing it directly, since registering a scheduled task may require elevation. Run the snippet manually in an elevated PowerShell.
+
+## Verification
+
+After install, confirm:
+
+1. `node adapters/codex/emit.js /tmp/agentforge-test-codex` runs to completion and prints a JSON summary.
+2. Re-running the same command prints `files_changed: 0`.
+3. `AGENTS.md` is under 400 lines and renders cleanly in any markdown viewer.
+4. `config.toml` parses with a TOML linter (`python -c "import tomllib; tomllib.loads(open('config.toml','rb').read().decode())"`).
+5. After a Codex session, `telemetry/prompts.jsonl` has at least one row.
+6. `bash scripts/dead-skills-report.sh` writes a report under `memory/feedback/`.
+
+## Rollback
+
+Every emit writes into a target dir that is git-tracked. To undo the most recent emit:
+
+```bash
+cd ~/.codex
+git reset --hard HEAD~1
+```
+
+To uninstall the cron entry:
+
+```bash
+crontab -l | grep -v 'AgentForge-AutoPruneWeekly' | crontab -
+```
+
+To uninstall the shell trap, open `~/.bashrc` or `~/.zshrc` and delete the block bounded by the `# >>> AgentForge-codex session-end trap >>>` markers.
+
+## Boundaries
+
+This adapter:
+
+- Reads only `spec/*.yaml` and its own `templates/` + `scripts/`.
+- Writes only inside the target dir passed on the CLI.
+- Does not cross-reference any other adapter.
+- Refuses to emit if any spec file's `schema_version` does not match `1`.
