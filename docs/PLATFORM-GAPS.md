@@ -127,7 +127,7 @@ so the fix improved both. No further action.
 Items the v0.2 ship should clear. Grouped by adapter. P0 = ship-blocker, P1 =
 v0.2-ship target, P2 = deferred to v0.3+ (or accepted as documented).
 
-### codex (5 items)
+### codex (6 items)
 
 - **P1 `codex-notify-coarse`** — docs-only verification subsection in `adapters/codex/README.md`. ~30 min.
 - **P1 `codex-session-end-shell-only`** — expand README gap #3 + add a coverage-check echo to `install-shell-trap.sh`. ~45 min.
