@@ -1,0 +1,28 @@
+{{INDEX}}
+
+---
+
+## How entries land here
+
+The generic adapter has **no SessionEnd hook**. Memory entries are written
+manually. Two recommended rituals:
+
+1. **End of session.** After a meaningful working session, append one entry per
+   genuine learning to the right bucket file in `memory/<bucket>/`. Update the
+   relevant section above with a one-line index pointer (under ~150 chars).
+2. **Before re-exploration.** When you start a new session on a familiar repo,
+   read this index first. Re-exploring known territory is the most common token
+   waste.
+
+Rules:
+
+- One file per genuine learning. Do not duplicate.
+- Verify a recalled fact against current state before acting on it.
+- Index entries are one line, under ~150 characters. Keep them scannable.
+
+Buckets:
+
+- `memory/user/` — preferences, profile facts, corrections to remember across sessions
+- `memory/feedback/` — session logs, prune reports, validated approaches, router suggestions
+- `memory/project/` — per-project decisions, schemas, gotchas, Live State
+- `memory/reference/` — external system pointers (dashboards, repos, tools, patterns)

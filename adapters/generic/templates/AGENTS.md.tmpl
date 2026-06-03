@@ -1,0 +1,79 @@
+# AGENTS.md — Universal Agent Identity
+
+> Emitted by AgentForge's `generic` adapter. Portable across any LLM-aware editor
+> that reads a top-level `AGENTS.md` (Cursor, Aider, Gemini CLI, Codex CLI, Copilot
+> Chat, and any future tool that follows the convention).
+>
+> Substance is canonical (router, memory protocol, execution rules). Automation
+> is **manual** — see the setup checklist at the bottom.
+
+## Identity
+
+{{IDENTITY_BLOCK}}
+
+## Stack Defaults
+
+{{STACK_BLOCK}}
+
+## Execution Rules
+
+{{EXECUTION_RULES}}
+
+## Skill Router
+
+Match user intent against triggers; load **one** skill on demand. Don't pre-load.
+
+{{SKILL_ROUTER}}
+
+**Priority:** explicit `/slash` invocation wins. Else first-match wins. Else, no skill load.
+
+### Local skills
+
+{{LOCAL_SKILLS}}
+
+## Memory Protocol
+
+{{MEMORY_PROTOCOL}}
+
+## Context Discipline
+
+{{CONTEXT_DISCIPLINE}}
+
+---
+
+## Manual Setup Checklist
+
+The generic adapter ships the substance (this file, the router, the memory
+protocol, the skills directory). The automation pieces below are **opt-in** and
+require user assembly because there is no portable hook API across every
+LLM-aware editor.
+
+{{SETUP_CHECKLIST}}
+
+---
+
+## Honest Limitations
+
+This adapter is the lowest-common-denominator. It does **not** match Claude
+Code's coverage. Read this section before relying on it.
+
+- **No automatic telemetry.** {{TELEMETRY_GAP}}. Without telemetry, the weekly
+  dead-skills report has no data to work with — it will report "no telemetry"
+  until you instrument something.
+- **No auto skill-router sync.** When you add or edit a `skills/<name>/SKILL.md`,
+  you must run `node scripts/sync-local-skill-router.js` yourself (or wire a
+  file-watcher — see the checklist).
+- **No scheduled prune.** The weekly auto-prune is a script you can run manually
+  or schedule via Windows Task Scheduler / cron / launchd / systemd timer.
+  Grace period is **{{GRACE_PERIOD_DAYS}} days** of zero invocations before a
+  skill becomes a prune candidate.
+- **No SessionEnd hook.** Memory entries are written manually. The
+  `agentic-prompt-architect` skill and the handoff procedure are the recommended
+  end-of-session rituals.
+- **Editor-specific features are out of scope.** Cursor's `.cursorrules`, Aider's
+  `.aider.conf.yml`, Gemini CLI's `GEMINI.md` — if you want those, layer them on
+  top of this file or use a dedicated adapter.
+
+If you find yourself wishing the generic adapter did more, that's a signal to
+build (or request) a dedicated adapter for your editor. The generic adapter
+trades automation for portability. That's the point.

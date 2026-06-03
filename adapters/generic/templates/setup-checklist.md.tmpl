@@ -1,0 +1,53 @@
+### Optional automation hooks
+
+These wire the maintenance loop into your OS. None are required to get value
+from this file — but each one moves the generic adapter closer to the
+Claude-Code-grade posture.
+
+- **Schedule the weekly dead-skills report.** Pick one:
+  - Linux/macOS cron: `0 15 * * 5 cd /path/to/agent-home && bash scripts/dead-skills-report.sh`
+  - Windows Task Scheduler: create a weekly trigger that runs
+    `bash.exe scripts/dead-skills-report.sh` (or `wsl bash …`) every Friday 3pm.
+  - On-demand: just `bash scripts/dead-skills-report.sh` whenever.
+- **Watch SKILL.md changes.** When you add or edit a skill, the
+  AUTO-LOCAL-SKILLS table in this file goes stale until you re-run the sync
+  script. Two ways to keep it fresh:
+  - Manual: `node scripts/sync-local-skill-router.js` after every skill edit.
+  - File-watcher: point `chokidar-cli`, `entr`, `fswatch`, or `inotifywait` at
+    `skills/**/SKILL.md` and fire the sync script on change.
+- **Log skill invocations to telemetry.** If your editor exposes a tool-call
+  hook (Cursor MCP events, Aider on-tool-use, Gemini CLI extensions), append a
+  one-line JSON to `telemetry/skill-invocations.jsonl`:
+  `{"ts":"<iso>","skill":"<name>"}`. Without this, the dead-skills report has
+  nothing to compare against.
+- **Log user prompts (optional, for router pattern analysis).** Same idea —
+  append `{"ts":"<iso>","prompt":"<first-80-chars>"}` to
+  `telemetry/prompts.jsonl` from a user-prompt hook if your editor has one.
+
+### Per-editor stubs
+
+The same `AGENTS.md` works across editors, but each one needs a slightly
+different on-ramp.
+
+- **Cursor.** Cursor already reads top-level `AGENTS.md` as project rules in
+  recent versions; if yours doesn't, copy this file's content (or symlink it)
+  to `.cursorrules` at the project root. Cursor's "Rules for AI" UI also accepts
+  the same content. No native skill-router concept — the table is reasoned over
+  inline. Telemetry needs an MCP server or a wrapper around your model calls.
+- **Aider.** Aider auto-loads `AGENTS.md` when present in the repo (recent
+  versions). Older versions: pass `--read AGENTS.md` or add it under
+  `read:` in `.aider.conf.yml`. Aider's `/run` and `/test` are good places to
+  pipe invocation logs into the telemetry file.
+- **Gemini CLI.** Gemini CLI prefers `GEMINI.md`. Either copy `AGENTS.md` to
+  `GEMINI.md`, symlink it, or use the CLI's `--system-instruction-file` flag to
+  point at this file. Skill router is reasoned over inline.
+- **Codex CLI.** Codex reads `AGENTS.md` natively; the dedicated `codex`
+  adapter offers tighter hook coverage if you want it. This generic file works
+  as a baseline either way.
+- **GitHub Copilot Chat.** Copilot reads `.github/copilot-instructions.md`.
+  Symlink or copy this file there. No invocation hooks — the router stays
+  manual.
+- **Anything else.** If your editor accepts a "system prompt file" or "project
+  rules" flag, point it at `AGENTS.md`. If it has tool-use hooks, wire them
+  into `telemetry/skill-invocations.jsonl` and you get the dead-skills loop for
+  free.
