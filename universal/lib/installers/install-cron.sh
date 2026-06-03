@@ -47,7 +47,16 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-[ -z "$TAG" ] && { echo "install-cron: --tag is required" >&2; exit 2; }
+# Reject empty-string args explicitly — a caller passing --tag "" would
+# otherwise produce an untagged crontab line that --unregister cannot later
+# find, leaving orphan entries. Same hazard for --script / --schedule on
+# install. (Equals-form `--arg=VALUE` is intentionally not supported; use
+# `--arg VALUE` per the README.)
+[ -z "$TAG" ] && { echo "install-cron: --tag is required and must be non-empty" >&2; exit 2; }
+if [ "$UNREGISTER" -eq 0 ]; then
+  [ -z "$SCRIPT_PATH" ] && { echo "install-cron: --script is required and must be non-empty on install" >&2; exit 2; }
+  [ -z "$SCHEDULE" ]    && { echo "install-cron: --schedule is required and must be non-empty on install" >&2; exit 2; }
+fi
 
 is_windows() {
   case "${OS:-}" in Windows_NT) return 0 ;; esac

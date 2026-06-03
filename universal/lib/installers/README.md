@@ -21,6 +21,11 @@ install-cron.sh \
   [--unregister]
 ```
 
+Arguments are space-separated (`--arg VALUE`). The equals form (`--arg=VALUE`)
+is intentionally not parsed — `install-cron.sh` will exit 2 with
+`unknown argument` rather than silently mis-parse a quoted path. Empty-string
+values (`--tag ""`, `--script ""`) are also rejected.
+
 `install-task.ps1` is the Windows backend. Direct invocation:
 
 ```
@@ -64,10 +69,21 @@ parses these shapes into `New-ScheduledTaskTrigger` arguments:
 
 `<dow>` accepts both numeric (0–7, Sun=0=7) and three-letter names (MON, TUE, …).
 
-Schedules outside this subset will fall back to Daily and print a warning;
-edit the registered task by hand in Task Scheduler if you need something more
-exotic. The intent here is "schedule the AgentForge weekly maintenance loops,"
-not "be a general cron-to-TaskScheduler translator."
+Schedules outside this subset behave as follows:
+
+- **Multi-day dow** (`5,6`, `1-5`, `*/2`): `install-task.ps1` exits 2 with an
+  error pointing the user at Task Scheduler. We refuse explicitly because a
+  silent fall-through to Daily would make the task fire on the wrong day
+  without warning.
+- **Monthly** (`<dom>` set): registered as Daily with a `Write-Warning`. The
+  user can re-target in Task Scheduler if it matters; AgentForge itself
+  never uses monthly schedules.
+- **UNC paths** (`\\server\share\...`): refused up front because the
+  drive-letter-to-POSIX regex can't translate them. Map to a drive letter
+  first.
+
+The intent here is "schedule the AgentForge weekly maintenance loops," not
+"be a general cron-to-TaskScheduler translator."
 
 ## Idempotency
 
