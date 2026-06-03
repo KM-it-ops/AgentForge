@@ -37,4 +37,8 @@ fi
 } >> "$RC"
 
 echo "[install-shell-trap] appended trap to $RC. Open a new shell to activate."
+echo "[install-shell-trap] AgentForge session-end coverage check — after opening a new shell, run:"
+echo "                       type codex   # expected: 'codex is a function'"
+echo "                     If it reports a file path instead, the trap is inactive in this shell."
+echo "                     See adapters/codex/README.md § 'Session-end coverage check'."
 exit 0
