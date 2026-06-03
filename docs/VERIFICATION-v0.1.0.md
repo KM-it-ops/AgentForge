@@ -89,7 +89,7 @@ v0.1.0 → spec(router): amend phase 5 - backticks around plugin/skill names
 - Aider adapter
 - File-watcher fallback for platforms without lifecycle hooks (for sync-local-skill-router.js)
 - `npx agentforge` npm package wrapper
-- GitHub Actions CI for the round-trip tests
+- ~~GitHub Actions CI for the round-trip tests~~ — landed post-tag in commit 79257f6 (`.github/workflows/round-trip.yml`, matrix: ubuntu+windows × node 20+22).
 
 ## Rollback
 
