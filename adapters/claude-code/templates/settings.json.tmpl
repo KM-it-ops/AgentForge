@@ -1,0 +1,89 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "FileWriteTool|FileEditTool",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx prettier --write \"$FILE_PATH\" --ignore-unknown 2>/dev/null || true"
+          },
+          {
+            "type": "command",
+            "command": "if echo \"$FILE_PATH\" | grep -qE 'skills/[^/]+/SKILL\\.md$'; then node {{agent_home_posix}}/hooks/scripts/sync-local-skill-router.js || true; fi"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "FileWriteTool|FileEditTool",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$FILE_PATH\" | grep -qE '(generated|dist|build|node_modules)'; then echo 'BLOCKED: Cannot write to generated/dist/build/node_modules folder'; exit 1; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "BashTool",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"$(date '+%Y-%m-%d %H:%M:%S'): $COMMAND\" >> \"{{agent_home_native}}/audit.log\""
+          }
+        ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash {{agent_home_posix}}/hooks/scripts/log-skill-invocation.sh"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash {{agent_home_posix}}/hooks/scripts/log-prompt.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"[$(date '+%Y-%m-%d %H:%M:%S')] Session started\" >> \"{{agent_home_native}}/session.log\""
+          },
+          {
+            "type": "command",
+            "command": "node {{agent_home_posix}}/hooks/scripts/sync-local-skill-router.js || true"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"[$(date '+%Y-%m-%d %H:%M:%S')] Session ended\" >> \"{{agent_home_native}}/session.log\""
+          },
+          {
+            "type": "command",
+            "command": "bash {{agent_home_posix}}/hooks/scripts/log-session-end.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

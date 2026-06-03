@@ -1,0 +1,57 @@
+# Global Claude Brain — {{user_name}}
+# Loaded for EVERY Claude Code session. Keep ≤100 lines.
+# Last updated: {{date}} (emitted by AgentForge claude-code adapter)
+
+## Identity
+- **Name:** {{user_name}} | Address as "{{address_as}}"
+- **Location:** {{location}} | {{os}} | Base: `{{base_path}}`
+- **Role:** {{role}} ({{certifications}})
+
+## Stack Defaults
+For any non-trivial build, **the `{{stack_authoritative_skill}}` skill is authoritative** — its {{stack_baseline_doctrine}} targets a {{stack_baseline_score}} master-dev baseline. Invoke it on "build me X" / "what stack should I use" / new-project intake.
+Casual shorthand for quick mentions: {{stack_shorthand}}.
+
+## Execution Rules
+{{execution_rules_block}}
+
+## Skill Router
+Match user intent against triggers; load **one** skill on demand. Don't pre-load.
+
+| Trigger keywords | Load |
+|---|---|
+{{manual_routes_block}}
+
+**Priority:** {{priority_line}}
+
+{{auto_local_skills_marker_start}}
+### Local skills (auto-registered)
+| Local skill | Trigger keywords |
+|---|---|
+{{auto_local_skills_rows}}
+{{auto_local_skills_marker_end}}
+
+## Spec-Driven Development (spec-kit)
+When a project contains `.specify/`, it is source-of-truth: `/speckit.constitution → /speckit.specify → /speckit.clarify → /speckit.plan → /speckit.tasks → /speckit.analyze → /speckit.implement`. No feature code without a spec.
+
+Pairs with superpowers: `brainstorming` → `/speckit.specify` → `test-driven-development` → `/speckit.implement`.
+
+## Memory Protocol
+- `MEMORY.md` (this folder) is the always-loaded index.
+- `memory/user/`, `memory/feedback/`, `memory/project/`, `memory/reference/` — load on demand by topic.
+- After significant sessions: write one memory file per genuine learning. Do not duplicate.
+- Verify a recalled fact against current state before acting on it.
+
+## Context Discipline
+{{context_discipline_block}}
+
+## Project Conventions
+- Per-repo `{{project_override_path}}` overrides these globals.
+- Issue tracker: {{project_issue_tracker}}.
+- Triage labels: {{project_triage_labels}}.
+- Domain docs: single-context (`{{project_domain_single}}`); monorepos use `{{project_domain_monorepo}}`.
+- See `~/.claude/docs/agents/{issue-tracker,triage-labels,domain}.md` when wiring a new repo.
+
+## Self-Healing
+- Each project's root `CLAUDE.md` is canonical context; target <{{self_healing_target_lines}} lines, with **{{self_healing_sections}}** sections updated at each milestone.
+- Read root CLAUDE.md before re-exploring. Re-exploring a known codebase is the most common token waste.
+- End every session: {{self_healing_eos}}.
