@@ -1,0 +1,15 @@
+---
+description: {{DESCRIPTION}}
+globs: "**/*"
+alwaysApply: false
+---
+
+# Route: {{ROUTE_ID}}
+
+**Triggers:** {{TRIGGERS}}
+
+**Load:** {{LOAD}}
+
+When the user's intent matches any trigger above, load the target skill or
+guidance referenced under **Load**. Only load one skill per turn. Defer to the
+consolidated router in `.cursor/rules/router.mdc` for priority ordering.
