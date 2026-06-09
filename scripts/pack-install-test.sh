@@ -7,19 +7,20 @@
 #
 # Per adapter:
 #   1. Install the tarball into a clean throwaway npm project.
-#   2. Run `agentforge init <adapter> --dir <sandbox>` via the binstub.
-#   3. Assert exit 0 and file count matches the verified-baseline counts.
+#   2. Run `agentforge doctor --json` via the installed binstub.
+#   3. Run `agentforge init <adapter> --dir <sandbox>` via the binstub.
+#   4. Assert exit 0 and file count matches the verified-baseline counts.
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-WORK="${TMPDIR:-/tmp}/agentforge-pack-test"
+WORK="${AGENTFORGE_PACK_TEST_WORK:-${TMPDIR:-/tmp}/agentforge-pack-test-$$}"
 
 declare -A EXPECTED_FILES
 EXPECTED_FILES[claude-code]=13
 EXPECTED_FILES[codex]=24
 EXPECTED_FILES[generic]=7
-EXPECTED_FILES[cursor]=28
+EXPECTED_FILES[cursor]=30
 
 fail() {
   echo "FAIL: $*" >&2
@@ -58,6 +59,16 @@ main() {
   ver="$("$bin" --version)"
   echo "  installed binstub reports version: $ver"
 
+  if ! "$bin" doctor --json >"$WORK/doctor.json" 2>&1; then
+    cat "$WORK/doctor.json" >&2
+    fail "installed binstub doctor failed"
+  fi
+  if ! grep -q '"ok": true' "$WORK/doctor.json"; then
+    cat "$WORK/doctor.json" >&2
+    fail "installed binstub doctor did not report ok"
+  fi
+  echo "  installed binstub doctor OK"
+
   echo "=== emit each adapter via binstub ==="
   for adapter in claude-code codex generic cursor; do
     local sandbox="$WORK/sandbox-$adapter"
@@ -83,7 +94,7 @@ main() {
   done
 
   echo
-  echo "Pack + install + emit verified for all 4 adapters."
+  echo "Pack + install + doctor + emit verified for all 4 adapters."
 }
 
 main "$@"

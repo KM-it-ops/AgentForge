@@ -23,7 +23,7 @@ Running `node adapters/codex/emit.js <target-dir>` writes the following into `<t
 | `scripts/install-shell-trap.sh` | `spec/telemetry.yaml` event `session_end` | Wraps `codex` in a shell function so exit triggers session-end logging. |
 | `crontab.entry` | `spec/automation.yaml` | Standalone copy of the cron line for manual install. |
 
-Re-running the emitter is **idempotent**: identical inputs produce zero file diff (excluding the "Last updated" comment in `AGENTS.md` only when the spec changes). A git checkpoint is created on first emit; subsequent emits commit only real diffs.
+Re-running the emitter is **idempotent**: identical inputs produce zero file diff (excluding the "Last updated" comment in `AGENTS.md` only when the spec changes). A git checkpoint is created on first emit; subsequent emits commit only real diffs. The emit script prints a JSON receipt with `target`, `checkpoint_sha`, `files_written`, `files_changed`, and per-file `details`.
 
 ## How to install
 
@@ -61,7 +61,7 @@ The adapter is honest about where Codex differs from Claude Code. Document the a
 
 After install, confirm:
 
-1. `node adapters/codex/emit.js /tmp/agentforge-test-codex` runs to completion and prints a JSON summary.
+1. `node adapters/codex/emit.js /tmp/agentforge-test-codex` runs to completion and prints a JSON receipt.
 2. Re-running the same command prints `files_changed: 0`.
 3. `AGENTS.md` is under 400 lines and renders cleanly in any markdown viewer.
 4. `config.toml` parses with a TOML linter (`python -c "import tomllib; tomllib.loads(open('config.toml','rb').read().decode())"`).

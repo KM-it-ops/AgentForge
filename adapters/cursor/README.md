@@ -20,6 +20,7 @@ Given a target directory, `emit.js` writes:
 │   └── rules/
 │       ├── identity.mdc               # alwaysApply: true
 │       ├── router.mdc                 # alwaysApply: true
+│       ├── local-skills.mdc           # alwaysApply: true, generated from skills/*/SKILL.md
 │       └── route-<id>.mdc             # one per spec.router.manual_routes
 ├── MEMORY.md                          # memory index with manual-write protocol
 ├── memory/
@@ -34,7 +35,8 @@ Given a target directory, `emit.js` writes:
 ├── telemetry/
 │   └── README.md                      # honest gap doc (Cursor has no telemetry)
 └── scripts/
-    └── dead-skills-report.sh          # byte-identical copy from adapters/generic/
+    ├── dead-skills-report.sh          # byte-identical copy from adapters/generic/
+    └── watch-skills.js                # refreshes .cursor/rules/local-skills.mdc
 ```
 
 Re-running is idempotent. If the target dir is a git repo with pending
@@ -61,6 +63,7 @@ Our mapping:
 |---|---|---|
 | `.cursor/rules/identity.mdc` | `true` | Identity + stack defaults + execution rules + memory pointer |
 | `.cursor/rules/router.mdc` | `true` | Full skill router table from `spec.router.manual_routes` |
+| `.cursor/rules/local-skills.mdc` | `true` | Generated local SKILL.md table maintained by `scripts/watch-skills.js` |
 | `.cursor/rules/route-<id>.mdc` | `false` | One per route — triggers + load target, discoverable on its own |
 | `.cursorrules` | n/a | Consolidated legacy view (identity + execution + router + memory pointer) |
 
@@ -89,6 +92,10 @@ node adapters/cursor/emit.js ~/agent-home
 
 # Run the dead-skills report (after you have telemetry)
 bash /path/to/project/scripts/dead-skills-report.sh
+
+# Refresh local skill discovery once, or watch while editing skills
+node /path/to/project/scripts/watch-skills.js --once /path/to/project
+node /path/to/project/scripts/watch-skills.js /path/to/project
 ```
 
 The emit script prints a JSON receipt: paths written, which ones changed, and
@@ -129,9 +136,10 @@ Findings from building this adapter — input for the round-trip / audit report:
   `scripts/installers/install-cron.sh` (cron on Unix, Task Scheduler on
   Windows). Review the appended report on your next session and archive
   unused skills by hand.
-- **No auto-router sync.** When you add or edit a `skills/<name>/SKILL.md`,
-  re-run `node adapters/cursor/emit.js <target>` to regenerate the router
-  rules. The adapter has no on-write file watcher.
+- **Local skill auto-router sync.** **Closed in the flagship-readiness batch.**
+  `scripts/watch-skills.js` maintains `.cursor/rules/local-skills.mdc` from
+  `skills/*/SKILL.md`. Run it with `--once` for deterministic refreshes or
+  without `--once` to watch while editing local skills.
 - **`.cursorrules` is deprecated but kept.** We emit both the legacy file and
   the modular `.mdc` tree because Cursor still respects `.cursorrules` and
   some integrations (and older Cursor builds) read only that file. The two
@@ -143,7 +151,7 @@ Findings from building this adapter — input for the round-trip / audit report:
 |---|---|---|---|---|---|
 | `claude-code` | ✅ PreToolUse + UserPromptSubmit + SessionEnd | ✅ jsonl sinks | ✅ auto-router | ✅ Windows Task | ✅ |
 | `codex` | ⚠️ notify-event hook | ⚠️ jsonl, granularity caveat | ⚠️ on disk, no auto-loader | ⚠️ cron entry | ✅ |
-| `cursor` | ❌ none | ❌ user-instrumented only | ❌ rules layer only | ❌ user-wired | ✅ |
+| `cursor` | ❌ none | ❌ user-instrumented only | ⚠️ rules layer + local-skill watcher | ✅ weekly report | ✅ |
 | `generic` | ❌ none | ❌ user-instrumented only | ❌ manual | ❌ user-wired | ✅ |
 
 The cursor adapter sits between `generic` and `codex` in posture: it has

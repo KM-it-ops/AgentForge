@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AgentForge Visual Demo</title>
+    <meta
+      name="description"
+      content="A visual demo of AgentForge turning one canonical spec into platform-native agent configurations."
+    >
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="site-header" aria-label="AgentForge demo navigation">
+      <a class="brand" href="../../README.md" aria-label="AgentForge README">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 42 42" role="img">
+            <path d="M7 8h28v7c-5 1-8 4-8 9v3h7v7H14v-7h7v-3c0-5-3-8-8-9H7z" />
+          </svg>
+        </span>
+        <span>AgentForge</span>
+      </a>
+      <nav aria-label="Demo links">
+        <a href="../READINESS.md">Readiness</a>
+        <a href="../PLATFORM-GAPS.md">Gaps</a>
+        <a href="../../spec/SPEC.md">Spec</a>
+      </nav>
+      <button class="command-button" type="button" data-copy="npx agentforge init codex">
+        <span aria-hidden="true">&gt;_</span>
+        npx agentforge
+      </button>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="demo-title">
+        <div class="hero-copy">
+          <h1 id="demo-title"><span>One spec.</span> <span>Many agents.</span></h1>
+          <p>
+            AgentForge keeps the important behavior in one canonical source, then emits
+            the right files for Claude Code, Codex, Cursor, and generic agent workspaces.
+          </p>
+        </div>
+
+        <section class="flow-stage" aria-label="AgentForge workflow diagram">
+          <div class="stage-label">1. Canonical source</div>
+          <article class="spec-panel" aria-label="YAML source spec">
+            <div class="panel-top">
+              <span class="file-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M6 3h8l5 5v13H6z" />
+                  <path d="M14 3v6h6" />
+                  <path d="M9 13h6M9 17h4" />
+                </svg>
+              </span>
+              <strong>agentforge.yaml</strong>
+            </div>
+            <pre aria-label="Example AgentForge YAML"><code><span class="muted">01</span> identity:
+<span class="muted">02</span>   name: AgentForge
+<span class="muted">03</span> router:
+<span class="muted">04</span>   default: lean cold-start
+<span class="muted">05</span> memory:
+<span class="muted">06</span>   protocol: portable
+<span class="muted">07</span> skills:
+<span class="muted">08</span>   - diagnose
+<span class="muted">09</span>   - handoff
+<span class="muted">10</span> automation:
+<span class="muted">11</span>   prune: weekly</code></pre>
+          </article>
+
+          <div class="compiler-node" aria-label="AgentForge compiler">
+            <div class="forge-icon" aria-hidden="true">
+              <svg viewBox="0 0 48 48">
+                <path d="M10 10h28v9c-7 1-11 5-11 12v4h9v8H12v-8h9v-4c0-7-4-11-11-12z" />
+              </svg>
+            </div>
+            <h2>Compiler</h2>
+            <p>Normalizes the core posture and translates platform plumbing.</p>
+          </div>
+
+          <div class="stage-label output-label">2. Adapter outputs</div>
+          <div class="adapter-stack" aria-label="Adapter outputs">
+            <button class="adapter-card active" type="button" data-adapter="claude">
+              <span class="adapter-icon claude" aria-hidden="true">*</span>
+              <span>
+                <strong>Claude Code</strong>
+                <small>CLAUDE.md + hooks</small>
+              </span>
+              <code>13 files</code>
+            </button>
+            <button class="adapter-card" type="button" data-adapter="codex">
+              <span class="adapter-icon codex" aria-hidden="true">C</span>
+              <span>
+                <strong>Codex</strong>
+                <small>AGENTS.md + notify</small>
+              </span>
+              <code>24 files</code>
+            </button>
+            <button class="adapter-card" type="button" data-adapter="cursor">
+              <span class="adapter-icon cursor" aria-hidden="true">K</span>
+              <span>
+                <strong>Cursor</strong>
+                <small>.cursor/rules/*.mdc</small>
+              </span>
+              <code>30 files</code>
+            </button>
+            <button class="adapter-card" type="button" data-adapter="generic">
+              <span class="adapter-icon generic" aria-hidden="true">&gt;_</span>
+              <span>
+                <strong>Generic</strong>
+                <small>portable AGENTS.md</small>
+              </span>
+              <code>7 files</code>
+            </button>
+          </div>
+        </section>
+
+        <section class="proof-grid" aria-label="Verification proof">
+          <article class="terminal-card">
+            <div class="terminal-top">
+              <strong><span aria-hidden="true">&gt;_</span> agentforge doctor</strong>
+              <span>All checks passed</span>
+            </div>
+            <ul class="check-list" aria-label="Verification checks">
+              <li data-check="doctor"><span aria-hidden="true"></span><strong>doctor</strong><em>Environment looks good</em><code>OK</code></li>
+              <li data-check="verify"><span aria-hidden="true"></span><strong>verify</strong><em>Round-trip and package tests pass</em><code>OK</code></li>
+              <li data-check="pack"><span aria-hidden="true"></span><strong>pack/install</strong><em>Installed binstub emits all adapters</em><code>OK</code></li>
+              <li data-check="cursor"><span aria-hidden="true"></span><strong>cursor watcher</strong><em>Local skill rules refresh on demand</em><code>OK</code></li>
+            </ul>
+          </article>
+
+          <article class="detail-card" aria-live="polite">
+            <h2 id="adapter-title">Claude Code output</h2>
+            <p id="adapter-copy">
+              Emits the full Claude posture: identity, settings, hooks, telemetry helpers,
+              pruning scripts, and universal skills.
+            </p>
+            <div class="detail-actions">
+              <button type="button" id="run-demo">Run visual proof</button>
+              <a href="../READINESS.md">Open readiness runbook</a>
+            </div>
+          </article>
+        </section>
+      </section>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

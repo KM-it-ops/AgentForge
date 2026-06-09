@@ -651,17 +651,17 @@ function gitCheckpoint(targetDir) {
     // Only commit if there are staged changes.
     try {
       execFileSync('git', ['diff', '--cached', '--quiet'], { cwd: targetDir, stdio: 'ignore' });
-      return { committed: false, reason: 'no changes' };
+      return null;
     } catch (_) {
       execFileSync(
         'git',
         ['-c', 'user.email=agentforge@local', '-c', 'user.name=AgentForge', 'commit', '-q', '-m', 'agentforge(codex): emit'],
         { cwd: targetDir, stdio: 'ignore' }
       );
-      return { committed: true };
+      return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: targetDir, encoding: 'utf8' }).trim();
     }
   } catch (e) {
-    return { committed: false, reason: 'git unavailable: ' + e.message };
+    return null;
   }
 }
 
@@ -692,9 +692,13 @@ function main() {
 
   const summary = {
     target: targetDir,
-    files_total: results.length,
+    checkpoint_sha: checkpoint,
+    files_written: results.length,
     files_changed: results.filter((r) => r.changed).length,
-    git_checkpoint: checkpoint,
+    details: results.map((r) => ({
+      path: path.relative(targetDir, r.path),
+      changed: r.changed,
+    })),
   };
   process.stdout.write(JSON.stringify(summary, null, 2) + '\n');
 }

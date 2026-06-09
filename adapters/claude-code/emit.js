@@ -774,6 +774,7 @@ process.exit(0);
 
 function gitCheckpoint(targetDir) {
   const gitDir = path.join(targetDir, ".git");
+  let committed = false;
   try {
     if (!fs.existsSync(gitDir)) {
       execSync("git init", { cwd: targetDir, stdio: "pipe" });
@@ -784,11 +785,14 @@ function gitCheckpoint(targetDir) {
       execSync('git -c user.email=agentforge@local -c user.name=AgentForge commit -m "chore: agentforge claude-code checkpoint"', {
         cwd: targetDir, stdio: "pipe",
       });
+      committed = true;
     } catch (e) {
       // nothing to commit — fine
     }
+    return committed ? execSync("git rev-parse HEAD", { cwd: targetDir, encoding: "utf8" }).trim() : null;
   } catch (e) {
     console.warn(`[agentforge] git checkpoint skipped: ${e.message}`);
+    return null;
   }
 }
 
@@ -799,13 +803,20 @@ function gitCheckpoint(targetDir) {
 function main() {
   const targetArg = process.argv[2];
   const target = expandTarget(targetArg);
-  console.log(`[agentforge:claude-code] target=${target}`);
 
   const spec = loadSpec();
 
   // Pre-checkpoint
   ensureDir(target);
-  gitCheckpoint(target);
+  const checkpoint = gitCheckpoint(target);
+  const results = [];
+  const record = (p, changed) => {
+    results.push({
+      path: path.relative(target, p),
+      changed: Boolean(changed),
+    });
+    return changed;
+  };
 
   // Build template variables
   const dateStr = new Date().toISOString().slice(0, 10);
@@ -833,6 +844,8 @@ function main() {
   const claudeMd2 = render(claudeTmpl, claudeVars2);
   const wroteClaude = writeIfChanged(claudeMdPath, claudeMd2);
   if (wroteClaude) fs.writeFileSync(dateMarkerPath, effectiveDate);
+  record(claudeMdPath, wroteClaude);
+  record(dateMarkerPath, wroteClaude);
 
   // settings.json
   const settingsTmpl = fs.readFileSync(path.join(TEMPLATES_DIR, "settings.json.tmpl"), "utf8");
@@ -842,7 +855,8 @@ function main() {
   const settings = render(settingsTmpl, settingsVars);
   // Validate JSON
   try { JSON.parse(settings); } catch (e) { abort(`settings.json render produced invalid JSON: ${e.message}`); }
-  writeIfChanged(path.join(target, "settings.json"), settings);
+  const settingsPath = path.join(target, "settings.json");
+  record(settingsPath, writeIfChanged(settingsPath, settings));
 
   // Hook scripts
   const auto = spec.automation || {};
@@ -855,10 +869,10 @@ function main() {
     grace_period_days: safety.grace_period_days != null ? safety.grace_period_days : 60,
     agent_invocation_flags: flagsPerPlatform.claude_code || "--print --dangerously-skip-permissions",
   };
-  emitHookScripts(target, hookVars);
+  for (const p of emitHookScripts(target, hookVars)) record(p, true);
 
   // Memory
-  buildMemoryFiles(spec.memory, target);
+  for (const p of buildMemoryFiles(spec.memory, target)) record(p, true);
 
   // Skills stub
   ensureDir(path.join(target, "skills"));
@@ -866,6 +880,9 @@ function main() {
   if (!fs.existsSync(skillsReadme)) {
     fs.writeFileSync(skillsReadme,
       "# Local skills\n\nDrop SKILL.md-prefixed directories here. The sync-local-skill-router.js\nhook will register them in CLAUDE.md automatically.\n");
+    record(skillsReadme, true);
+  } else {
+    record(skillsReadme, false);
   }
 
   // Telemetry dir
@@ -874,10 +891,17 @@ function main() {
   // install-task.ps1 (verbatim copy — it's parametric)
   const psSrc = fs.readFileSync(path.join(SCRIPTS_DIR, "install-task.ps1"), "utf8");
   ensureDir(path.join(target, "hooks", "scripts"));
-  writeIfChanged(path.join(target, "hooks", "scripts", "install-task.ps1"), psSrc);
+  const installTaskPath = path.join(target, "hooks", "scripts", "install-task.ps1");
+  record(installTaskPath, writeIfChanged(installTaskPath, psSrc));
 
-  console.log(`[agentforge:claude-code] emit complete`);
-  console.log(`  Run hooks/scripts/install-task.ps1 (PowerShell) to register the weekly task.`);
+  const summary = {
+    target,
+    checkpoint_sha: checkpoint,
+    files_written: results.length,
+    files_changed: results.filter((r) => r.changed).length,
+    details: results,
+  };
+  console.log(JSON.stringify(summary, null, 2));
 }
 
 if (require.main === module) main();
