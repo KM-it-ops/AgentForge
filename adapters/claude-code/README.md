@@ -37,7 +37,7 @@ node adapters/claude-code/emit.js ~/.claude
 powershell -ExecutionPolicy Bypass -File ~/.claude/hooks/scripts/install-task.ps1 -AgentHome "$env:USERPROFILE\.claude"
 ```
 
-The emitter creates a git checkpoint commit in `<target>` before each run (initializing the repo if needed). Re-running produces zero diff.
+The emitter creates a git checkpoint commit in `<target>` before each run (initializing the repo if needed). Re-running produces zero diff. The emit script prints a JSON receipt with `target`, `checkpoint_sha`, `files_written`, `files_changed`, and per-file `details`.
 
 ## Verifying the round-trip
 

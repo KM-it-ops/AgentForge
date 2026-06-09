@@ -95,16 +95,14 @@ The adapter sits between `generic` and `codex` on the coverage matrix.
 | cursor | `cursor-no-skill-loader` | Cursor has no `skills/` directory contract. The emitter ships `skills/README.md` with the SKILL.md frontmatter convention, but Cursor itself won't auto-load skills — the rule system is the routing layer. | degraded | platform-limitation | docs-only | Documented in `adapters/cursor/README.md` § "Platform gaps" bullet 2 and the emitted `skills/README.md` (see `adapters/cursor/emit.js` lines 666–687). No code change. | S | P2 |
 | cursor | `cursor-no-lifecycle-hooks` | No SessionEnd hook means memory writes are a manual ritual; matches generic adapter posture. | cosmetic | platform-limitation | docs-only | Documented in `adapters/cursor/README.md` § "Platform gaps" bullet 3. The emitted identity rule's memory pointer (`adapters/cursor/templates/rule-identity.mdc.tmpl`) already documents the protocol so the agent knows where to write by hand. No code change. | S | P2 |
 | cursor | `cursor-no-scheduled-task` | Cursor previously had no auto-install path for its `dead-skills-report.sh` — users wired it into cron / Task Scheduler / launchd / systemd by hand per OS. | degraded | platform-limitation | fixed | Closed in v0.3 work. Cursor now ships `scripts/install-cron.sh` (thin wrapper) + `scripts/cursor-weekly-report.sh` (the actual scheduled job — runs `dead-skills-report.sh` weekly and appends to `memory/feedback/dead-skills-report-<date>.md` since Cursor has no headless binary to spawn for auto-prune). Wrapper delegates to the same `universal/lib/installers/` pair the codex adapter uses. | S | n/a |
-| cursor | `cursor-no-auto-router-sync` | When the user adds or edits a `skills/<name>/SKILL.md`, they must re-run `node adapters/cursor/emit.js <target>` to regenerate the router rules. No on-write file watcher. | degraded | adapter-choice | docs-only | Documented in `adapters/cursor/README.md` § "Platform gaps" bullet 5. Adapter-fix path (deferred): ship a `scripts/watch-skills.js` using `node:fs.watch` that re-invokes `emit.js` on `skills/**/SKILL.md` changes. Defer to v0.3 — most users edit skills rarely. | M | P2 |
+| cursor | `cursor-no-auto-router-sync` | When the user adds or edits a `skills/<name>/SKILL.md`, Cursor needs a refreshed local-skill rule for discovery. | degraded | adapter-choice | fixed | Closed in the flagship-readiness batch: the cursor adapter now emits `.cursor/rules/local-skills.mdc` and ships `scripts/watch-skills.js`, which refreshes that rule from `skills/*/SKILL.md` with `--once` or watches continuously via `node:fs.watch`. | M | n/a |
 | cursor | `cursor-cursorrules-deprecated` | `.cursorrules` is deprecated upstream but kept emitted alongside the modular `.cursor/rules/*.mdc` tree because integrations and older Cursor builds still read it. Two views kept in sync by the emitter. | cosmetic | platform-limitation | docs-only | Documented in `adapters/cursor/README.md` § "Platform gaps" bullet 6. Re-evaluate at v0.3 — if Cursor removes `.cursorrules` support, remove the emission in `adapters/cursor/emit.js` lines 598–608 and the `cursorrules.tmpl` template. | S | P2 |
 
 ### Notes
 
-All cursor gaps are documented but none have shipping adapter-fix code paths
-in v0.2. The cursor adapter's value-add in v0.2 is the `.mdc` rule tree
-structure, not automation. The `cursor-no-auto-router-sync` and
-`cursor-no-scheduled-task` rows would each be `adapter-fix` candidates in v0.3
-once a shared installer library exists under `universal/lib/`.
+Cursor still has platform limitations, but two formerly deferred adapter-fix
+items now have shipping code paths: scheduled dead-skills reports and
+local-skill rule refresh through `scripts/watch-skills.js`.
 
 ---
 
@@ -146,9 +144,9 @@ work required.
 ### cursor (0 P0/P1 items)
 
 All six cursor gaps are documented in `adapters/cursor/README.md` § "Platform
-gaps". Two are adapter-fix candidates (`cursor-no-auto-router-sync`,
-`cursor-no-scheduled-task`) but both depend on a shared installer/watcher
-library that doesn't exist yet — defer to v0.3.
+gaps". `cursor-no-scheduled-task` and `cursor-no-auto-router-sync` now have
+shipping adapter fixes. Remaining cursor gaps are platform limitations or
+docs-only posture notes.
 
 ### claude-code (0 items)
 
@@ -160,14 +158,10 @@ No gaps.
 
 ### Rationale for the cut line
 
-P2 items fall into two buckets: (1) **upstream-only** gaps where AgentForge
-can't ship a fix without the platform vendor moving first
-(`codex-skill-unknown`), and (2) **shared-infrastructure** gaps that would
-each be small in isolation but together motivate one consolidated
-`universal/lib/installers/` module in v0.3 (`codex-windows-cron-not-executed`,
-`cursor-no-scheduled-task`, `cursor-no-auto-router-sync`). Shipping each
-piecemeal in v0.2 would duplicate code across adapters and lock in
-adapter-specific paths we'd then have to refactor. The four cursor P2 docs-only
+P2 items now fall mostly into upstream-only or intentionally manual posture:
+AgentForge can't ship `codex-skill-unknown` without the platform vendor moving
+first, while Cursor telemetry, skill-loader, and lifecycle gaps need external
+platform support or user instrumentation. The four cursor P2 docs-only
 rows are *already documented* in the adapter README and the emitted
 `telemetry/README.md` / `skills/README.md` — they need no v0.2 action. The
 P1 batch above is scoped at roughly half a day of work and clears every codex

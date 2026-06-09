@@ -12,8 +12,8 @@
 
 | Item | Source | Effort | Priority | Blocked by |
 |---|---|---|---|---|
-| Gemini CLI adapter | v0.1 backlog | L | P2 | `watch-skills.js` for auto-router-sync parity |
-| Aider adapter | v0.1 backlog | L | P2 | `watch-skills.js` for auto-router-sync parity |
+| Gemini CLI adapter | v0.1 backlog | L | P2 | none; Cursor watcher provides the parity pattern |
+| Aider adapter | v0.1 backlog | L | P2 | none; Cursor watcher provides the parity pattern |
 
 ### codex gap items
 
@@ -34,7 +34,7 @@
 | `cursor-no-skill-loader` | docs-only | S | P2 | — |
 | `cursor-no-lifecycle-hooks` | docs-only | S | P2 | — |
 | ~~`cursor-no-scheduled-task`~~ | ~~adapter-fix candidate~~ | ~~S~~ | **closed (v0.3 installers)** | — |
-| `cursor-no-auto-router-sync` | adapter-fix candidate | M | P2 | `watch-skills.js` |
+| ~~`cursor-no-auto-router-sync`~~ | ~~adapter-fix candidate~~ | ~~M~~ | **closed** | — |
 | `cursor-cursorrules-deprecated` | docs-only (re-eval v0.3) | S | P2 | upstream Cursor removing legacy support |
 
 ### generic gap items (intentional posture)
@@ -51,9 +51,9 @@
 | Item | Where it lives (proposed) | Effort | Priority | Unblocks |
 |---|---|---|---|---|
 | ~~`universal/lib/installers/`~~ | `universal/lib/installers/` | ~~M~~ | **shipped (v0.3)** | closed `codex-windows-cron-not-executed`, `cursor-no-scheduled-task`; claude-code refactor to use it = follow-up |
-| `scripts/watch-skills.js` (file-watcher fallback for sync-local-skill-router.js) | per-adapter `scripts/` initially | M | P2 | `cursor-no-auto-router-sync`, Gemini/Aider auto-sync |
-| Unified JSON summary shape across all 4 adapters | per-adapter `emit.js` | S | P2 | downstream tooling that parses receipts |
-| macOS CI matrix row (`macos-latest`) | `.github/workflows/round-trip.yml` | S | P2 | catches launchd/`/tmp` differences before users hit them |
+| ~~`scripts/watch-skills.js` (file-watcher fallback for sync-local-skill-router.js)~~ | `adapters/cursor/scripts/watch-skills.js` | ~~M~~ | **closed** | closed `cursor-no-auto-router-sync`; provides a parity pattern for Gemini/Aider |
+| ~~Unified JSON summary shape across all 4 adapters~~ | ~~per-adapter `emit.js`~~ | ~~S~~ | **closed** | downstream tooling can parse `target`, `checkpoint_sha`, `files_written`, `files_changed`, and `details` from every adapter |
+| ~~macOS CI matrix row (`macos-latest`)~~ | `.github/workflows/round-trip.yml` | ~~S~~ | **closed** | catches launchd/`/tmp` differences before users hit them |
 | npm publish workflow + tag automation | new `.github/workflows/publish.yml` | S | P2 | `npx agentforge init …` against the real registry |
 
 ### Historical (closed — kept for audit trail)
@@ -62,10 +62,13 @@
 |---|---|---|
 | Cursor adapter | v0.2 (commits `fe82089` → `1dae552`) | 23 emitted files, idempotent |
 | `npx agentforge` wrapper | v0.1.1 (commit `e2dbaee`) | bin/agentforge.js + pack-install CI |
-| Round-trip CI | post-v0.1.0 (commit `79257f6`) | matrix ubuntu+windows × node 20+22 |
+| Round-trip CI | post-v0.1.0 (commit `79257f6`) + flagship-improvement tranche | matrix ubuntu+windows+macOS x node 20+22 |
 | `cli-init-cwd-footgun` | v0.2 (commit `a80964d`) | found during Task 2, fixed in-scope |
 | P1 codex cleanup batch (4 items) | v0.2.1 (`1ae6935` → `fc039c1`) | codex coverage ~85% → ~95%; backstop review applied 2 Important fixes (`set -e` defense + word-bounded flag regex) |
 | `universal/lib/installers/` shared module | v0.3 (this batch) | closed `codex-windows-cron-not-executed` + `cursor-no-scheduled-task` simultaneously; thin-wrapper pattern documented in `universal/lib/installers/README.md` |
+| Unified JSON receipt shape | flagship-improvement tranche | all four adapters emit `target`, `checkpoint_sha`, `files_written`, `files_changed`, and `details`; round-trip test asserts `files_changed: 0` for every adapter |
+| Installed-binstub doctor verification | flagship-improvement tranche | `scripts/pack-install-test.sh` now runs `agentforge doctor --json` from the installed package before adapter emits |
+| Cursor local skill watcher | flagship-improvement tranche | cursor adapter emits `.cursor/rules/local-skills.mdc` and ships `scripts/watch-skills.js --once` / watch mode |
 
 ## Topographic map
 
@@ -82,7 +85,7 @@ flowchart LR
     CLI["bin/agentforge.js<br/>npx agentforge init"]:::shipped
     ROUND["scripts/round-trip-test.sh"]:::shipped
     PACK["scripts/pack-install-test.sh"]:::shipped
-    CI[".github/workflows/round-trip.yml<br/>matrix: ubuntu+windows × node 20+22"]:::shipped
+    CI[".github/workflows/round-trip.yml<br/>matrix: ubuntu+windows+macOS × node 20+22"]:::shipped
   end
 
   subgraph Adapters["Shipping adapters"]
@@ -106,7 +109,7 @@ flowchart LR
     U2["cursor-no-skill-loader"]:::p2
     U3["cursor-no-lifecycle-hooks"]:::p2
     U4["cursor-no-scheduled-task<br/>(closed v0.3 installers)"]:::shipped
-    U5["cursor-no-auto-router-sync"]:::p2
+    U5["cursor-no-auto-router-sync<br/>(closed watcher)"]:::shipped
     U6["cursor-cursorrules-deprecated"]:::upstream
   end
 
@@ -124,9 +127,9 @@ flowchart LR
 
   subgraph Shared["Shared infrastructure candidates (v0.3)"]
     INST["universal/lib/installers/<br/>cron + Task Scheduler<br/>(shipped — closed C6 & U4)"]:::shipped
-    WATCH["scripts/watch-skills.js<br/>file-watcher fallback"]:::shared
-    JSON["unified JSON receipt shape<br/>across 4 emitters"]:::shared
-    MAC["macOS CI matrix row"]:::shared
+    WATCH["scripts/watch-skills.js<br/>(closed cursor watcher)"]:::shipped
+    JSON["unified JSON receipt shape<br/>(closed)"]:::shipped
+    MAC["macOS CI matrix row<br/>(closed)"]:::shipped
     PUB["npm publish workflow"]:::shared
   end
 
@@ -154,9 +157,9 @@ flowchart LR
   %% Shared-library dependency edges (the load-bearing topology)
   INST -.->|unblocks| C6
   INST -.->|unblocks| U4
-  WATCH -.->|unblocks| U5
-  WATCH -.->|unblocks| GEM
-  WATCH -.->|unblocks| AID
+  WATCH -.->|closed| U5
+  WATCH -.->|pattern for| GEM
+  WATCH -.->|pattern for| AID
   JSON -.->|consistency for| CC & CX & CU & GE
   MAC -.->|extends| CI
   PUB -.->|publishes| CLI
@@ -174,9 +177,9 @@ flowchart LR
 
 1. ~~**P1 codex cleanup batch**~~ — **done** (v0.2.1, commits `1ae6935` → `fc039c1`). Codex coverage ~85% → ~95%.
 2. ~~**Build `universal/lib/installers/`**~~ — **done** (v0.3). Both dependent gaps (`codex-windows-cron-not-executed`, `cursor-no-scheduled-task`) closed in the same commit batch.
-3. **Build `scripts/watch-skills.js`** (~half a day). Closes `cursor-no-auto-router-sync` and removes the blocker for Gemini/Aider adapters.
-4. **Gemini CLI adapter or Aider adapter** (~1–2 days each). At this point both have all shared infrastructure available.
-5. **Unify JSON receipt shape** (~1 hour). One-time rename in codex emitter to match generic/cursor. Cheap insurance for downstream tooling.
-6. **macOS CI row** + **npm publish workflow** (~1 hour combined). Both small, both quality-of-life. Bundle into one chore commit.
+3. ~~**Build `scripts/watch-skills.js`**~~ — **done for Cursor**. Closes `cursor-no-auto-router-sync` and gives Gemini/Aider adapters a proven local-skill watcher pattern.
+4. **Gemini CLI adapter or Aider adapter** (~1–2 days each). At this point both have all shared infrastructure patterns available.
+5. ~~**Unify JSON receipt shape**~~ — **done**. All four emitters now expose the same receipt keys and the round-trip test checks idempotency from every adapter receipt.
+6. ~~**macOS CI row**~~ — **done**. **npm publish workflow** remains deferred because it needs release-policy and token-handling decisions.
 
 The cut line between v0.2 ship-now and v0.3 backlog is drawn at step 1. Steps 2–3 are the right v0.3 starter set because they unblock the most downstream work for the least code.

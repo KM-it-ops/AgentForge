@@ -1,40 +1,67 @@
 # AgentForge
 
-> A configuration framework for agentic AI coding assistants.
-> One spec. Many adapters. The same posture in any agent.
-> AgentForge is a framework for configuring, evaluating, and benchmarking AI coding agents across real engineering workflows.
+<div align="center">
+  <img src="docs/demo/demo-desktop.png" alt="AgentForge visual demo showing one YAML spec flowing into Claude Code, Codex, Cursor, and Generic adapters" width="100%">
 
-It currently includes:
+  <h3>One spec. Many agents.</h3>
 
-- AgentForge Core — portable configuration adapters for AI coding assistants
-- AgentForge Benchmarks — reproducible evaluations of AI agents on applied software tasks
-- ATT&CKLens Benchmark — the first defensive cybersecurity benchmark in the suite
+  <p>
+    A configuration framework for agentic AI coding assistants. Author your posture once,
+    then emit platform-native files for Claude Code, Codex, Cursor, and generic agent workspaces.
+  </p>
 
-**Status:** v0.1.0 shipped (Claude Code + Codex + Generic). v0.2 adds Cursor + the `npx agentforge` CLI + round-trip CI. See [`docs/VERIFICATION-v0.1.0.md`](docs/VERIFICATION-v0.1.0.md) and [`docs/PLATFORM-GAPS.md`](docs/PLATFORM-GAPS.md).
+  <p>
+    <a href="docs/demo/index.html"><strong>Open demo</strong></a>
+    &nbsp;|&nbsp;
+    <a href="docs/READINESS.md">Readiness proof</a>
+    &nbsp;|&nbsp;
+    <a href="docs/PLATFORM-GAPS.md">Platform gaps</a>
+    &nbsp;|&nbsp;
+    <a href="docs/DEFERRED-MAP.md">Deferred map</a>
+  </p>
 
-## The problem
+  <p>
+    <img alt="Node >= 18" src="https://img.shields.io/badge/node-%3E%3D18-007f78">
+    <img alt="Adapters: 4" src="https://img.shields.io/badge/adapters-4-ca7a29">
+    <img alt="Version 0.1.1" src="https://img.shields.io/badge/version-0.1.1-21313b">
+    <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-121820">
+  </p>
+</div>
 
-You set up Claude Code with a slim global hub, a skill router, memory protocol, telemetry hooks, weekly auto-prune. It works beautifully — for Claude Code. The day you want the same posture in Codex CLI, Cursor, Gemini CLI, or Aider, you start from scratch. Every agent has its own file format, its own hook API, its own plugin ecosystem.
+## Suite Scope
 
-AgentForge solves this by separating the **substance** (router philosophy, memory protocol, 96/100 stack baseline, observe-then-prune loop) from the **plumbing** (per-agent file formats and hook APIs).
+AgentForge is a framework for configuring, evaluating, and benchmarking AI coding agents
+across real engineering workflows. It currently includes:
 
-## The architecture
+- **AgentForge Core** - portable configuration adapters for AI coding assistants.
+- **AgentForge Benchmarks** - reproducible evaluations of AI agents on applied software tasks.
+- **ATT&CKLens Benchmark** - the first defensive cybersecurity benchmark in the suite.
 
+## What It Does
+
+AgentForge separates the portable agent behavior from each tool's file formats and hook APIs.
+You edit the canonical source in `spec/`; AgentForge compiles that posture into the right files
+for each supported agent runtime.
+
+```mermaid
+flowchart LR
+  Spec["spec/*.yaml<br/>identity, router, memory, telemetry"] --> Compiler["AgentForge compiler"]
+  Compiler --> Claude["Claude Code<br/>CLAUDE.md + hooks"]
+  Compiler --> Codex["Codex<br/>AGENTS.md + notify"]
+  Compiler --> Cursor["Cursor<br/>.cursor/rules/*.mdc"]
+  Compiler --> Generic["Generic<br/>portable AGENTS.md"]
+  Compiler --> Proof["doctor + verify<br/>pack/install checks"]
 ```
-spec/           ← universal YAML source of truth
-universal/      ← copied verbatim by every adapter (skills, memory, lessons)
-adapters/       ← per-platform emitters
-  ├── claude-code/
-  ├── codex/
-  ├── cursor/    ← .cursorrules + .cursor/rules/*.mdc
-  └── generic/   ← lowest common denominator AGENTS.md
-bootstrap/      ← platform-detect installer
-bin/            ← `npx agentforge` CLI
-```
 
-You edit `spec/`. The adapters emit the right files for each platform. The substance stays canonical; only the plumbing adapts.
+| Surface | What ships |
+|---|---|
+| Canonical spec | `spec/identity.yaml`, `spec/router.yaml`, `spec/memory.yaml`, `spec/automation.yaml`, `spec/telemetry.yaml` |
+| Universal payload | Shared skills, memory templates, lessons, and installers under `universal/` |
+| Adapter emitters | Platform-specific generators under `adapters/` |
+| CLI | `npx agentforge init <adapter>` and `agentforge doctor` |
+| Proof | Round-trip tests, package install tests, readiness runbook, and visual demo |
 
-## Quick start
+## Quick Start
 
 ```bash
 # Install for Claude Code (writes to ~/.claude/)
@@ -43,16 +70,19 @@ npx agentforge init claude-code
 # Install for Codex CLI (writes to ~/.codex/)
 npx agentforge init codex
 
-# Install Cursor rules (.cursorrules + .cursor/rules/*.mdc — --dir required)
+# Install Cursor rules (.cursorrules + .cursor/rules/*.mdc)
 npx agentforge init cursor --dir ./my-cursor-config
 
-# Install generic AGENTS.md anywhere (--dir is required for the generic adapter)
+# Install generic AGENTS.md anywhere
 npx agentforge init generic --dir ./my-agent-config
+
+# Check whether the local checkout has the tools AgentForge needs
+npx agentforge doctor
 ```
 
 Re-running is idempotent. Every install creates a git-tracked checkpoint so rollback is one command.
 
-Until the package is published to npm, install from a git checkout:
+For local development or pre-publish installs, use a git checkout:
 
 ```bash
 git clone https://github.com/KM-it-ops/AgentForge.git
@@ -61,46 +91,88 @@ npm install -g .
 agentforge init claude-code
 ```
 
-## What ports cleanly
+## Visual Demo
+
+Run the local demo when you want to show the project at a glance:
+
+```bash
+npm run demo
+```
+
+Keep that command running, then visit:
+
+```text
+http://127.0.0.1:41738/docs/demo/
+```
+
+You can also open `docs/demo/index.html` directly from the filesystem when you do not need a
+local server. The demo shows how one AgentForge spec flows into Claude Code, Codex, Cursor,
+and Generic outputs, plus the verification checks that prove the repo is ready.
+
+## Verify Locally
+
+```bash
+npm run verify
+```
+
+`npm run verify` runs the adapter round-trip test and the npm pack/install test, including
+`agentforge doctor --json` through the installed binstub. On Windows, the npm scripts launch
+Git Bash explicitly when WSL `bash.exe` is first on `PATH` but cannot see Windows Node/npm.
+Set `AGENTFORGE_BASH` to a specific Bash executable if you want to override the auto-detected shell.
+
+For a quick local readiness check without creating an adapter target, run:
+
+```bash
+npx agentforge doctor
+npx agentforge doctor --json
+```
+
+For the full current proof set, use the readiness runbook:
+
+```bash
+cat docs/READINESS.md
+```
+
+## Platform Coverage
+
+| Target | Coverage | Notes |
+|---|---:|---|
+| Claude Code | 100% | Full adapter with identity, settings, hooks, telemetry helpers, and pruning scripts. |
+| Codex CLI | ~85% | Strong AGENTS.md-centered adapter with notify hooks and local skill routing. |
+| Cursor | ~55% | `.cursorrules`, `.cursor/rules/*.mdc`, weekly report scripts, and local skill watcher. |
+| Generic | ~40% | Portable AGENTS.md, memory notes, setup checklist, and helper scripts. |
+| Gemini CLI / Aider | Future | Deferred expansion paths are tracked in `docs/DEFERRED-MAP.md`. |
+
+## What Ports Cleanly
 
 | Component | Portable? | Why |
 |---|---|---|
-| Router philosophy (pattern → skill) | ✅ Universal | Just a markdown table any agent can reason over |
-| Memory protocol (user/feedback/project/reference + index) | ✅ Universal | Directory structure + index file |
-| 96/100 stack baseline | ✅ Universal | Embedded in the `agentic-prompt-architect` skill |
-| Spec-kit + TDD workflow doctrine | ✅ Universal | Separate CLI + a discipline |
-| HTML lessons | ✅ Universal | Static, browser-readable |
-| Weekly auto-prune loop | ✅ Mostly | Same bash logic; only the CLI invocation per-platform changes |
+| Router philosophy | Yes | A pattern-to-skill table any agent can reason over. |
+| Memory protocol | Yes | Directory structure plus index file. |
+| 96/100 stack baseline | Yes | Embedded in the `agentic-prompt-architect` skill. |
+| Spec-kit + TDD workflow doctrine | Yes | Separate CLI plus a discipline. |
+| HTML lessons | Yes | Static, browser-readable files. |
+| Weekly auto-prune loop | Mostly | Same bash logic; only the CLI invocation changes by platform. |
 
-## What needs per-platform adaptation
+## What Needs Per-Platform Adaptation
 
 - Identity file: `CLAUDE.md` vs `AGENTS.md` vs `.cursorrules` vs `GEMINI.md`
 - Skill format: YAML-frontmatter `SKILL.md` vs `.mdc` rules vs inline sections
 - Hook API: Claude Code lifecycle hooks vs Codex notify hooks vs file watchers
-- Plugin ecosystem: each platform has its own marketplace or no concept at all
-
-## v1 platform support
-
-| Target | Coverage | Notes |
-|---|---:|---|
-| Claude Code | 100% | Hand-built adapter; round-trips against the original `~/.claude/` |
-| Codex CLI | ~85% | Hand-built adapter; weaker lifecycle hooks. See `docs/PLATFORM-GAPS.md` |
-| Cursor | ~55% | Modern `.cursor/rules/*.mdc` + legacy `.cursorrules`; no hooks/telemetry primitives (`alwaysApply: true` for identity + router, per-route discoverability rules) |
-| Generic (any LLM-aware editor) | ~40% | AGENTS.md + manual setup docs |
-| Gemini CLI / Aider | — | Community adapters via PR |
-| Devin / cloud agents | — | Out of scope (closed runtime) |
+- Plugin ecosystem: each platform has its own marketplace or no equivalent concept
 
 ## Philosophy
 
-Three rules from the source posture, preserved across all adapters:
-
-1. **Lean cold-start.** Identity + router + memory pointer always loaded. Everything else opt-in by keyword.
-2. **Observe, then prune.** Telemetry logs every skill invocation. Weekly autonomous pass archives what hasn't earned its keep.
-3. **The Universal Core travels.** A 17-tool baseline ships with every TypeScript project. Domain adapters activate only when needed. See `universal/skills/agentic-prompt-architect/`.
+1. **Lean cold-start.** Identity, router, and memory pointer stay always loaded. Everything else is opt-in by keyword.
+2. **Observe, then prune.** Telemetry logs skill invocation. A weekly pass archives what has not earned its keep.
+3. **The Universal Core travels.** Shared skills, memory, lessons, and installers move with every adapter.
 
 ## Status
 
-v0.1.0 shipped four adapters (Claude Code, Codex, Generic) plus round-trip CI on `ubuntu-latest` + `windows-latest` × node 20+22. v0.2 adds the Cursor adapter, the `npx agentforge` CLI, and `docs/PLATFORM-GAPS.md` — a single audit of every documented platform gap with concrete remediation paths.
+v0.1.1 ships four adapters (Claude Code, Codex, Cursor, Generic), the `npx agentforge` CLI,
+round-trip CI on `ubuntu-latest` + `windows-latest` + `macos-latest` x Node 20 and 22,
+package-install readiness verification, a visual demo, and a platform-gap audit with concrete
+remediation paths.
 
 ## License
 

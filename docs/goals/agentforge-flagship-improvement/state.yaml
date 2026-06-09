@@ -1,0 +1,876 @@
+# GoalBuddy v2 state.yaml
+# Board truth lives here. goal.md is the editable charter; notes/ holds long receipts only.
+
+version: 2
+
+goal:
+  title: "AgentForge Flagship Improvement"
+  slug: "agentforge-flagship-improvement"
+  kind: open_ended
+  tranche: "Complete successive safe verified slices until AgentForge has current repo health evidence plus a verified, polished demo/app experience or equivalent flagship-ready artifact."
+  status: done
+  oracle:
+    signal: "Current repo health evidence plus a verified, polished demo/app experience or equivalent artifact showing AgentForge is flagship-ready."
+    cadence: "after each Worker package and at final audit"
+    final_proof: "A final Judge or PM receipt maps completed task receipts, verification commands, and demo/app walkthrough evidence to the flagship-ready outcome and records full_outcome_complete: true."
+  intake:
+    original_request: "Prepare a fresh GoalBuddy board for making C:\\AI\\AgentForge a flagship project through phased technical-health and demo-readiness improvements."
+    interpreted_outcome: "AgentForge becomes a flagship-quality local repo through scoped discovery, prioritized implementation slices, verification, and final demo/readiness proof."
+    input_shape: vague
+    audience: "repo owner and future users/evaluators of AgentForge"
+    authority: approved
+    proof_type: demo
+    completion_proof: "Current repo health evidence plus a verified, polished demo/app experience or equivalent artifact showing the project is flagship-ready."
+    likely_misfire: "GoalBuddy succeeds at broad discovery, cosmetic cleanup, or many tiny improvements without proving technical health and demo-readiness against the flagship oracle."
+    blind_spots_considered:
+      - "The goal is intentionally broad and could sprawl without Judge-selected implementation tranches."
+      - "Flagship quality must cover both technical health and visible demo/readiness proof."
+      - "Credentials, secrets, destructive operations, production changes, and major dependency churn still need explicit approval."
+    existing_plan_facts:
+      - "Create only docs/goals/agentforge-flagship-improvement/goal.md, state.yaml, notes/, and generated local board artifacts."
+      - "Use the local live GoalBuddy board."
+      - "Start with Scout, queue Judge selection, queue a bounded Worker slot, queue PM continuation, and finish with Judge audit."
+      - "Record Scout, Worker, and Judge availability as bundled_not_installed unless installed configs are verified."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+agents:
+  scout: bundled_not_installed
+  worker: bundled_not_installed
+  judge: bundled_not_installed
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41737/agentforge-flagship-improvement/"
+    command: "npx goalbuddy board docs/goals/agentforge-flagship-improvement"
+
+active_task: null
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: high
+    objective: "Map repo structure, current app purpose, verification commands, build/test state, and obvious flagship-readiness gaps."
+    inputs:
+      - "README.md"
+      - "package.json"
+      - "docs"
+      - "spec"
+      - ".github"
+    constraints:
+      - "Read-only."
+      - "Do not edit implementation files."
+      - "Prefer concrete file-path evidence and runnable commands over generic advice."
+      - "Do not load external references or named skills unless a later task explicitly permits it."
+    expected_output:
+      - "Repo structure and purpose map"
+      - "Verification commands and current build/test state"
+      - "Obvious flagship-readiness gaps"
+      - "Candidate implementation tranches with evidence"
+    receipt:
+      result: done
+      summary: "Mapped AgentForge as a Node CLI/config framework driven by five YAML specs, universal assets, and four adapter emitters. Core CI-style verification is present and passes through Git Bash, but default Windows `npm test` is brittle because `bash` resolves to WSL here and cannot see Node."
+      evidence:
+        - "README.md"
+        - "package.json"
+        - "bin/agentforge.js"
+        - "scripts/round-trip-test.sh"
+        - "scripts/pack-install-test.sh"
+        - ".github/workflows/round-trip.yml"
+        - "spec/SPEC.md"
+        - "docs/PLATFORM-GAPS.md"
+        - "docs/DEFERRED-MAP.md"
+      commands:
+        - cmd: "npm test"
+          status: fail
+          summary: "Failed before repo tests because WSL bash was selected and reported `FAIL: node not on PATH`."
+        - cmd: "& 'C:\\Program Files\\Git\\bin\\bash.exe' scripts/round-trip-test.sh"
+          status: pass
+          summary: "All four adapters round-tripped cleanly: claude-code 13 files, codex 24, generic 7, cursor 28."
+        - cmd: "& 'C:\\Program Files\\Git\\bin\\bash.exe' scripts/pack-install-test.sh"
+          status: pass
+          summary: "npm pack/install plus binstub emit verified for all four adapters."
+        - cmd: "node bin/agentforge.js --version; node bin/agentforge.js --help"
+          status: pass
+          summary: "CLI reports version 0.1.1 and expected adapter help."
+        - cmd: "node bin/agentforge.js init cursor"
+          status: pass
+          summary: "Expected error path exits non-zero with `--dir` requirement."
+      findings:
+        - "Repo purpose: `npx agentforge init <adapter>` emits platform-native config postures from canonical specs."
+        - "Architecture: `spec/*.yaml` is source of truth; `universal/` ships shared skills, memory, lessons, and installers; `adapters/` render platform-specific files; `bin/agentforge.js` dispatches adapter init."
+        - "Verification surface: round-trip idempotency, npm pack/install/binstub, CLI help/version/error paths, and documented platform-gap reports."
+        - "Obvious flagship gap: default `npm test` is not reliable on this Windows machine because PowerShell resolves `bash.exe` to WSL, where Node is absent; explicit Git Bash passes."
+        - "Obvious flagship gap: README claims a strong v0.2/v0.1 story but has no quick local verification section explaining the Git Bash requirement or Windows fallback."
+        - "Obvious flagship gap: deferred work exists for adapter parity and publish polish, especially `scripts/watch-skills.js`, unified JSON summaries, macOS CI, and npm publish automation in docs/DEFERRED-MAP.md."
+      spawned_tasks:
+        - T002
+  - id: T002
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: medium
+    objective: "Inspect demo/user experience quality, docs, onboarding, dependencies, reliability risks, and easy high-confidence wins."
+    inputs:
+      - "T001 receipt"
+      - "README.md"
+      - "docs"
+      - "package.json"
+      - "available local app or demo entrypoints found by T001"
+    constraints:
+      - "Read-only."
+      - "Do not edit implementation files."
+      - "Prioritize findings that can be verified locally."
+    expected_output:
+      - "Demo/readiness assessment"
+      - "Docs and onboarding gaps"
+      - "Dependency and reliability risks"
+      - "High-confidence wins ranked by impact and verification strength"
+    receipt:
+      result: done
+      summary: "CLI demo readiness is mostly strong: direct `agentforge init` works, pack dry-run includes the expected source payload, and adapter docs are explicit. The visible flagship issues are stale README/bootstrap wording, Windows test ergonomics, and README links to docs omitted from the npm tarball."
+      evidence:
+        - "README.md"
+        - "bootstrap/README.md"
+        - "adapters/claude-code/README.md"
+        - "adapters/codex/README.md"
+        - "adapters/generic/README.md"
+        - "adapters/cursor/README.md"
+        - "docs/DEFERRED-MAP.md"
+        - "package.json"
+      commands:
+        - cmd: "npm pack --dry-run --json"
+          status: pass
+          summary: "Tarball dry-run reports 82 entries, including CLI, adapters, bootstrap, specs, universal assets, and README.md."
+        - cmd: "node bin/agentforge.js init generic --dir 'C:\\tmp\\agentforge-t002-demo-generic'"
+          status: pass
+          summary: "First-run CLI demo emitted 7 generic adapter files successfully into C:\\tmp."
+      findings:
+        - "No runtime npm dependencies are declared; emitter code is dependency-light and package install risk is low."
+        - "README status wording is inconsistent: package version is 0.1.1, README says v0.1.0 shipped four adapters while also saying v0.2 adds Cursor and the CLI."
+        - "README quick-start documents install commands but does not document the local verification commands that actually prove flagship readiness."
+        - "README links to docs/VERIFICATION-v0.1.0.md and docs/PLATFORM-GAPS.md, but npm pack dry-run omits docs/, so those relative links are not carried in the packaged artifact."
+        - "bootstrap/README.md is stale: it calls npx a future entry point and troubleshooting says only claude-code, codex, and generic are supported, despite cursor and the CLI already shipping."
+        - "Windows demo friction remains: default `npm test` fails when WSL bash precedes Git Bash, although Git Bash verification passes."
+      high_confidence_wins:
+        - "Add a Windows-safe verification entrypoint or npm script so `npm test` does not depend on PATH selecting Git Bash instead of WSL."
+        - "Refresh README status, quick-start, and verification sections to match the current four-adapter CLI package."
+        - "Refresh bootstrap README to describe current `npx agentforge` usage and cursor support."
+        - "Either include docs/ in the npm package or adjust README links so package consumers do not land on missing relative docs."
+      spawned_tasks:
+        - T003
+  - id: T003
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Choose the first largest safe useful implementation tranche by impact, confidence, reversibility, and verification strength."
+    inputs:
+      - "T001 receipt"
+      - "T002 receipt"
+      - "Goal oracle"
+    constraints:
+      - "Do not implement."
+      - "Pick the largest safe useful slice with clear allowed_files, verify commands, and stop conditions."
+      - "Prefer work that materially advances both technical health and demo/readiness proof."
+      - "Require explicit approval for credentials, secrets, destructive operations, production changes, or major dependency churn."
+    expected_output:
+      - "Decision"
+      - "Exact Worker objective"
+      - "allowed_files"
+      - "verify"
+      - "stop_if"
+      - "Blocked or deferred tasks"
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "The first largest safe useful slice should improve the flagship first-run surface without changing adapter semantics: make local verification reliable on Windows, refresh stale README/bootstrap claims, and ensure package consumers can reach the docs the README advertises."
+      exact_worker_objective: "Implement a first-run verification and documentation polish slice: add a cross-platform Bash launcher for npm scripts, update package scripts for round-trip/pack verification, include top-level docs markdown in npm package contents, and refresh README/bootstrap wording to match the shipped four-adapter CLI."
+      allowed_files:
+        - "package.json"
+        - "README.md"
+        - "bootstrap/README.md"
+        - "scripts/run-bash-script.js"
+      verify:
+        - "npm test"
+        - "npm run test:pack"
+        - "npm run verify"
+        - "npm pack --dry-run --json"
+        - "node bin/agentforge.js --help"
+      stop_if:
+        - "The slice requires changing adapter emit semantics."
+        - "The slice requires deleting docs, generated assets, or existing scripts."
+        - "The slice requires credentials, secrets, destructive operations, production changes, or major dependency churn."
+        - "Verification fails twice for the same unresolved reason."
+      blocked_or_deferred_tasks:
+        - "Adapter parity work such as scripts/watch-skills.js remains deferred until after this first-run polish slice."
+        - "New Gemini/Aider adapters remain out of scope for this first slice."
+      spawned_tasks:
+        - T004
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implement first-run verification and documentation polish for the shipped four-adapter CLI."
+    allowed_files:
+      - "package.json"
+      - "README.md"
+      - "bootstrap/README.md"
+      - "scripts/run-bash-script.js"
+    verify:
+      - "npm test"
+      - "npm run test:pack"
+      - "npm run verify"
+      - "npm pack --dry-run --json"
+      - "node bin/agentforge.js --help"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "Behavior is ambiguous."
+      - "Verification fails twice."
+      - "The work requires credentials, secrets, destructive operations, production changes, or major dependency churn without explicit approval."
+    receipt:
+      result: done
+      changed_files:
+        - "package.json"
+        - "README.md"
+        - "bootstrap/README.md"
+        - "scripts/run-bash-script.js"
+      commands:
+        - cmd: "npm test"
+          status: pass
+          summary: "New npm test path runs round-trip verification through the Bash launcher and passes for all four adapters."
+        - cmd: "npm run test:pack"
+          status: pass
+          summary: "Pack/install/binstub verification passes for all four adapters."
+        - cmd: "npm run verify"
+          status: pass
+          summary: "Combined local verification command passes."
+        - cmd: "npm pack --dry-run --json"
+          status: pass
+          summary: "Dry-run tarball now includes root scripts plus docs/DEFERRED-MAP.md, docs/PLATFORM-GAPS.md, and docs/VERIFICATION-v0.1.0.md."
+        - cmd: "node bin/agentforge.js --help"
+          status: pass
+          summary: "CLI help still renders expected adapter list and usage."
+        - cmd: "git diff --check"
+          status: pass
+          summary: "No whitespace errors."
+      summary: "Added a Node Bash launcher so npm verification skips unusable WSL bash on Windows, added `test:pack` and `verify` scripts, included docs and root scripts in npm package contents, and refreshed README/bootstrap wording for the current four-adapter CLI."
+  - id: T005
+    type: pm
+    assignee: PM
+    status: done
+    reasoning_hint: high
+    objective: "Update the board after the first verified tranche and decide whether to continue with another Worker slice or request Judge review."
+    inputs:
+      - "T004 receipt"
+      - "Last verification"
+      - "Goal oracle"
+    constraints:
+      - "Only update GoalBuddy control files unless a new active Worker task explicitly allows implementation edits."
+      - "Do not mark the goal done unless a final audit proves the full flagship outcome."
+      - "If safe local work remains, queue or activate the next largest safe useful Worker package."
+    expected_output:
+      - "Updated board state"
+      - "Next active task or final-audit justification"
+      - "Receipt-backed continuation decision"
+    receipt:
+      result: done
+      full_outcome_complete: false
+      summary: "First-run verification/docs polish is complete and verified, but the broader flagship oracle still needs additional product-quality work and final demo/readiness evidence."
+      decision: "Continue with a Judge-selected next tranche rather than final audit."
+      evidence:
+        - "T001 receipt"
+        - "T002 receipt"
+        - "T003 receipt"
+        - "T004 receipt"
+        - "checks.last_verification"
+      spawned_tasks:
+        - T006
+        - T007
+  - id: T006
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Choose the next largest safe useful flagship-improvement tranche after first-run verification/docs polish."
+    inputs:
+      - "T001 receipt"
+      - "T002 receipt"
+      - "T004 receipt"
+      - "docs/DEFERRED-MAP.md"
+      - "Goal oracle"
+    constraints:
+      - "Do not implement."
+      - "Prefer a slice that materially improves product quality, demo/readiness, or downstream maintainability."
+      - "Avoid credentials, secrets, destructive operations, production changes, and major dependency churn."
+      - "Return exact Worker objective, allowed_files, verify commands, and stop conditions."
+    expected_output:
+      - "Decision"
+      - "Exact Worker objective"
+      - "allowed_files"
+      - "verify"
+      - "stop_if"
+      - "Why this slice beats alternatives"
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "The next best tranche is the deferred unified JSON receipt shape. It improves downstream maintainability, makes adapter emits easier for tools and agents to consume, and is bounded to stdout/test/doc updates without changing emitted adapter files."
+      exact_worker_objective: "Unify adapter emit JSON summaries so claude-code, codex, generic, and cursor all emit parseable receipts with `target`, `checkpoint_sha`, `files_written`, `files_changed`, and `details`, then require `files_changed: 0` idempotency evidence for all four adapters in the round-trip test."
+      allowed_files:
+        - "adapters/claude-code/emit.js"
+        - "adapters/codex/emit.js"
+        - "adapters/claude-code/README.md"
+        - "adapters/codex/README.md"
+        - "scripts/round-trip-test.sh"
+        - "docs/DEFERRED-MAP.md"
+      verify:
+        - "npm test"
+        - "npm run test:pack"
+        - "npm run verify"
+        - "node adapters/claude-code/emit.js C:/tmp/agentforge-json-claude"
+        - "node adapters/codex/emit.js C:/tmp/agentforge-json-codex"
+      stop_if:
+        - "The work requires changing emitted target file contents for any adapter."
+        - "The work requires changing the public CLI command shape."
+        - "Verification fails twice for the same unresolved reason."
+      alternatives_considered:
+        - "scripts/watch-skills.js is larger and should wait until receipt shape is consistent."
+        - "macOS CI and publish workflow are useful but less directly tied to local verified product quality."
+      spawned_tasks:
+        - T007
+  - id: T007
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Unify adapter emit JSON summaries and round-trip idempotency checks across all four adapters."
+    allowed_files:
+      - "adapters/claude-code/emit.js"
+      - "adapters/codex/emit.js"
+      - "adapters/claude-code/README.md"
+      - "adapters/codex/README.md"
+      - "scripts/round-trip-test.sh"
+      - "docs/DEFERRED-MAP.md"
+    verify:
+      - "npm test"
+      - "npm run test:pack"
+      - "npm run verify"
+      - "node adapters/claude-code/emit.js C:/tmp/agentforge-json-claude"
+      - "node adapters/codex/emit.js C:/tmp/agentforge-json-codex"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "Behavior is ambiguous."
+      - "Verification fails twice."
+      - "The work requires credentials, secrets, destructive operations, production changes, or major dependency churn without explicit approval."
+    receipt:
+      result: done
+      changed_files:
+        - "adapters/claude-code/emit.js"
+        - "adapters/codex/emit.js"
+        - "adapters/claude-code/README.md"
+        - "adapters/codex/README.md"
+        - "scripts/round-trip-test.sh"
+        - "docs/DEFERRED-MAP.md"
+      commands:
+        - cmd: "node adapters/claude-code/emit.js C:/tmp/agentforge-json-claude"
+          status: pass
+          summary: "Claude Code emitter prints target, checkpoint_sha, files_written, files_changed, and details."
+        - cmd: "node adapters/codex/emit.js C:/tmp/agentforge-json-codex"
+          status: pass
+          summary: "Codex emitter prints target, checkpoint_sha, files_written, files_changed, and details."
+        - cmd: "npm test"
+          status: pass
+          summary: "Round-trip test now asserts files_changed: 0 from every adapter JSON receipt."
+        - cmd: "npm run test:pack"
+          status: pass
+          summary: "Pack/install/binstub verification remains green."
+        - cmd: "npm run verify"
+          status: pass
+          summary: "Combined verification remains green."
+        - cmd: "git diff --check"
+          status: pass
+          summary: "No whitespace errors."
+      summary: "Unified adapter emit receipts across all four adapters, made claude-code emit JSON, renamed codex receipt keys to match generic/cursor, expanded round-trip idempotency checks to all adapters, and marked the deferred JSON-shape item closed."
+  - id: T008
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Choose the next safe flagship-improvement tranche after verified first-run polish and unified adapter receipts."
+    inputs:
+      - "T001 receipt"
+      - "T002 receipt"
+      - "T004 receipt"
+      - "T007 receipt"
+      - "docs/DEFERRED-MAP.md"
+      - "Goal oracle"
+    constraints:
+      - "Do not implement."
+      - "Prefer a tranche that advances demo readiness, adapter parity, or release quality."
+      - "Avoid credentials, secrets, destructive operations, production changes, and major dependency churn."
+      - "Return exact Worker objective, allowed_files, verify commands, and stop conditions."
+    expected_output:
+      - "Decision"
+      - "Exact Worker objective"
+      - "allowed_files"
+      - "verify"
+      - "stop_if"
+      - "Why this slice beats alternatives"
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "The next highest-leverage flagship slice is a local readiness command. It improves demo confidence and user onboarding without requiring credentials, release automation, or adapter semantic changes."
+      exact_worker_objective: "Add an `agentforge doctor` command with human and JSON output that checks Node version, npm, git, usable Bash for verification scripts, required spec files, and adapter emitter availability; document it in README."
+      allowed_files:
+        - "bin/agentforge.js"
+        - "README.md"
+      verify:
+        - "node bin/agentforge.js doctor"
+        - "node bin/agentforge.js doctor --json"
+        - "node bin/agentforge.js --help"
+        - "npm run verify"
+      stop_if:
+        - "The command would need network access, credentials, destructive operations, or production changes."
+        - "The command would need to mutate user config or target adapter directories."
+        - "Verification fails twice for the same unresolved reason."
+      alternatives_considered:
+        - "macOS CI and publish workflow improve release quality but are less useful for local demo confidence and publish workflow may need owner policy."
+        - "scripts/watch-skills.js is valuable but larger and less visible than a readiness command."
+      spawned_tasks:
+        - T009
+  - id: T009
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Add and document an AgentForge local readiness doctor command."
+    allowed_files:
+      - "bin/agentforge.js"
+      - "README.md"
+    verify:
+      - "node bin/agentforge.js doctor"
+      - "node bin/agentforge.js doctor --json"
+      - "node bin/agentforge.js --help"
+      - "npm run verify"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "Behavior is ambiguous."
+      - "Verification fails twice."
+      - "The work requires network access, credentials, destructive operations, production changes, or target config mutations."
+    receipt:
+      result: done
+      changed_files:
+        - "bin/agentforge.js"
+        - "README.md"
+      commands:
+        - cmd: "node bin/agentforge.js doctor"
+          status: pass
+          summary: "Human-readable readiness check reports ok for Node, npm, git, usable Git Bash, spec files, and four adapter emitters."
+        - cmd: "node bin/agentforge.js doctor --json"
+          status: pass
+          summary: "JSON readiness check returns ok: true with per-check details."
+        - cmd: "node bin/agentforge.js --help"
+          status: pass
+          summary: "Help lists `doctor [--json]` and includes the cursor example."
+        - cmd: "npm run verify"
+          status: pass
+          summary: "Round-trip plus pack/install verification remains green."
+        - cmd: "git diff --check"
+          status: pass
+          summary: "No whitespace errors."
+      summary: "Added a non-mutating `agentforge doctor` command with human and JSON output for local readiness checks, plus README guidance for using it."
+  - id: T010
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Choose the next safe flagship-improvement tranche after the doctor command and verified package/readiness slices."
+    inputs:
+      - "T001 receipt"
+      - "T002 receipt"
+      - "T004 receipt"
+      - "T007 receipt"
+      - "T009 receipt"
+      - "docs/DEFERRED-MAP.md"
+      - "Goal oracle"
+    constraints:
+      - "Do not implement."
+      - "Prefer a tranche that advances demo readiness, adapter parity, release quality, or documentation accuracy."
+      - "Avoid credentials, secrets, destructive operations, production changes, and major dependency churn."
+      - "Return exact Worker objective, allowed_files, verify commands, and stop conditions."
+    expected_output:
+      - "Decision"
+      - "Exact Worker objective"
+      - "allowed_files"
+      - "verify"
+      - "stop_if"
+      - "Why this slice beats alternatives"
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "After the doctor command, the next safest flagship slice is release/readiness hardening: prove the packaged binstub can run doctor and add macOS CI coverage. This improves demo and release confidence without credentials, destructive operations, or adapter semantic changes."
+      exact_worker_objective: "Extend release/readiness verification by adding macOS to the round-trip CI matrix and making the pack/install test run `agentforge doctor --json` through the installed binstub."
+      allowed_files:
+        - ".github/workflows/round-trip.yml"
+        - "scripts/pack-install-test.sh"
+        - "README.md"
+        - "docs/DEFERRED-MAP.md"
+      verify:
+        - "npm run test:pack"
+        - "npm run verify"
+        - "npm pack --dry-run --json"
+        - "git diff --check"
+      stop_if:
+        - "The work requires credentials, secrets, production deployment, or an npm publish token."
+        - "The work requires changing adapter emit semantics."
+        - "Verification fails twice for the same unresolved reason."
+      alternatives_considered:
+        - "npm publish workflow is useful but needs owner policy and npm token handling."
+        - "scripts/watch-skills.js improves adapter parity but is larger and less directly tied to immediate release confidence."
+      spawned_tasks:
+        - T011
+  - id: T011
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Harden release/readiness verification with installed-binstub doctor coverage and macOS CI."
+    allowed_files:
+      - ".github/workflows/round-trip.yml"
+      - "scripts/pack-install-test.sh"
+      - "README.md"
+      - "docs/DEFERRED-MAP.md"
+    verify:
+      - "npm run test:pack"
+      - "npm run verify"
+      - "npm pack --dry-run --json"
+      - "git diff --check"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "The work requires credentials, secrets, production deployment, or an npm publish token."
+      - "The work requires changing adapter emit semantics."
+      - "Verification fails twice for the same unresolved reason."
+    receipt:
+      result: done
+      changed_files:
+        - ".github/workflows/round-trip.yml"
+        - "scripts/pack-install-test.sh"
+        - "README.md"
+        - "docs/DEFERRED-MAP.md"
+      commands:
+        - cmd: "npm run test:pack"
+          status: pass
+          summary: "Installed package now runs `agentforge doctor --json` before adapter emits, then verifies all four adapter file counts."
+        - cmd: "npm run verify"
+          status: pass
+          summary: "Round-trip plus pack/install/doctor verification passes."
+        - cmd: "npm pack --dry-run --json"
+          status: pass
+          summary: "Dry-run package still includes the expected docs, scripts, CLI, adapters, spec, and universal assets."
+        - cmd: "git diff --check"
+          status: pass
+          summary: "No whitespace errors."
+      summary: "Added macOS to the CI matrix, made pack/install verification exercise `agentforge doctor --json` through the installed binstub, and updated README/deferred-map release-readiness notes."
+  - id: T012
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Choose the next safe flagship-improvement tranche after release/readiness hardening."
+    inputs:
+      - "T001 receipt"
+      - "T002 receipt"
+      - "T004 receipt"
+      - "T007 receipt"
+      - "T009 receipt"
+      - "T011 receipt"
+      - "docs/DEFERRED-MAP.md"
+      - "Goal oracle"
+    constraints:
+      - "Do not implement."
+      - "Prefer a tranche that advances demo readiness, adapter parity, release quality, or documentation accuracy."
+      - "Avoid credentials, secrets, destructive operations, production changes, and major dependency churn."
+      - "Return exact Worker objective, allowed_files, verify commands, and stop conditions."
+    expected_output:
+      - "Decision"
+      - "Exact Worker objective"
+      - "allowed_files"
+      - "verify"
+      - "stop_if"
+      - "Why this slice beats alternatives"
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "The next slice should create a verified readiness/demo artifact. The repo now has stronger code and verification, but the flagship oracle still needs an inspectable artifact that maps local commands to proof for users and future audits."
+      exact_worker_objective: "Create and link a `docs/READINESS.md` runbook that documents the current verified local demo/readiness commands, what each proves, expected outputs, and remaining deferred release items."
+      allowed_files:
+        - "README.md"
+        - "docs/READINESS.md"
+      verify:
+        - "node bin/agentforge.js doctor"
+        - "node bin/agentforge.js doctor --json"
+        - "npm run verify"
+        - "node bin/agentforge.js init generic --dir C:\\tmp\\agentforge-readiness-generic"
+        - "npm pack --dry-run --json"
+        - "git diff --check"
+      stop_if:
+        - "The work requires changing implementation code or adapter behavior."
+        - "The work requires credentials, secrets, production deployment, or an npm publish token."
+        - "Verification fails twice for the same unresolved reason."
+      alternatives_considered:
+        - "watch-skills.js advances adapter parity but is larger and less directly tied to the current demo/readiness proof."
+        - "npm publish workflow remains deferred because token and release-policy handling need owner approval."
+      spawned_tasks:
+        - T013
+  - id: T013
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Create and link a verified AgentForge readiness/demo runbook."
+    allowed_files:
+      - "README.md"
+      - "docs/READINESS.md"
+    verify:
+      - "node bin/agentforge.js doctor"
+      - "node bin/agentforge.js doctor --json"
+      - "npm run verify"
+      - "node bin/agentforge.js init generic --dir C:\\tmp\\agentforge-readiness-generic"
+      - "npm pack --dry-run --json"
+      - "git diff --check"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "The work requires implementation or adapter behavior changes."
+      - "The work requires credentials, secrets, production deployment, or an npm publish token."
+      - "Verification fails twice for the same unresolved reason."
+    receipt:
+      result: done
+      changed_files:
+        - "README.md"
+        - "docs/READINESS.md"
+      commands:
+        - cmd: "node bin/agentforge.js doctor"
+          status: pass
+          summary: "Human readiness check exits 0 and reports Result: ok."
+        - cmd: "node bin/agentforge.js doctor --json"
+          status: pass
+          summary: "Machine-readable readiness check exits 0 and returns ok: true."
+        - cmd: "npm run verify"
+          status: pass
+          summary: "Round-trip plus pack/install/doctor verification passes."
+        - cmd: "node bin/agentforge.js init generic --dir C:\\tmp\\agentforge-readiness-generic"
+          status: pass
+          summary: "First-run Generic adapter demo emits 7 files through the CLI."
+        - cmd: "npm pack --dry-run --json"
+          status: pass
+          summary: "Dry-run package includes docs/READINESS.md and the expected package payload."
+        - cmd: "git diff --check"
+          status: pass
+          summary: "No whitespace errors."
+      summary: "Created a packaged readiness runbook that maps local demo/release commands to expected proof and linked it from README."
+  - id: T014
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Choose whether to run final audit or continue with the next safe local flagship-improvement tranche."
+    inputs:
+      - "All done task receipts"
+      - "docs/READINESS.md"
+      - "docs/DEFERRED-MAP.md"
+      - "Goal oracle"
+      - "Current dirty diff"
+    constraints:
+      - "Do not implement."
+      - "Approve final audit only if no safe useful local work remains for the current flagship tranche."
+      - "If safe useful local work remains, return exact Worker objective, allowed_files, verify commands, and stop conditions."
+    expected_output:
+      - "final_audit | continue"
+      - "full_outcome_complete: true | false"
+      - "missing evidence or next Worker objective"
+      - "allowed_files"
+      - "verify"
+      - "stop_if"
+    receipt:
+      result: done
+      decision: continue
+      full_outcome_complete: false
+      rationale: "Safe useful local work remains: the deferred Cursor auto-router-sync gap has a bounded implementation path that improves adapter parity and unblocks future adapter work without credentials or release-side effects."
+      exact_worker_objective: "Add a Cursor local-skills watcher that maintains `.cursor/rules/local-skills.mdc` from `skills/*/SKILL.md`, supports `--once` for deterministic verification, ships through the cursor adapter, and updates docs/tests for the new emitted files."
+      allowed_files:
+        - "adapters/cursor/emit.js"
+        - "adapters/cursor/README.md"
+        - "adapters/cursor/scripts/watch-skills.js"
+        - "scripts/pack-install-test.sh"
+        - "docs/PLATFORM-GAPS.md"
+        - "docs/DEFERRED-MAP.md"
+        - "docs/READINESS.md"
+      verify:
+        - "node adapters/cursor/emit.js C:/tmp/agentforge-cursor-watch"
+        - "node C:/tmp/agentforge-cursor-watch/scripts/watch-skills.js --once C:/tmp/agentforge-cursor-watch"
+        - "npm test"
+        - "npm run test:pack"
+        - "npm run verify"
+        - "git diff --check"
+      stop_if:
+        - "The work requires changing Cursor platform assumptions beyond local rule generation."
+        - "The work requires external watcher dependencies."
+        - "The work requires credentials, secrets, production deployment, or an npm publish token."
+        - "Verification fails twice for the same unresolved reason."
+      spawned_tasks:
+        - T015
+  - id: T015
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Add and verify a Cursor local-skills watcher and generated local-skills rule."
+    allowed_files:
+      - "adapters/cursor/emit.js"
+      - "adapters/cursor/README.md"
+      - "adapters/cursor/scripts/watch-skills.js"
+      - "scripts/pack-install-test.sh"
+      - "docs/PLATFORM-GAPS.md"
+      - "docs/DEFERRED-MAP.md"
+      - "docs/READINESS.md"
+    verify:
+      - "node adapters/cursor/emit.js C:/tmp/agentforge-cursor-watch"
+      - "node C:/tmp/agentforge-cursor-watch/scripts/watch-skills.js --once C:/tmp/agentforge-cursor-watch"
+      - "npm test"
+      - "npm run test:pack"
+      - "npm run verify"
+      - "git diff --check"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "The work requires external watcher dependencies."
+      - "The work requires credentials, secrets, production deployment, or an npm publish token."
+      - "Verification fails twice for the same unresolved reason."
+    receipt:
+      result: done
+      changed_files:
+        - "adapters/cursor/emit.js"
+        - "adapters/cursor/README.md"
+        - "adapters/cursor/scripts/watch-skills.js"
+        - "scripts/pack-install-test.sh"
+        - "docs/PLATFORM-GAPS.md"
+        - "docs/DEFERRED-MAP.md"
+        - "docs/READINESS.md"
+      commands:
+        - cmd: "node adapters/cursor/emit.js C:/tmp/agentforge-cursor-watch"
+          status: pass
+          summary: "Cursor adapter emit exits 0 and reports 30 written files, including `.cursor/rules/local-skills.mdc` and `scripts/watch-skills.js`."
+        - cmd: "node C:/tmp/agentforge-cursor-watch/scripts/watch-skills.js --once C:/tmp/agentforge-cursor-watch"
+          status: pass
+          summary: "After adding a sample `skills/sample-skill/SKILL.md`, the watcher refreshed `.cursor/rules/local-skills.mdc` with the sample skill name and description."
+        - cmd: "npm test"
+          status: pass
+          summary: "All four adapters round-trip idempotently; Cursor now emits 30 files."
+        - cmd: "npm run test:pack"
+          status: pass
+          summary: "Pack/install/doctor/binstub emit verification passes for all four adapters; pack temp work now uses a per-process path to avoid concurrent collisions."
+        - cmd: "npm run verify"
+          status: pass
+          summary: "Full verification passes: source round-trip plus package install, installed-binstub doctor, and adapter emits."
+        - cmd: "npm pack --dry-run --json"
+          status: pass
+          summary: "Package dry-run includes `adapters/cursor/scripts/watch-skills.js`, top-level docs, scripts, CLI, adapters, specs, and universal assets."
+        - cmd: "git diff --check"
+          status: pass
+          summary: "No whitespace errors."
+      summary: "Closed the Cursor local-skill refresh gap by generating `.cursor/rules/local-skills.mdc`, shipping a dependency-free watcher with deterministic `--once` mode, documenting the workflow, and hardening pack verification against shared temp collisions."
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Audit whether the full flagship-improvement outcome is complete against the goal oracle."
+    inputs:
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Demo/readiness evidence"
+      - "Goal oracle"
+    constraints:
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion if the broader original outcome still has safe local follow-up slices."
+      - "Reject completion if demo/readiness proof is missing or stale."
+    expected_output:
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      summary: "AgentForge now satisfies the flagship oracle for this run: current repo health is verified, the packaged CLI/demo path is documented in `docs/READINESS.md`, and adapter parity/readiness improvements have direct local proof."
+      evidence:
+        - "T004: Windows-safe verification scripts, refreshed README/bootstrap onboarding, and packaged docs."
+        - "T007: unified adapter JSON receipt shape across Claude Code and Codex."
+        - "T009: `agentforge doctor` and `agentforge doctor --json` readiness checks."
+        - "T011: installed-binstub doctor verification and macOS CI matrix coverage."
+        - "T013: packaged readiness/demo runbook linked from README."
+        - "T015: Cursor local-skill watcher and generated `.cursor/rules/local-skills.mdc` proof."
+      commands:
+        - cmd: "npm run verify"
+          status: pass
+          summary: "Round-trip idempotency and pack/install/doctor/emit checks pass."
+        - cmd: "npm pack --dry-run --json"
+          status: pass
+          summary: "Packaged artifact includes readiness docs and the Cursor watcher."
+        - cmd: "git diff --check"
+          status: pass
+          summary: "No whitespace errors in the final diff."
+      remaining_deferred:
+        - "Publishing automation and npm token handling remain intentionally deferred because release credentials/policy require owner approval."
+        - "Future Gemini/Aider adapters remain community/future expansion work rather than blockers for the current four-adapter flagship proof."
+      oracle_mapping:
+        repo_health: "Verified by `npm run verify`, `npm run test:pack`, `npm pack --dry-run --json`, and `git diff --check`."
+        demo_or_artifact: "`docs/READINESS.md` documents executable local proof commands and expected outcomes for doctor, verify, Generic demo emit, Cursor watcher refresh, package dry-run, and diff hygiene."
+        readiness: "README, bootstrap docs, adapter docs, platform gaps, and deferred map now match the shipped four-adapter CLI posture."
+
+checks:
+  dirty_fingerprint: unknown
+  last_verification:
+    result: pass
+    task: T015
+    commands:
+      - cmd: "node adapters/cursor/emit.js C:/tmp/agentforge-cursor-watch"
+        status: pass
+      - cmd: "npm run verify"
+        status: pass
+      - cmd: "npm run test:pack"
+        status: pass
+      - cmd: "npm pack --dry-run --json"
+        status: pass
+      - cmd: "git diff --check"
+        status: pass

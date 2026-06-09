@@ -9,7 +9,7 @@
 # Idempotency criteria (BOTH must hold on the second emit):
 #   - exit code 0
 #   - `git status --porcelain` is empty inside the sandbox
-#   - codex/generic/cursor adapters additionally emit JSON with files_changed: 0
+#   - every adapter emits JSON with files_changed: 0
 #
 # Exit 0 on success, non-zero on any failure. Designed for CI.
 
@@ -65,13 +65,11 @@ run_adapter() {
     fail "$adapter: second emit exited non-zero"
   fi
 
-  # JSON-summary adapters: assert files_changed == 0 on the second run.
-  if [ "$adapter" = "codex" ] || [ "$adapter" = "generic" ] || [ "$adapter" = "cursor" ]; then
-    if ! grep -q '"files_changed": 0' "$log2"; then
-      echo "--- second emit log ---" >&2
-      cat "$log2" >&2
-      fail "$adapter: second emit reported files_changed != 0"
-    fi
+  # Every adapter emits a JSON receipt; assert idempotency from it.
+  if ! grep -q '"files_changed": 0' "$log2"; then
+    echo "--- second emit log ---" >&2
+    cat "$log2" >&2
+    fail "$adapter: second emit reported files_changed != 0"
   fi
 
   # git status must be clean after both emits + checkpoint.

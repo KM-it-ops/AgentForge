@@ -547,6 +547,55 @@ function buildRouteLoad(route) {
   return target.generic || target.claude_code || target.codex || "(no mapping documented)";
 }
 
+function readLocalSkill(skillsDir, name) {
+  const skillPath = path.join(skillsDir, name, "SKILL.md");
+  if (!fs.existsSync(skillPath)) return null;
+  const raw = fs.readFileSync(skillPath, "utf8");
+  const frontmatter = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  const meta = {};
+  if (frontmatter) {
+    for (const line of frontmatter[1].split(/\r?\n/)) {
+      const m = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
+      if (!m) continue;
+      meta[m[1]] = m[2].replace(/^["']|["']$/g, "").trim();
+    }
+  }
+  return {
+    name: meta.name || name,
+    description: (meta.description || "Local Cursor skill.").replace(/\s+/g, " ").trim(),
+  };
+}
+
+function buildLocalSkillsRule(target) {
+  const skillsDir = path.join(target, "skills");
+  const skills = fs.existsSync(skillsDir)
+    ? fs.readdirSync(skillsDir, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory() && !entry.name.startsWith("_"))
+        .map((entry) => readLocalSkill(skillsDir, entry.name))
+        .filter(Boolean)
+    : [];
+  const rows = skills.length
+    ? skills.map((skill) => `| \`${skill.name}\` | ${skill.description} |`).join("\n")
+    : "| _(no local skills installed)_ | _(drop SKILL.md dirs into `skills/` to populate this table)_ |";
+  return [
+    "---",
+    "description: Local SKILL.md router entries generated from skills/*/SKILL.md",
+    'globs: "**/*"',
+    "alwaysApply: true",
+    "---",
+    "",
+    "# Local Skills",
+    "",
+    "This file is managed by `scripts/watch-skills.js`. It makes local Cursor",
+    "skills discoverable without re-running the full AgentForge emitter.",
+    "",
+    "| Skill | Description |",
+    "|---|---|",
+    rows,
+    "",
+  ].join("\n");
+}
+
 // ---------------------------------------------------------------------------
 // Git checkpoint — best-effort, skip if not a git repo (don't init).
 // ---------------------------------------------------------------------------
@@ -625,7 +674,10 @@ function main() {
   }, "rule-router.mdc.tmpl");
   results.push(writeIfChanged(path.join(target, ".cursor", "rules", "router.mdc"), routerMdc));
 
-  // 4. .cursor/rules/route-<id>.mdc — one rule per manual route.
+  // 4. .cursor/rules/local-skills.mdc — local SKILL.md discovery table.
+  results.push(writeIfChanged(path.join(target, ".cursor", "rules", "local-skills.mdc"), buildLocalSkillsRule(target)));
+
+  // 5. .cursor/rules/route-<id>.mdc — one rule per manual route.
   const routeTmpl = fs.readFileSync(path.join(TEMPLATES_DIR, "rule-route.mdc.tmpl"), "utf8");
   const routes = (spec.router && spec.router.manual_routes) || [];
   for (const route of routes) {
@@ -641,11 +693,11 @@ function main() {
     results.push(writeIfChanged(path.join(target, ".cursor", "rules", `route-${id}.mdc`), body));
   }
 
-  // 5. MEMORY.md — same memory-index seed the generic adapter writes.
+  // 6. MEMORY.md — same memory-index seed the generic adapter writes.
   const memoryIndex = buildMemoryIndex(spec.memory);
   results.push(writeIfChanged(path.join(target, "MEMORY.md"), memoryIndex));
 
-  // 6. memory/<bucket>/.gitkeep + seeded files.
+  // 7. memory/<bucket>/.gitkeep + seeded files.
   for (const b of spec.memory.buckets || []) {
     const bucketDir = path.join(target, "memory", b.name);
     ensureDir(bucketDir);
@@ -664,7 +716,7 @@ function main() {
     }
   }
 
-  // 7. skills/README.md — manual-add convention for SKILL.md dirs.
+  // 8. skills/README.md — manual-add convention for SKILL.md dirs.
   const skillsReadme = [
     "# skills/",
     "",
@@ -679,8 +731,9 @@ function main() {
     "",
     "Cursor has no native skill-loader concept. The router rules under",
     "`.cursor/rules/` are the routing layer — point them at the skills you keep",
-    "here. Re-run `node adapters/cursor/emit.js <target>` after adding skills",
-    "to keep the router rules in sync if you wire them up.",
+    "here. Run `node scripts/watch-skills.js --once` after adding skills, or",
+    "`node scripts/watch-skills.js` to keep `.cursor/rules/local-skills.mdc`",
+    "current while you edit.",
     "",
     "Archived skills live in `_archived/` and are excluded from",
     "`scripts/dead-skills-report.sh`.",
@@ -688,7 +741,7 @@ function main() {
   ].join("\n");
   results.push(writeIfChanged(path.join(target, "skills", "README.md"), skillsReadme));
 
-  // 8. telemetry/README.md — honest gap doc (Cursor has no telemetry primitive).
+  // 9. telemetry/README.md — honest gap doc (Cursor has no telemetry primitive).
   const telemetryGap = (((spec.telemetry || {}).adapter_notes || {}).generic || {}).gap
     || "no automatic telemetry without an explicit watcher process";
   const telemetryReadme = [
@@ -712,7 +765,7 @@ function main() {
   ].join("\n");
   results.push(writeIfChanged(path.join(target, "telemetry", "README.md"), telemetryReadme));
 
-  // 9. scripts/* — verbatim copy of every file in adapters/cursor/scripts/.
+  // 10. scripts/* — verbatim copy of every file in adapters/cursor/scripts/.
   //    Currently: dead-skills-report.sh (from generic), install-cron.sh
   //    (thin wrapper around the universal installer), cursor-weekly-report.sh
   //    (scheduled by install-cron.sh).
@@ -723,7 +776,7 @@ function main() {
     results.push(copyScript(src, path.join(target, "scripts", f)));
   }
 
-  // 10. scripts/installers/* — byte-identical copies of universal/lib/installers/.
+  // 11. scripts/installers/* — byte-identical copies of universal/lib/installers/.
   //     Closes cursor-no-scheduled-task by giving install-cron.sh a sibling
   //     to delegate to.
   if (fs.existsSync(UNIVERSAL_INSTALLERS_DIR)) {

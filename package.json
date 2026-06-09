@@ -32,13 +32,19 @@
   },
   "files": [
     "bin/",
+    "docs/*.md",
+    "docs/demo/",
     "spec/",
+    "scripts/",
     "universal/",
     "adapters/",
     "bootstrap/",
     "README.md"
   ],
   "scripts": {
-    "test": "bash scripts/round-trip-test.sh"
+    "demo": "node scripts/serve-demo.js",
+    "test": "node scripts/run-bash-script.js scripts/round-trip-test.sh",
+    "test:pack": "node scripts/run-bash-script.js scripts/pack-install-test.sh",
+    "verify": "npm test && npm run test:pack"
   }
 }

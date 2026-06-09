@@ -40,6 +40,7 @@ function printHelp() {
 
 Usage:
   agentforge init <adapter> [--dir <path>]
+  agentforge doctor [--json]
   agentforge --version
   agentforge --help
 
@@ -52,7 +53,9 @@ Adapters:
 Examples:
   npx agentforge init claude-code
   npx agentforge init codex --dir ~/.codex-dev
+  npx agentforge init cursor --dir ./my-cursor-config
   npx agentforge init generic --dir ./my-agent-config
+  npx agentforge doctor
 
 Docs: https://github.com/KM-it-ops/AgentForge
 `);
@@ -98,6 +101,110 @@ function expandTilde(p) {
   return p;
 }
 
+function commandCheck(name, cmd, args) {
+  const res = spawnSync(cmd, args, {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  const output = ((res.stdout || '') + (res.stderr || '')).trim().split(/\r?\n/)[0] || '';
+  return {
+    name,
+    ok: res.status === 0,
+    detail: res.status === 0 ? output : (res.error ? res.error.message : output || `exit ${res.status}`),
+  };
+}
+
+function bashCandidates() {
+  const out = [];
+  if (process.env.AGENTFORGE_BASH) out.push(process.env.AGENTFORGE_BASH);
+  if (process.platform === 'win32') {
+    out.push(
+      'C:\\Program Files\\Git\\bin\\bash.exe',
+      'C:\\Program Files\\Git\\usr\\bin\\bash.exe',
+      'bash'
+    );
+  } else {
+    out.push('bash');
+  }
+  return [...new Set(out.filter(Boolean))];
+}
+
+function usableBashCheck() {
+  for (const candidate of bashCandidates()) {
+    const res = spawnSync(
+      candidate,
+      ['-lc', 'command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1 && command -v git >/dev/null 2>&1'],
+      { stdio: 'ignore' }
+    );
+    if (res.status === 0) {
+      return { name: 'usable bash', ok: true, detail: candidate };
+    }
+  }
+  return {
+    name: 'usable bash',
+    ok: false,
+    detail: 'No bash found that can see node, npm, and git. Install Git Bash or set AGENTFORGE_BASH.',
+  };
+}
+
+function specFilesCheck() {
+  const files = ['identity.yaml', 'router.yaml', 'memory.yaml', 'telemetry.yaml', 'automation.yaml'];
+  const missing = files.filter((f) => !fs.existsSync(path.join(PKG_ROOT, 'spec', f)));
+  return {
+    name: 'spec files',
+    ok: missing.length === 0,
+    detail: missing.length === 0 ? `${files.length} required spec files found` : `missing: ${missing.join(', ')}`,
+  };
+}
+
+function adapterEmittersCheck() {
+  const missing = Object.keys(ADAPTERS).filter((adapter) => {
+    return !fs.existsSync(path.join(ADAPTERS_DIR, adapter, 'emit.js'));
+  });
+  return {
+    name: 'adapter emitters',
+    ok: missing.length === 0,
+    detail: missing.length === 0 ? `${Object.keys(ADAPTERS).length} adapter emitters found` : `missing: ${missing.join(', ')}`,
+  };
+}
+
+function nodeVersionCheck() {
+  const major = Number(process.versions.node.split('.')[0]);
+  return {
+    name: 'node >=18',
+    ok: major >= 18,
+    detail: `v${process.versions.node}`,
+  };
+}
+
+function runDoctor(argv) {
+  const json = argv.includes('--json');
+  const unknown = argv.filter((arg) => arg !== '--json');
+  if (unknown.length > 0) fail(`unknown doctor flag: ${unknown[0]}`);
+
+  const checks = [
+    nodeVersionCheck(),
+    commandCheck('npm', 'npm', ['--version']),
+    commandCheck('git', 'git', ['--version']),
+    usableBashCheck(),
+    specFilesCheck(),
+    adapterEmittersCheck(),
+  ];
+  const ok = checks.every((check) => check.ok);
+
+  if (json) {
+    process.stdout.write(JSON.stringify({ ok, checks }, null, 2) + '\n');
+  } else {
+    process.stdout.write('AgentForge doctor\n');
+    for (const check of checks) {
+      process.stdout.write(`${check.ok ? '[ok]' : '[fail]'} ${check.name}: ${check.detail}\n`);
+    }
+    process.stdout.write(`\nResult: ${ok ? 'ok' : 'failed'}\n`);
+  }
+
+  process.exit(ok ? 0 : 1);
+}
+
 function runInit(argv) {
   const { adapter, dir } = parseInitArgs(argv);
 
@@ -137,6 +244,8 @@ function main(argv) {
   switch (cmd) {
     case 'init':
       return runInit(rest);
+    case 'doctor':
+      return runDoctor(rest);
     case '--version':
     case '-v':
       process.stdout.write(`${pkgVersion()}\n`);

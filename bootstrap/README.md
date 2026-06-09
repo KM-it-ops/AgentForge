@@ -55,19 +55,19 @@ Re-running the bootstrap on an existing install reconciles target with spec. Fil
 
 Every adapter creates a git checkpoint before writing, so any install is one `git reset --hard HEAD~1` away from rollback.
 
-## Future: `npx agentforge`
+## CLI entry point
 
-Once AgentForge is published to npm, the canonical entry point becomes:
+The package CLI is the preferred entry point when AgentForge is installed from npm or a local checkout:
 
 ```bash
-npx agentforge init [platform]
+npx agentforge init <platform> [--dir <path>]
 ```
 
-The `npx` wrapper will clone the repo to a temp dir, run `bootstrap.sh` from there, then clean up. The `bootstrap.sh` here is the underlying mechanism.
+Use `bootstrap.sh` / `bootstrap.ps1` when you want the explicit platform-detection installer. Use `agentforge init` when you already know the target adapter.
 
 ## Troubleshooting
 
 - **`ERROR: node is required`** — install Node.js 18+ from https://nodejs.org/
 - **`ERROR: required spec file missing`** — your AgentForge checkout is incomplete; re-clone.
-- **`ERROR: unknown platform 'X'`** — only `claude-code`, `codex`, `generic` are supported in v1.
+- **`ERROR: unknown platform 'X'`** — supported adapters are `claude-code`, `codex`, `cursor`, and `generic`.
 - **Emit fails partway through** — the adapter's git checkpoint protects you. Inspect the target dir, optionally `git reset --hard` to the pre-emit state.
