@@ -2,6 +2,13 @@
 
 > A configuration framework for agentic AI coding assistants.
 > One spec. Many adapters. The same posture in any agent.
+> AgentForge is a framework for configuring, evaluating, and benchmarking AI coding agents across real engineering workflows.
+
+It currently includes:
+
+- AgentForge Core — portable configuration adapters for AI coding assistants
+- AgentForge Benchmarks — reproducible evaluations of AI agents on applied software tasks
+- ATT&CKLens Benchmark — the first defensive cybersecurity benchmark in the suite
 
 **Status:** v0.1.0 shipped (Claude Code + Codex + Generic). v0.2 adds Cursor + the `npx agentforge` CLI + round-trip CI. See [`docs/VERIFICATION-v0.1.0.md`](docs/VERIFICATION-v0.1.0.md) and [`docs/PLATFORM-GAPS.md`](docs/PLATFORM-GAPS.md).
 
