@@ -111,16 +111,18 @@ function commandCandidates(cmd) {
 function commandCheck(name, cmd, args) {
   let last = null;
   for (const candidate of commandCandidates(cmd)) {
+    const needsShell = process.platform === 'win32' && /\.(cmd|bat)$/i.test(candidate);
     const res = spawnSync(candidate, args, {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
+      shell: needsShell,
     });
     last = res;
     if (res.status === 0) {
       const output = ((res.stdout || '') + (res.stderr || '')).trim().split(/\r?\n/)[0] || '';
       return { name, ok: true, detail: output };
     }
-    if (res.error && res.error.code === 'ENOENT') continue;
+    if (res.error && ['ENOENT', 'EINVAL'].includes(res.error.code)) continue;
     break;
   }
 
