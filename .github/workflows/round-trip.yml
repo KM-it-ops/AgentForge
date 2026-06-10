@@ -23,10 +23,5 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Run round-trip test
-        shell: bash
-        run: bash scripts/round-trip-test.sh
-
-      - name: Pack tarball and emit via installed binstub
-        shell: bash
-        run: bash scripts/pack-install-test.sh
+      - name: Verify AgentForge
+        run: npm run verify
