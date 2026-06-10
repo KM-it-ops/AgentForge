@@ -101,16 +101,34 @@ function expandTilde(p) {
   return p;
 }
 
+function commandCandidates(cmd) {
+  if (process.platform === 'win32' && !/\.(cmd|exe|bat)$/i.test(cmd)) {
+    return [cmd, `${cmd}.cmd`, `${cmd}.exe`];
+  }
+  return [cmd];
+}
+
 function commandCheck(name, cmd, args) {
-  const res = spawnSync(cmd, args, {
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
-  const output = ((res.stdout || '') + (res.stderr || '')).trim().split(/\r?\n/)[0] || '';
+  let last = null;
+  for (const candidate of commandCandidates(cmd)) {
+    const res = spawnSync(candidate, args, {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    last = res;
+    if (res.status === 0) {
+      const output = ((res.stdout || '') + (res.stderr || '')).trim().split(/\r?\n/)[0] || '';
+      return { name, ok: true, detail: output };
+    }
+    if (res.error && res.error.code === 'ENOENT') continue;
+    break;
+  }
+
+  const output = last ? ((last.stdout || '') + (last.stderr || '')).trim().split(/\r?\n/)[0] || '' : '';
   return {
     name,
-    ok: res.status === 0,
-    detail: res.status === 0 ? output : (res.error ? res.error.message : output || `exit ${res.status}`),
+    ok: false,
+    detail: last?.error ? last.error.message : output || `exit ${last?.status ?? 'unknown'}`,
   };
 }
 
