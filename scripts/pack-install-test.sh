@@ -16,15 +16,19 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 WORK="${AGENTFORGE_PACK_TEST_WORK:-${TMPDIR:-/tmp}/agentforge-pack-test-$$}"
 
-declare -A EXPECTED_FILES
-EXPECTED_FILES[claude-code]=13
-EXPECTED_FILES[codex]=24
-EXPECTED_FILES[generic]=7
-EXPECTED_FILES[cursor]=30
-
 fail() {
   echo "FAIL: $*" >&2
   exit 1
+}
+
+expected_files() {
+  case "$1" in
+    claude-code) echo 13 ;;
+    codex) echo 24 ;;
+    generic) echo 7 ;;
+    cursor) echo 30 ;;
+    *) fail "no expected file count for adapter: $1" ;;
+  esac
 }
 
 main() {
@@ -86,7 +90,8 @@ main() {
 
     local count
     count=$(find "$sandbox" -type f -not -path "*/.git/*" | wc -l | tr -d ' ')
-    local expected="${EXPECTED_FILES[$adapter]}"
+    local expected
+    expected="$(expected_files "$adapter")"
     if [ "$count" != "$expected" ]; then
       fail "$adapter file count mismatch: got $count, expected $expected (a missing files: entry in package.json?)"
     fi
