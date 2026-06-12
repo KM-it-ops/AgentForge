@@ -15,6 +15,8 @@
     &nbsp;|&nbsp;
     <a href="docs/READINESS.md">Readiness proof</a>
     &nbsp;|&nbsp;
+    <a href="docs/releases/v0.2-readiness.md">v0.2 release packet</a>
+    &nbsp;|&nbsp;
     <a href="docs/PLATFORM-GAPS.md">Platform gaps</a>
     &nbsp;|&nbsp;
     <a href="docs/DEFERRED-MAP.md">Deferred map</a>
@@ -23,7 +25,7 @@
   <p>
     <img alt="Node >= 18" src="https://img.shields.io/badge/node-%3E%3D18-007f78">
     <img alt="Adapters: 4" src="https://img.shields.io/badge/adapters-4-ca7a29">
-    <img alt="Version 0.1.1" src="https://img.shields.io/badge/version-0.1.1-21313b">
+    <img alt="Version 0.2.0" src="https://img.shields.io/badge/version-0.2.0-21313b">
     <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-121820">
   </p>
 </div>
@@ -169,10 +171,12 @@ cat docs/READINESS.md
 
 ## Status
 
-v0.1.1 ships four adapters (Claude Code, Codex, Cursor, Generic), the `npx agentforge` CLI,
-round-trip CI on `ubuntu-latest` + `windows-latest` + `macos-latest` x Node 20 and 22,
-package-install readiness verification, a visual demo, and a platform-gap audit with concrete
-remediation paths.
+v0.2.0 is the current release-candidate package version. It ships four adapters
+(Claude Code, Codex, Cursor, Generic), the `npx agentforge` CLI, round-trip CI on
+`ubuntu-latest` + `windows-latest` + `macos-latest` x Node 20 and 22,
+package-install readiness verification, a visual demo, and a platform-gap audit
+with concrete remediation paths. Public/npm release remains gated by
+`docs/releases/v0.2-readiness.md`.
 
 ## License
 
