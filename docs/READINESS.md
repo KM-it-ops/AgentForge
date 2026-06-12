@@ -2,6 +2,11 @@
 
 This is the current local proof set for AgentForge as a four-adapter CLI package. Run it from the repository root before a demo, release candidate, or handoff.
 
+For the v0.2 public/npm release decision, use
+`docs/releases/v0.2-readiness.md` as the release packet. It records the
+versioning decision, package metadata audit, release checklist, blockers, and
+approval gates. This runbook remains the command-level proof surface.
+
 ## What This Proves
 
 - The local checkout has the tools AgentForge needs.
@@ -23,6 +28,25 @@ node adapters/cursor/emit.js C:\tmp\agentforge-cursor-watch
 node C:\tmp\agentforge-cursor-watch\scripts\watch-skills.js --once C:\tmp\agentforge-cursor-watch
 npm pack --dry-run --json
 git diff --check
+```
+
+To produce one JSON evidence packet for a release handoff, run:
+
+```powershell
+.\scripts\release-evidence.ps1
+```
+
+It writes `.test-output/release-evidence-v0.2.json` and uses no credentials.
+
+On this Windows workstation, if `npm` resolves through Volta and fails with
+`EPERM: operation not permitted, lstat 'C:\Users\alkur'`, use the real Node.js
+npm path and a workspace-local cache:
+
+```powershell
+$env:PATH='C:\Program Files\nodejs;' + $env:PATH
+$env:npm_config_cache=(Resolve-Path .\.test-output\npm-cache).Path
+& 'C:\Program Files\nodejs\npm.cmd' run verify
+& 'C:\Program Files\nodejs\npm.cmd' pack --dry-run --json
 ```
 
 ## Expected Results
@@ -67,9 +91,11 @@ Expected: exits `0` and refreshes `.cursor/rules/local-skills.mdc` from `skills/
 Expected: exits `0` and includes the package payload needed for real installs:
 
 - `bin/`
+- `CHANGELOG.md`
 - `adapters/`
 - `bootstrap/`
 - `docs/*.md`
+- `docs/releases/`
 - `scripts/`
 - `spec/`
 - `universal/`
@@ -93,5 +119,11 @@ for Node `20` and `22`.
 
 These are not required for the current readiness proof, but remain useful future work:
 
-- npm publish workflow and tag automation, which need owner decisions for release policy and token handling.
+- npm publish workflow and tag automation, which need owner decisions for release policy and access scope.
 - Future Gemini CLI and Aider adapters.
+
+## Release Boundary
+
+Do not publish to npm, create a GitHub release, create a tag, push release
+commits, or use credentials from this runbook. Those actions require explicit
+owner approval and a completed release packet.

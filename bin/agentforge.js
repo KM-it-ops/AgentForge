@@ -103,6 +103,9 @@ function expandTilde(p) {
 
 function commandCandidates(cmd) {
   if (process.platform === 'win32' && !/\.(cmd|exe|bat)$/i.test(cmd)) {
+    if (cmd === 'npm' || cmd === 'npx') {
+      return [`${cmd}.cmd`, `${cmd}.exe`, cmd];
+    }
     return [cmd, `${cmd}.cmd`, `${cmd}.exe`];
   }
   return [cmd];

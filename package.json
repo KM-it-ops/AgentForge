@@ -1,6 +1,6 @@
 {
   "name": "agentforge",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A configuration framework for agentic AI coding assistants. One spec. Many adapters. The same posture in any agent.",
   "keywords": [
     "agent",
@@ -32,8 +32,11 @@
   },
   "files": [
     "bin/",
+    "CHANGELOG.md",
     "docs/*.md",
+    "!docs/GOALBUDDY-HANDOFF.md",
     "docs/demo/",
+    "docs/releases/",
     "spec/",
     "scripts/",
     "universal/",
