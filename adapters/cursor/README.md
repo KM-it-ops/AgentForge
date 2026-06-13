@@ -109,6 +109,10 @@ the git checkpoint SHA (if any).
 - Memory bucket dirs are created once (empty `.gitkeep`); the emitter never
   overwrites an existing memory file on subsequent runs. Logs live in `logs/`,
   not `memory/`.
+- **Merge-safe `.cursorrules`** — AgentForge content lives inside an
+  `AGENTFORGE:BEGIN`/`AGENTFORGE:END` managed block. If you already hand-author
+  `.cursorrules`, the block is mounted atop your file on first emit and only the
+  block is rewritten thereafter, so your own rules are preserved.
 
 ## Platform gaps
 
