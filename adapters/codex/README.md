@@ -41,6 +41,13 @@ bash ~/.codex/scripts/install-shell-trap.sh
 
 That's the whole install. From there, Codex auto-loads `AGENTS.md` on every session, the `notify` hook routes events to the log scripts, and crontab triggers the auto-prune every Friday at 3pm.
 
+### Adopting into an existing `~/.codex`
+
+The emitter is **merge-safe** — it will not clobber a hand-maintained install:
+
+- **`AGENTS.md`** — AgentForge content lives inside an `AGENTFORGE:BEGIN`/`AGENTFORGE:END` managed block. On first emit the block is mounted at the top of your existing file; on re-emit only the block is rewritten, so your own notes/learnings outside it are preserved.
+- **`config.toml`** — if you already have a non-AgentForge `config.toml` (your real model, plugins, MCP servers, trusted projects), it is **left untouched**. The managed Codex config is written to `config.agentforge.toml` instead; merge the `notify` hook and `[telemetry]` keys into your own config by hand if you want telemetry wiring.
+
 ## Known gaps (verify on a real Codex install)
 
 The adapter is honest about where Codex differs from Claude Code. Document the actual behavior of your installed Codex build against these items, then file an upstream fix or amend `spec/telemetry.yaml`.

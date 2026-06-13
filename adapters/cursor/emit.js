@@ -408,6 +408,41 @@ function writeIfChanged(p, content) {
   return { path: p, changed: true };
 }
 
+// ---------------------------------------------------------------------------
+// Merge-safe identity writer — preserve hand-authored .cursorrules on adoption.
+//   - no file              -> write the managed block
+//   - file has BEGIN/END    -> replace only the block, keep surrounding content
+//   - file without markers  -> adoption: prepend the block, preserve the rest
+// ---------------------------------------------------------------------------
+const AF_BLOCK_BEGIN =
+  "<!-- AGENTFORGE:BEGIN — managed by AgentForge; edits inside this block are overwritten on re-emit -->";
+const AF_BLOCK_END = "<!-- AGENTFORGE:END -->";
+
+function buildManagedBlock(body) {
+  return AF_BLOCK_BEGIN + "\n" + String(body).replace(/\s+$/, "") + "\n" + AF_BLOCK_END;
+}
+
+function writeIdentityFile(p, body) {
+  const block = buildManagedBlock(body);
+  let existing = null;
+  try {
+    existing = fs.readFileSync(p, "utf8");
+  } catch (_) {
+    /* missing */
+  }
+  if (existing === null) {
+    return writeIfChanged(p, block + "\n");
+  }
+  const b = existing.indexOf(AF_BLOCK_BEGIN);
+  const e = existing.indexOf(AF_BLOCK_END);
+  if (b !== -1 && e !== -1 && e > b) {
+    const before = existing.slice(0, b);
+    const after = existing.slice(e + AF_BLOCK_END.length);
+    return writeIfChanged(p, before + block + after);
+  }
+  return writeIfChanged(p, block + "\n\n" + existing);
+}
+
 function copyScript(src, dst) {
   const content = fs.readFileSync(src, "utf8");
   const result = writeIfChanged(dst, content);
@@ -655,7 +690,7 @@ function main() {
     MEMORY_PROTOCOL: memoryProtocol,
     CONTEXT_DISCIPLINE: contextDiscipline,
   }, "cursorrules.tmpl");
-  results.push(writeIfChanged(path.join(target, ".cursorrules"), cursorrules));
+  results.push(writeIdentityFile(path.join(target, ".cursorrules"), cursorrules));
 
   // 2. .cursor/rules/identity.mdc (alwaysApply: true).
   const identityTmpl = fs.readFileSync(path.join(TEMPLATES_DIR, "rule-identity.mdc.tmpl"), "utf8");

@@ -47,7 +47,8 @@
   "scripts": {
     "demo": "node scripts/serve-demo.js",
     "test": "node scripts/run-bash-script.js scripts/round-trip-test.sh",
+    "test:merge-safe": "node scripts/run-bash-script.js scripts/merge-safe-test.sh",
     "test:pack": "node scripts/run-bash-script.js scripts/pack-install-test.sh",
-    "verify": "npm test && npm run test:pack"
+    "verify": "npm test && npm run test:merge-safe && npm run test:pack"
   }
 }
