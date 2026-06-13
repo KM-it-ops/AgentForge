@@ -1,0 +1,8 @@
+{
+  "name": "yarn-lock-fixture",
+  "version": "1.0.0",
+  "packageManager": "yarn@4.0.0",
+  "scripts": {
+    "build": "node -e \"console.log('yarn build ok')\""
+  }
+}
