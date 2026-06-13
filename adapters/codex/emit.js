@@ -12,7 +12,8 @@
  * "Last updated" timestamp line in AGENTS.md — held stable by reading existing
  * AGENTS.md and reusing its date if spec sha is unchanged).
  *
- * Git checkpoint: best-effort `git add -A && git commit` inside the target dir.
+ * Git checkpoint: best-effort `git add -A && git commit` inside the target dir,
+ * but only when it is already a git repo — never `git init` a fresh target.
  */
 
 'use strict';
@@ -697,16 +698,16 @@ function writeTelemetrySinks(targetDir) {
 }
 
 function gitCheckpoint(targetDir) {
-  // Best-effort: init if absent, then add+commit. Never fail the emit.
+  // Best-effort checkpoint of a PRE-EXISTING repo. Never `git init` a fresh
+  // target: that would sweep unrelated target contents (e.g. ~/.codex secrets
+  // like .credentials.json / auth.json) into a new repo via `git add -A`.
+  // Mirrors the cursor adapter. Never fail the emit.
   try {
-    const gitDir = path.join(targetDir, '.git');
-    if (!fs.existsSync(gitDir)) {
-      execFileSync('git', ['init', '-q'], { cwd: targetDir, stdio: 'ignore' });
-      execFileSync(
-        'git',
-        ['-c', 'user.email=agentforge@local', '-c', 'user.name=AgentForge', 'commit', '--allow-empty', '-q', '-m', 'agentforge: initial checkpoint'],
-        { cwd: targetDir, stdio: 'ignore' }
-      );
+    try {
+      execFileSync('git', ['rev-parse', '--is-inside-work-tree'], { cwd: targetDir, stdio: 'ignore' });
+    } catch (_) {
+      // Target is not a git repo — skip the checkpoint, do not create one.
+      return null;
     }
     execFileSync('git', ['add', '-A'], { cwd: targetDir, stdio: 'ignore' });
     // Only commit if there are staged changes.
