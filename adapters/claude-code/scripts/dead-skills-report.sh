@@ -4,7 +4,9 @@
 TELEMETRY="{{agent_home_native}}/telemetry/skill-invocations.jsonl"
 SKILLS_DIR="{{agent_home_native}}/skills"
 TODAY=$(date '+%Y-%m-%d')
-OUT="{{agent_home_native}}/memory/feedback/dead-skills-$TODAY.md"
+# Report lives in logs/ (outside the brain), fixed filename — no dated accumulation.
+OUT="{{agent_home_native}}/logs/dead-skills-latest.md"
+mkdir -p "$(dirname "$OUT")"
 
 if [ ! -f "$TELEMETRY" ]; then
   echo "# Dead skills report — $TODAY" > "$OUT"

@@ -3,7 +3,8 @@
 #
 # Cursor cannot spawn an AI binary non-interactively for auto-prune (no headless
 # Cursor CLI as of v0.2). Instead, this script runs dead-skills-report.sh and
-# appends the output as a dated memory file the user reviews on next session.
+# appends the output as a dated log file in logs/ (NOT memory/ — the brain holds
+# curated knowledge only) the user reviews on next session.
 #
 # Idempotent per-day: if today's report already exists, the script appends a
 # delimiter and updates it instead of creating duplicates.
@@ -13,7 +14,7 @@ set -u
 AGENT_HOME="$(cd "$(dirname "$0")/.." && pwd)"
 REPORT_SCRIPT="$AGENT_HOME/scripts/dead-skills-report.sh"
 DATE="$(date +%F)"
-OUT="$AGENT_HOME/memory/feedback/dead-skills-report-$DATE.md"
+OUT="$AGENT_HOME/logs/dead-skills-report-$DATE.md"
 
 mkdir -p "$(dirname "$OUT")" 2>/dev/null || true
 

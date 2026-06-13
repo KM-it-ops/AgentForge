@@ -11,7 +11,7 @@ Running `node adapters/codex/emit.js <target-dir>` writes the following into `<t
 | `AGENTS.md` | `spec/identity.yaml` + `spec/router.yaml` | Identity, stack, execution rules, skill router, memory protocol. Codex auto-loads this as system context. |
 | `config.toml` | `spec/telemetry.yaml` | Single `notify` hook that dispatches to per-event log scripts. |
 | `MEMORY.md` | `spec/memory.yaml` | Memory index (always-loaded). |
-| `memory/{user,feedback,project,reference}/` | `spec/memory.yaml` | Bucket directories; `memory/feedback/session-log.md` seeded. |
+| `memory/{user,feedback,project,reference}/` | `spec/memory.yaml` | Bucket directories (curated knowledge only; logs go to `logs/`). |
 | `telemetry/*.jsonl` + `telemetry/auto-prune.log` | `spec/telemetry.yaml` | Append-only sinks. Created empty if missing; existing data preserved. |
 | `scripts/codex-notify-dispatch.sh` | (adapter) | Dispatches the single `notify` event to per-event log scripts. |
 | `scripts/log-skill-invocation.sh` | `spec/telemetry.yaml` event `skill_invocation` | jsonl writer. |
@@ -66,7 +66,7 @@ After install, confirm:
 3. `AGENTS.md` is under 400 lines and renders cleanly in any markdown viewer.
 4. `config.toml` parses with a TOML linter (`python -c "import tomllib; tomllib.loads(open('config.toml','rb').read().decode())"`).
 5. After a Codex session, `telemetry/prompts.jsonl` has at least one row.
-6. `bash scripts/dead-skills-report.sh` writes a report under `memory/feedback/`.
+6. `bash scripts/dead-skills-report.sh` writes a report under `logs/`.
 
 ### First-install verification — notify-event coverage
 
@@ -99,7 +99,7 @@ type codex
 # active in this shell — re-source ~/.bashrc / ~/.zshrc or open a new shell.
 ```
 
-Sanity-check that the trap fires by running `codex --version && ls -lt ~/.codex/telemetry/session-log.md | head -1` — the session-log mtime should
+Sanity-check that the trap fires by running `codex --version && ls -lt ~/.codex/logs/session-log.md | head -1` — the session-log mtime should
 be within the last few seconds. If it isn't, the trap installed but the
 session-end script isn't being invoked; verify `$AGENT_HOME` resolves
 correctly in `install-shell-trap.sh`.

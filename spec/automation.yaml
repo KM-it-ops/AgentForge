@@ -36,7 +36,7 @@ weekly_prune:
     4. Read the identity file and identify the Skill Router table.
     5. Read the last ~200 lines of {telemetry_prompts_path}. Look for repeated phrasings
        that are not currently routed. Propose (do NOT apply) up to 3 router-table additions.
-       Write proposals to {agent_home}/memory/feedback/router-suggestions-{date}.md.
+       Write proposals to {agent_home}/logs/router-suggestions-{date}.md (logs/, not memory/).
     6. If you archived any skills, commit the changes:
        git add -A && git commit -m 'chore: weekly auto-prune (N skills archived after {grace_period_days}d zero use)'
     7. Print a one-paragraph summary of what you did. Exit.

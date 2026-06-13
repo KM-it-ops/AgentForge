@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # SessionEnd: append timestamped session marker for retrospective analysis.
-LOG="{{agent_home_native}}/memory/feedback/session-log.md"
+# Logs live OUTSIDE memory/ — memory/ holds curated knowledge only (brain hygiene).
+LOG="{{agent_home_native}}/logs/session-log.md"
 mkdir -p "$(dirname "$LOG")"
 if [ ! -f "$LOG" ]; then
   echo "# Session log" > "$LOG"

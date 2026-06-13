@@ -25,9 +25,7 @@ Given a target directory, `emit.js` writes:
 ├── MEMORY.md                          # memory index with manual-write protocol
 ├── memory/
 │   ├── user/.gitkeep
-│   ├── feedback/
-│   │   ├── .gitkeep
-│   │   └── session-log.md             # seeded per spec.memory
+│   ├── feedback/.gitkeep
 │   ├── project/.gitkeep
 │   └── reference/.gitkeep
 ├── skills/
@@ -108,8 +106,9 @@ the git checkpoint SHA (if any).
   (`writeIfChanged`).
 - Re-emit prints `"files_changed": 0` and `git status --porcelain` stays empty
   inside a git-repo target.
-- Memory bucket dirs and seeded files (`session-log.md`) are created once; the
-  emitter never overwrites them on subsequent runs.
+- Memory bucket dirs are created once (empty `.gitkeep`); the emitter never
+  overwrites an existing memory file on subsequent runs. Logs live in `logs/`,
+  not `memory/`.
 
 ## Platform gaps
 
@@ -132,7 +131,7 @@ Findings from building this adapter — input for the round-trip / audit report:
   (no headless binary to spawn), but **as of v0.3** the adapter ships
   `scripts/install-cron.sh` (thin wrapper) + `scripts/cursor-weekly-report.sh`
   that schedule `dead-skills-report.sh` weekly and append the output to
-  `memory/feedback/dead-skills-report-<date>.md`. The wrapper delegates to
+  `logs/dead-skills-report-<date>.md`. The wrapper delegates to
   `scripts/installers/install-cron.sh` (cron on Unix, Task Scheduler on
   Windows). Review the appended report on your next session and archive
   unused skills by hand.

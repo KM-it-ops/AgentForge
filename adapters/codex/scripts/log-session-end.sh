@@ -5,7 +5,8 @@
 set -u
 
 AGENT_HOME="$(cd "$(dirname "$0")/.." && pwd)"
-SINK="$AGENT_HOME/memory/feedback/session-log.md"
+# Logs live OUTSIDE memory/ — memory/ holds curated knowledge only (brain hygiene).
+SINK="$AGENT_HOME/logs/session-log.md"
 mkdir -p "$(dirname "$SINK")" 2>/dev/null || true
 
 TS="$(date -u +%FT%TZ)"
