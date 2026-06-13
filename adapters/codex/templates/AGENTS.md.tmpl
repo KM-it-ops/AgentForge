@@ -38,10 +38,10 @@ When a project contains `.specify/`, it is source-of-truth: `/speckit.constituti
 
 Pair the `tdd` skill block with `/speckit.implement` for TDD-driven execution.
 
-## Memory Protocol
-- `MEMORY.md` (in `~/.codex/`) is the always-loaded index.
-- `memory/user/`, `memory/feedback/`, `memory/project/`, `memory/reference/` — load on demand by topic when the user's intent matches a stored topic.
-- After significant sessions: write one memory file per genuine learning. Do not duplicate.
+## Memory Protocol (LLM-Wiki second brain)
+- `MEMORY.md` (in `~/.codex/`) is the always-loaded index — keep it in sync with every file under `memory/` (regenerate from the bucket files; do not let it drift).
+- `memory/{user,feedback,project,reference}/` hold one fact per file (YAML frontmatter `name`/`description`/`metadata.type`, `[[wikilinks]]`); load on demand when the user's intent matches a stored topic.
+- Run-logs go to `~/.codex/logs/`, JSONL telemetry to `~/.codex/telemetry/` — never `memory/`. One learning per file, no duplicates.
 - Verify a recalled fact against current state before acting on it.
 
 ## Context Discipline
