@@ -105,6 +105,29 @@ test_cursor() {
   echo "  cursor OK"
 }
 
+# An emit into a target that is NOT a git repo must never `git init` one. Doing
+# so would sweep whatever already lives in the target (e.g. ~/.codex secrets like
+# .credentials.json / auth.json) into a fresh repo via `git add -A`.
+test_no_repo_init() {
+  local adapter="$1"
+  local sb="$SANDBOX_ROOT/noinit-$adapter"
+  rm -rf "$sb"; mkdir -p "$sb"   # deliberately NOT a git repo
+  # Drop a credential-shaped file the checkpoint must never stage.
+  printf 'SECRET-TOKEN-DO-NOT-STAGE\n' > "$sb/.credentials.json"
+
+  echo "=== $adapter: emit into non-git target ==="
+  if ! node "$REPO_ROOT/adapters/$adapter/emit.js" "$sb" >"$SANDBOX_ROOT/.noinit-$adapter.log" 2>&1; then
+    cat "$SANDBOX_ROOT/.noinit-$adapter.log" >&2
+    fail "$adapter: emit into non-git target exited non-zero"
+  fi
+  [ ! -e "$sb/.git" ] \
+    || fail "$adapter: emit created a git repo in a non-repo target (would stage secrets via git add -A)"
+  grep -qF "SECRET-TOKEN-DO-NOT-STAGE" "$sb/.credentials.json" \
+    || fail "$adapter: pre-existing credential file was altered"
+
+  echo "  $adapter OK"
+}
+
 main() {
   echo "AgentForge merge-safe test"
   echo "  repo:    $REPO_ROOT"
@@ -116,6 +139,8 @@ main() {
 
   test_codex
   test_cursor
+  test_no_repo_init codex
+  test_no_repo_init cursor
 
   echo
   echo "All adapters preserve pre-existing user content."
