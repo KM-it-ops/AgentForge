@@ -561,6 +561,67 @@ function writeIfChangedExec(p, content) {
   return r;
 }
 
+// ---------------------------------------------------------------------------
+// Merge-safe writers — preserve hand-authored user content on adoption.
+// ---------------------------------------------------------------------------
+const AF_BLOCK_BEGIN =
+  '<!-- AGENTFORGE:BEGIN — managed by AgentForge; edits inside this block are overwritten on re-emit -->';
+const AF_BLOCK_END = '<!-- AGENTFORGE:END -->';
+// Stable sentinel present in every AgentForge-rendered config.toml header.
+const AF_CONFIG_SENTINEL = 'emitted by AgentForge';
+
+function buildManagedBlock(body) {
+  return AF_BLOCK_BEGIN + '\n' + String(body).replace(/\s+$/, '') + '\n' + AF_BLOCK_END;
+}
+
+// Write an identity file (AGENTS.md) without destroying user content:
+//   - no file               -> write the managed block
+//   - file has BEGIN/END     -> replace only the block, keep surrounding content
+//   - file without markers   -> adoption: prepend the block, preserve the rest
+function writeIdentityFile(p, body) {
+  const block = buildManagedBlock(body);
+  let existing = null;
+  try {
+    existing = fs.readFileSync(p, 'utf8');
+  } catch (_) {
+    /* missing */
+  }
+  if (existing === null) {
+    return writeIfChanged(p, block + '\n');
+  }
+  const b = existing.indexOf(AF_BLOCK_BEGIN);
+  const e = existing.indexOf(AF_BLOCK_END);
+  if (b !== -1 && e !== -1 && e > b) {
+    const before = existing.slice(0, b);
+    const after = existing.slice(e + AF_BLOCK_END.length);
+    return writeIfChanged(p, before + block + after);
+  }
+  // Adoption: no markers yet. Keep the user's file, mount the managed block atop it.
+  return writeIfChanged(p, block + '\n\n' + existing);
+}
+
+// Write config.toml without destroying a user's existing real config:
+//   - no file / our own file -> write managed config (idempotent)
+//   - user's own config       -> leave it untouched; drop config.agentforge.toml
+//                                sidecar carrying the managed config for manual merge.
+function writeConfigTomlSafe(targetDir, content) {
+  const p = path.join(targetDir, 'config.toml');
+  let existing = null;
+  try {
+    existing = fs.readFileSync(p, 'utf8');
+  } catch (_) {
+    /* missing */
+  }
+  if (existing === null || existing.includes(AF_CONFIG_SENTINEL)) {
+    return [writeIfChanged(p, content)];
+  }
+  const sidecar = path.join(targetDir, 'config.agentforge.toml');
+  return [
+    { path: p, changed: false, preserved: true },
+    writeIfChanged(sidecar, content),
+  ];
+}
+
 function copyScripts(targetDir) {
   const results = [];
   if (!fs.existsSync(ADAPTER_SCRIPTS_DIR)) return results;
@@ -680,8 +741,8 @@ function main() {
   const spec = loadSpec();
 
   const results = [];
-  results.push(writeIfChanged(path.join(targetDir, 'AGENTS.md'), renderIdentityFile(spec)));
-  results.push(writeIfChanged(path.join(targetDir, 'config.toml'), renderConfigToml(spec, targetDir)));
+  results.push(writeIdentityFile(path.join(targetDir, 'AGENTS.md'), renderIdentityFile(spec)));
+  results.push(...writeConfigTomlSafe(targetDir, renderConfigToml(spec, targetDir)));
   results.push(...writeMemoryStructure(spec, targetDir));
   results.push(...writeTelemetrySinks(targetDir));
   results.push(...copyScripts(targetDir));

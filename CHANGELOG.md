@@ -21,8 +21,20 @@ Status: not published.
   work.
 - Shared installer helpers under `universal/lib/installers/` for recurring
   scheduler setup patterns.
+- Merge-safe adoption test (`scripts/merge-safe-test.sh`, wired into
+  `npm run verify`) that emits into a target carrying pre-existing user files
+  and asserts the user's content survives, including on re-emit.
 
 ### Changed
+
+- Codex and Cursor adapters are now **merge-safe** when emitting into an
+  existing install. `AGENTS.md` and `.cursorrules` wrap AgentForge output in an
+  `AGENTFORGE:BEGIN`/`AGENTFORGE:END` managed block — on re-emit only that block
+  is rewritten, so hand-authored content outside it is preserved (and on first
+  adoption the block is mounted atop the user's existing file). An existing
+  non-AgentForge `config.toml` is no longer overwritten: it is left untouched
+  and the managed config is written to a `config.agentforge.toml` sidecar for
+  manual merge.
 
 - `agentforge doctor` now checks Node, npm, git, usable Bash, required spec
   files, and adapter emitters.
