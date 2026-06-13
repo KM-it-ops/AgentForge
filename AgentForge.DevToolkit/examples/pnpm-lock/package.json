@@ -1,0 +1,8 @@
+{
+  "name": "pnpm-lock-fixture",
+  "version": "1.0.0",
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "test": "node -e \"console.log('pnpm test ok')\""
+  }
+}
