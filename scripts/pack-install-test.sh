@@ -22,11 +22,13 @@ fail() {
 }
 
 expected_files() {
+  # Counts dropped by 1 per adapter when the session-log.md seed was removed
+  # from memory/feedback (logs now live in logs/, outside the brain).
   case "$1" in
-    claude-code) echo 13 ;;
-    codex) echo 24 ;;
-    generic) echo 7 ;;
-    cursor) echo 30 ;;
+    claude-code) echo 12 ;;
+    codex) echo 23 ;;
+    generic) echo 6 ;;
+    cursor) echo 29 ;;
     *) fail "no expected file count for adapter: $1" ;;
   esac
 }

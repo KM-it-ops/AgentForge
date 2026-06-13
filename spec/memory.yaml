@@ -24,11 +24,11 @@ buckets:
 
 # Protocol for memory writes (rendered into identity file).
 protocol:
-  always_loaded: MEMORY.md (generated index — never hand-edit; regenerate from memory/ files) + memory/hot.md warm cache
+  always_loaded: MEMORY.md (generated index — never hand-edit; regenerate so it reflects every memory/ file)
   load_on_demand: bucket files referenced by user intent or task
   write_triggers:
     - 'One fact per file: YAML frontmatter (name/description/metadata.type) + [[wikilinks]]'
-    - 'Logs/telemetry live in logs/, never in memory/'
+    - 'Markdown run-logs go to logs/; JSONL telemetry stays in telemetry/; never memory/'
     - 'Significant session learnings → write one file per genuine learning; no duplicates'
     - 'Regenerate MEMORY.md so it reflects every memory/ file (no drift)'
     - 'Verify a recalled fact against current state before acting on it'
