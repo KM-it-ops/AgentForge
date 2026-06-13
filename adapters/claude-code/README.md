@@ -13,7 +13,7 @@ Into `<target>/`:
 | `CLAUDE.md` | `templates/CLAUDE.md.tmpl` + `spec/identity.yaml` + `spec/router.yaml` | Slim hub; `<AUTO-LOCAL-SKILLS>` block managed by sync hook |
 | `settings.json` | `templates/settings.json.tmpl` | Hooks block wired to all five telemetry events |
 | `MEMORY.md` | `spec/memory.yaml` index template | Always-loaded memory index |
-| `memory/{user,feedback,project,reference}/` | `spec/memory.yaml` buckets | Plus seeded `feedback/session-log.md` |
+| `memory/{user,feedback,project,reference}/` | `spec/memory.yaml` buckets | Curated knowledge only; no seeded logs (logs → `logs/`) |
 | `hooks/scripts/log-skill-invocation.sh` | `scripts/log-skill-invocation.sh` | `PreToolUse` matcher=`Skill` |
 | `hooks/scripts/log-prompt.sh` | `scripts/log-prompt.sh` | `UserPromptSubmit` |
 | `hooks/scripts/log-session-end.sh` | `scripts/log-session-end.sh` | `SessionEnd` |

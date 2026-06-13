@@ -35,11 +35,11 @@ When a project contains `.specify/`, it is source-of-truth: `/speckit.constituti
 
 Pairs with superpowers: `brainstorming` → `/speckit.specify` → `test-driven-development` → `/speckit.implement`.
 
-## Memory Protocol
-- `MEMORY.md` (this folder) is the always-loaded index.
-- `memory/user/`, `memory/feedback/`, `memory/project/`, `memory/reference/` — load on demand by topic.
-- After significant sessions: write one memory file per genuine learning. Do not duplicate.
-- Verify a recalled fact against current state before acting on it.
+## Memory Protocol (LLM-Wiki second brain)
+- `MEMORY.md` is the always-loaded index; `memory/hot.md` is the top-of-session warm cache. Both are **generated** — never hand-edit them.
+- `memory/{user,feedback,project,reference}/` hold one fact per file (YAML frontmatter `name`/`description`/`metadata.type`, `[[wikilinks]]`); load on demand by topic.
+- After adding/editing a memory file, regenerate via the brain toolkit (`tools/brain`: `npm run index` + `npm run hot`) and run `npm run lint` (must be 0 errors). Logs/telemetry live in `logs/`, never in `memory/`.
+- One learning per file, no duplicates; verify a recalled fact against current state before acting.
 
 ## Context Discipline
 {{context_discipline_block}}

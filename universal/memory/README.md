@@ -13,7 +13,7 @@ Each adapter at install:
 
 1. Creates the 4 bucket directories under `{agent_home}/memory/{user,feedback,project,reference}/`.
 2. Copies MEMORY.md.tmpl to `{agent_home}/MEMORY.md` (substituting any placeholders).
-3. Seeds `memory/feedback/session-log.md` from the template in `automation.yaml` if the platform supports SessionEnd hooks.
+3. Logs are **not** seeded into `memory/` — SessionEnd markers and prune reports go to `logs/` (outside the brain). `memory/` holds curated knowledge only.
 
 ## Adding new buckets
 

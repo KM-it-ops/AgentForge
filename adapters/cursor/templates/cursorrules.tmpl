@@ -27,7 +27,7 @@ Match user intent against triggers; load **one** skill on demand. Don't pre-load
 
 ## Memory Protocol
 
-See `MEMORY.md` for the always-loaded index. Bucket files under `memory/{user,feedback,project,reference}/` are loaded on demand by topic.
+See `MEMORY.md` (generated index — keep in sync with every file under `memory/`) for the always-loaded index. Bucket files under `memory/{user,feedback,project,reference}/` (one fact per file, `[[wikilinks]]`) load on demand by topic. Logs live in `logs/`, never in `memory/`.
 
 {{MEMORY_PROTOCOL}}
 

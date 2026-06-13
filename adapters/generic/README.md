@@ -15,7 +15,6 @@ Given a target directory, `emit.js` writes:
 ├── memory/
 │   ├── user/
 │   ├── feedback/
-│   │   └── session-log.md        # seeded per spec
 │   ├── project/
 │   └── reference/
 ├── skills/
@@ -50,15 +49,15 @@ What you get out of the box:
   discipline, self-healing protocol).
 - ✅ The **skill router table** — every manual route rendered with its
   generic-adapter target instruction.
-- ✅ The **memory protocol** and the bucket directory structure, with the
-  seeded `session-log.md`.
+- ✅ The **memory protocol** and the bucket directory structure (curated
+  knowledge only; logs go to `logs/`, never `memory/`).
 - ✅ A **skills directory** with a README that explains the SKILL.md
   frontmatter contract.
 - ✅ `scripts/sync-local-skill-router.js` — rewrites the AUTO-LOCAL-SKILLS
   table between marker comments in `AGENTS.md`. Idempotent. Portable. Run
   manually after each skill edit, or wire into a file-watcher.
 - ✅ `scripts/dead-skills-report.sh` — reads `telemetry/skill-invocations.jsonl`
-  if present and writes a dated report to `memory/feedback/`. Tells you
+  if present and writes a dated report to `logs/`. Tells you
   honestly when there's no telemetry to compare against.
 
 What you must wire up manually:
@@ -113,9 +112,9 @@ the git checkpoint SHA (if any).
   `sync-local-skill-router.js`; everything between the marker comments is
   owned by the sync script, everything outside the markers is owned by the
   emitter.
-- Memory bucket dirs and seeded files are created once; the emitter never
-  overwrites a `session-log.md` that already exists, so user-appended history
-  is safe.
+- Memory bucket dirs are created once (empty); the emitter never overwrites an
+  existing memory file, so curated entries are safe. Logs live in `logs/`, not
+  `memory/`.
 
 ## Limitations, restated
 

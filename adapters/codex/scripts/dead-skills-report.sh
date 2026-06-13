@@ -3,7 +3,7 @@
 # in skill-invocations.jsonl, plus directory mtime so the auto-prune wrapper
 # can apply the grace period.
 #
-# Output: $AGENT_HOME/memory/feedback/dead-skills-YYYY-MM-DD.md
+# Output: $AGENT_HOME/logs/dead-skills-latest.md
 # Echoes the report path on stdout for the caller.
 
 set -u
@@ -12,7 +12,7 @@ AGENT_HOME="$(cd "$(dirname "$0")/.." && pwd)"
 SKILLS_DIR="$AGENT_HOME/skills"
 SINK="$AGENT_HOME/telemetry/skill-invocations.jsonl"
 DATE="$(date +%F)"
-REPORT="$AGENT_HOME/memory/feedback/dead-skills-$DATE.md"
+REPORT="$AGENT_HOME/logs/dead-skills-latest.md"
 mkdir -p "$(dirname "$REPORT")" 2>/dev/null || true
 
 {

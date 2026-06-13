@@ -22,8 +22,9 @@ echo "[$(date '+%Y-%m-%d %H:%M:%S')] auto-prune started" >> "$LOG"
 # 1. Run the report
 bash "$CLAUDE_HOME/hooks/scripts/dead-skills-report.sh" >> "$LOG" 2>&1
 
-# Locate the freshest report file
-LATEST_REPORT=$(ls -t "$CLAUDE_HOME/memory/feedback/"dead-skills-*.md 2>/dev/null | head -1)
+# Report now lives in logs/ (outside the brain), fixed filename.
+LATEST_REPORT="$CLAUDE_HOME/logs/dead-skills-latest.md"
+[ -f "$LATEST_REPORT" ] || LATEST_REPORT=""
 
 if [ -z "$LATEST_REPORT" ]; then
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] no report generated; aborting" >> "$LOG"
@@ -43,14 +44,14 @@ Steps you MUST take in order:
    - If the skill directory is older than {{grace_period_days}} days (mtime), move it to {{agent_home_native}}/skills/_archived/<name>/.
    - If younger than {{grace_period_days}} days, leave it alone (grace period).
 4. Read {{agent_home_native}}/CLAUDE.md and identify the '## Skill Router' table.
-5. Read the last ~200 lines of {{agent_home_native}}/telemetry/prompts.jsonl. Look for repeated phrasings that are not currently routed. Propose (do NOT apply) up to 3 router-table additions. Write proposals to {{agent_home_native}}/memory/feedback/router-suggestions-\$(date +%F).md.
+5. Read the last ~200 lines of {{agent_home_native}}/telemetry/prompts.jsonl. Look for repeated phrasings that are not currently routed. Propose (do NOT apply) up to 3 router-table additions. Write proposals to {{agent_home_native}}/logs/router-suggestions-\$(date +%F).md (logs/, NOT memory/ — the brain holds curated knowledge only).
 6. If you archived any skills, commit the changes in {{agent_home_native}}/ with:
    git add -A && git commit -m 'chore: weekly auto-prune (N skills archived after {{grace_period_days}}d zero use)'
 7. Print a one-paragraph summary of what you did. Exit.
 
 Hard rules:
 - Never delete; only move to _archived/.
-- Never modify {{agent_home_native}}/CLAUDE.md directly in this run; only WRITE router suggestions to the feedback file for human review.
+- Never modify {{agent_home_native}}/CLAUDE.md directly in this run; only WRITE router suggestions to the logs/ file for human review.
 - Never touch {{agent_home_native}}/plugins/ or settings.json.
 - Stay inside {{agent_home_native}}/. Do not modify any project repo."
 

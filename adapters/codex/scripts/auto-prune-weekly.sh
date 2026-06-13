@@ -36,7 +36,7 @@ Steps you MUST take in order:
 4. Read the identity file and identify the Skill Router table.
 5. Read the last ~200 lines of $TELEMETRY_PROMPTS_PATH. Look for repeated phrasings
    that are not currently routed. Propose (do NOT apply) up to 3 router-table additions.
-   Write proposals to $AGENT_HOME/memory/feedback/router-suggestions-$DATE.md.
+   Write proposals to $AGENT_HOME/logs/router-suggestions-$DATE.md (logs/, not memory/ — the brain holds curated knowledge only).
 6. If you archived any skills, commit the changes:
    git add -A && git commit -m 'chore: weekly auto-prune (N skills archived after ${GRACE_PERIOD_DAYS}d zero use)'
 7. Print a one-paragraph summary of what you did. Exit.
