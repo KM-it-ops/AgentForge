@@ -34,7 +34,7 @@ events:
     trigger:
       kind: session_end
     sink:
-      path: memory/feedback/session-log.md
+      path: logs/session-log.md   # logs/ — NOT memory/ (the brain holds curated knowledge only)
       schema:
         line: '- {ts} session ended'
     purpose: Lightweight session count and audit trail
@@ -42,7 +42,7 @@ events:
 # Sink file conventions.
 sinks:
   jsonl_files_under: telemetry/
-  markdown_logs_under: memory/feedback/
+  markdown_logs_under: logs/   # markdown run-logs live OUTSIDE memory/ (brain hygiene)
   rotation: none in v1; rely on weekly auto-prune to summarize then truncate (future)
 
 # Cross-platform notes.

@@ -10,15 +10,11 @@ buckets:
   - name: user
     purpose: Preferences, profile facts, corrections the agent should remember across sessions
     seed: false  # don't pre-populate
+  # NOTE: logs/prune-reports do NOT live here — they go to logs/ (outside the brain).
+  # feedback/ holds curated knowledge only. No seeded files.
   - name: feedback
-    purpose: Session logs, prune reports, validated approaches, router suggestions
-    seed: true
-    seeded_files:
-      - name: session-log.md
-        template: |
-          # Session log
-
-          Auto-appended by the SessionEnd hook.
+    purpose: Validated approaches, corrections, conventions (curated knowledge — NOT logs)
+    seed: false
   - name: project
     purpose: Per-project decisions, schemas, gotchas, Live State
     seed: false
@@ -28,11 +24,13 @@ buckets:
 
 # Protocol for memory writes (rendered into identity file).
 protocol:
-  always_loaded: MEMORY.md (index only)
+  always_loaded: MEMORY.md (generated index — never hand-edit; regenerate from memory/ files) + memory/hot.md warm cache
   load_on_demand: bucket files referenced by user intent or task
   write_triggers:
-    - 'Significant session learnings → write one file per genuine learning'
-    - 'No duplicate entries — verify before writing'
+    - 'One fact per file: YAML frontmatter (name/description/metadata.type) + [[wikilinks]]'
+    - 'Logs/telemetry live in logs/, never in memory/'
+    - 'Significant session learnings → write one file per genuine learning; no duplicates'
+    - 'Regenerate MEMORY.md so it reflects every memory/ file (no drift)'
     - 'Verify a recalled fact against current state before acting on it'
 
 # Index file (MEMORY.md) template.
@@ -41,6 +39,7 @@ index_template: |
   # Memory Index
 
   Index for the auto-memory protocol. Entries are one line, under ~150 chars.
-  Memory files live in `memory/{user,feedback,project,reference}/`.
+  Generated — keep in sync with every file under `memory/{user,feedback,project,reference}/`
+  (regenerate; do not let it drift). Logs live in `logs/`, never in `memory/`.
 
   {bucket_sections}

@@ -37,7 +37,7 @@ fi
 
 TELEMETRY="$TARGET/telemetry/skill-invocations.jsonl"
 SKILLS_DIR="$TARGET/skills"
-OUT_DIR="$TARGET/memory/feedback"
+OUT_DIR="$TARGET/logs"
 TODAY="$(date '+%Y-%m-%d')"
 OUT="$OUT_DIR/dead-skills-$TODAY.md"
 
