@@ -60,37 +60,43 @@ flowchart LR
 | Canonical spec | `spec/identity.yaml`, `spec/router.yaml`, `spec/memory.yaml`, `spec/automation.yaml`, `spec/telemetry.yaml` |
 | Universal payload | Shared skills, memory templates, lessons, and installers under `universal/` |
 | Adapter emitters | Platform-specific generators under `adapters/` |
-| CLI | `npx agentforge init <adapter>` and `agentforge doctor` |
+| CLI | `agentforge init <adapter>` and `agentforge doctor` (`npx agentforge …` after npm publish) |
 | Proof | Round-trip tests, package install tests, readiness runbook, and visual demo |
+
+## Prerequisites
+
+- **Node.js >= 18** and **npm**
+- **git**
+- **A POSIX shell (bash).** On Windows, use **Git Bash** — the verification suite and bootstrap installers run `.sh` scripts. If bash isn't on your `PATH`, point `AGENTFORGE_BASH` at it.
 
 ## Quick Start
 
-```bash
-# Install for Claude Code (writes to ~/.claude/)
-npx agentforge init claude-code
-
-# Install for Codex CLI (writes to ~/.codex/)
-npx agentforge init codex
-
-# Install Cursor rules (.cursorrules + .cursor/rules/*.mdc)
-npx agentforge init cursor --dir ./my-cursor-config
-
-# Install generic AGENTS.md anywhere
-npx agentforge init generic --dir ./my-agent-config
-
-# Check whether the local checkout has the tools AgentForge needs
-npx agentforge doctor
-```
-
-Re-running is idempotent. Every install creates a git-tracked checkpoint so rollback is one command.
-
-For local development or pre-publish installs, use a git checkout:
+> **Heads up:** AgentForge is not yet published to npm, so install from a git checkout (below). Once it's on npm this collapses to `npx agentforge init <adapter>` with no clone needed.
 
 ```bash
 git clone https://github.com/KM-it-ops/AgentForge.git
 cd AgentForge
 npm install -g .
+
+# Install for Claude Code (writes to ~/.claude/)
 agentforge init claude-code
+
+# ...or another adapter:
+agentforge init codex                              # Codex CLI  -> ~/.codex/
+agentforge init cursor  --dir ./my-cursor-config   # Cursor rules
+agentforge init generic --dir ./my-agent-config    # portable AGENTS.md
+
+# Check the local checkout has the tools AgentForge needs
+agentforge doctor
+```
+
+Re-running is idempotent. Every install creates a git-tracked checkpoint so rollback is one command.
+
+**Prefer a one-shot installer?** `bootstrap/` has auto-installers that handle the clone + setup:
+
+```bash
+./bootstrap/bootstrap.sh --auto         # macOS / Linux / Git Bash
+pwsh ./bootstrap/bootstrap.ps1 -Auto    # Windows PowerShell
 ```
 
 ## Visual Demo
