@@ -3,8 +3,8 @@
 # Reversible: -Unregister flag removes the task.
 #
 # Usage:
-#   powershell -ExecutionPolicy Bypass -File install-task.ps1 -AgentHome "C:\Users\alkur\.claude"
-#   powershell -ExecutionPolicy Bypass -File install-task.ps1 -AgentHome "C:\Users\alkur\.claude" -Unregister
+#   powershell -ExecutionPolicy Bypass -File install-task.ps1 -AgentHome "C:\Users\<you>\.claude"
+#   powershell -ExecutionPolicy Bypass -File install-task.ps1 -AgentHome "C:\Users\<you>\.claude" -Unregister
 
 param(
   [Parameter(Mandatory=$true)] [string]$AgentHome,

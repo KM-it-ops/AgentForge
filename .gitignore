@@ -22,3 +22,9 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+# Internal planning / agent handoff artifacts — not for public consumption
+docs/goals/
+*GOALBUDDY*
+AGENTS.md
+docs/GOALBUDDY-HANDOFF.md
