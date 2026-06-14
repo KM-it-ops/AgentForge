@@ -39,7 +39,7 @@ To produce one JSON evidence packet for a release handoff, run:
 It writes `.test-output/release-evidence-v0.2.json` and uses no credentials.
 
 On this Windows workstation, if `npm` resolves through Volta and fails with
-`EPERM: operation not permitted, lstat 'C:\Users\alkur'`, use the real Node.js
+`EPERM: operation not permitted, lstat 'C:\Users\<you>'`, use the real Node.js
 npm path and a workspace-local cache:
 
 ```powershell
