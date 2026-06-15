@@ -1,0 +1,39 @@
+schema_version: 1
+
+# OPTIONAL module — MCP server registrations, emitted per adapter.
+#
+# Absent, empty, or `servers: []` => no MCP output (adapters behave exactly as
+# before; the round-trip invariant holds). This file is NOT part of the five
+# mandatory spec modules — adapters load it through loadOptionalMcp().
+#
+# Fork-free: AgentForge references context-mode only by emitting a registration;
+# it never vendors context-mode's code.
+#
+# Per-adapter behavior:
+#   claude-code -> NOT registered. context-mode is a Claude Code *plugin*
+#                  (context-mode@context-mode); a manual mcpServers entry would
+#                  double-register it.
+#   codex       -> [mcp_servers.context-mode] in config.toml (node ./start.mjs).
+#   cursor      -> .cursor/mcp.json (portable `npx -y context-mode`).
+#   generic     -> documented in AGENTS.md (no auto-registration primitive).
+servers:
+  - name: context-mode
+    enabled: true
+    command: npx
+    args:
+      - "-y"
+      - context-mode
+    overrides:
+      claude-code:
+        register: false
+        note: Plugin-managed (context-mode@context-mode); a manual mcpServers entry double-registers it.
+      codex:
+        command: node
+        args:
+          - ./start.mjs
+        approval_mode: approve
+        env:
+          CONTEXT_MODE_PLATFORM: codex
+      generic:
+        register: false
+        note: Portable reference — wire `npx -y context-mode` into your MCP-capable client.

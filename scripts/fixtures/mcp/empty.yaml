@@ -1,0 +1,5 @@
+schema_version: 1
+
+# Empty server list — must behave identically to an absent mcp.yaml
+# (no MCP artifacts emitted, round-trip stays green).
+servers: []

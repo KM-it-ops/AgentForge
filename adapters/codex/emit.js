@@ -34,6 +34,9 @@ const UNIVERSAL_INSTALLERS_DIR = path.join(REPO_ROOT, 'universal', 'lib', 'insta
 
 const SPEC_SCHEMA_VERSION = 1;
 
+// Optional MCP module path (overridable for tests via AGENTFORGE_MCP_SPEC).
+const MCP_SPEC_PATH = process.env.AGENTFORGE_MCP_SPEC || path.join(SPEC_DIR, 'mcp.yaml');
+
 // ---------------------------------------------------------------------------
 // Minimal YAML parser (sufficient for AgentForge spec shape only).
 // Supports: nested mappings via 2-space indent, sequences (`- foo` or `- key: val`),
@@ -364,6 +367,81 @@ function loadSpec() {
     spec[f.replace('.yaml', '')] = parsed;
   }
   return spec;
+}
+
+// ---------------------------------------------------------------------------
+// Optional MCP module (spec/mcp.yaml) — fork-free per-adapter MCP registration.
+// Absent / empty / `servers: []` => null => no MCP output (round-trip stays green).
+// ---------------------------------------------------------------------------
+function loadOptionalMcp() {
+  let text;
+  try {
+    text = fs.readFileSync(MCP_SPEC_PATH, 'utf8');
+  } catch (_) {
+    return null;
+  }
+  const parsed = parseYaml(text);
+  if (!parsed || typeof parsed !== 'object') return null;
+  if (parsed.schema_version !== SPEC_SCHEMA_VERSION) {
+    throw new Error(
+      `Refusing to emit: mcp.yaml has schema_version ${parsed.schema_version}, ` +
+        `adapter supports ${SPEC_SCHEMA_VERSION}.`
+    );
+  }
+  if (!Array.isArray(parsed.servers) || parsed.servers.length === 0) return null;
+  return parsed;
+}
+
+// Resolve enabled servers for an adapter, merging base + overrides[adapterKey].
+// Returns all enabled servers (with a `register` flag); callers filter as needed.
+function mcpResolveServers(mcp, adapterKey) {
+  if (!mcp) return [];
+  return mcp.servers
+    .filter((s) => s && typeof s === 'object' && s.name && s.enabled !== false)
+    .map((s) => {
+      const ov = (s.overrides && s.overrides[adapterKey]) || {};
+      const env = (ov.env !== undefined ? ov.env : s.env) || {};
+      return {
+        name: s.name,
+        register: ov.register !== false,
+        command: ov.command || s.command || null,
+        args: Array.isArray(ov.args) ? ov.args : Array.isArray(s.args) ? s.args : [],
+        env: env && typeof env === 'object' && !Array.isArray(env) ? env : {},
+        approval_mode: ov.approval_mode || null,
+        note: ov.note || null,
+      };
+    })
+    .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+}
+
+function mcpSortedEnv(env) {
+  const out = {};
+  for (const k of Object.keys(env).sort()) out[k] = env[k];
+  return out;
+}
+
+function tomlQuote(s) {
+  return '"' + String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+}
+
+function renderMcpToml(servers) {
+  const blocks = [];
+  for (const s of servers) {
+    const lines = [`[mcp_servers.${s.name}]`];
+    if (s.command) lines.push(`command = ${tomlQuote(s.command)}`);
+    lines.push(`args = [${s.args.map(tomlQuote).join(', ')}]`);
+    if (s.approval_mode) lines.push(`default_tools_approval_mode = ${tomlQuote(s.approval_mode)}`);
+    let block = lines.join('\n');
+    const env = mcpSortedEnv(s.env);
+    const envKeys = Object.keys(env);
+    if (envKeys.length) {
+      block +=
+        `\n\n[mcp_servers.${s.name}.env]\n` +
+        envKeys.map((k) => `${k} = ${tomlQuote(env[k])}`).join('\n');
+    }
+    blocks.push(block);
+  }
+  return blocks.join('\n\n');
 }
 
 // ---------------------------------------------------------------------------
@@ -743,7 +821,17 @@ function main() {
 
   const results = [];
   results.push(writeIdentityFile(path.join(targetDir, 'AGENTS.md'), renderIdentityFile(spec)));
-  results.push(...writeConfigTomlSafe(targetDir, renderConfigToml(spec, targetDir)));
+  const mcp = loadOptionalMcp();
+  let configToml = renderConfigToml(spec, targetDir);
+  const codexServers = mcpResolveServers(mcp, 'codex').filter((s) => s.register);
+  if (codexServers.length) {
+    configToml =
+      configToml.replace(/\n*$/, '\n') +
+      '\n# MCP servers — managed by AgentForge spec/mcp.yaml\n' +
+      renderMcpToml(codexServers) +
+      '\n';
+  }
+  results.push(...writeConfigTomlSafe(targetDir, configToml));
   results.push(...writeMemoryStructure(spec, targetDir));
   results.push(...writeTelemetrySinks(targetDir));
   results.push(...copyScripts(targetDir));
