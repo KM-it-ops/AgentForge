@@ -1,8 +1,0 @@
-{
-  "name": "volta-fixture",
-  "version": "1.0.0",
-  "volta": {
-    "node": "20.11.1",
-    "npm": "10.2.4"
-  }
-}

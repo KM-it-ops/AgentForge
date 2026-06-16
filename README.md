@@ -184,6 +184,10 @@ package-install readiness verification, a visual demo, and a platform-gap audit
 with concrete remediation paths. Public/npm release remains gated by
 `docs/releases/v0.2-readiness.md`.
 
+## Companion tools
+
+- **[AgentForge Developer Toolkit](https://github.com/KM-it-ops/agentforge-devtoolkit)** — an optional, standalone Windows-first PowerShell module for discover-first Node project environment workflows (`node-scout`). Previously vendored here under `AgentForge.DevToolkit/`; now lives in its own repo so AgentForge stays a pure JS/Node configuration framework. AgentForge does not depend on it.
+
 ## License
 
 MIT.
