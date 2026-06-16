@@ -1,6 +1,6 @@
 {
   "name": "@kmitops/agentforge",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A configuration framework for agentic AI coding assistants. One spec. Many adapters. The same posture in any agent.",
   "keywords": [
     "agent",
