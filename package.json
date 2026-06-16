@@ -1,5 +1,5 @@
 {
-  "name": "agentforge",
+  "name": "@kmitops/agentforge",
   "version": "0.2.0",
   "description": "A configuration framework for agentic AI coding assistants. One spec. Many adapters. The same posture in any agent.",
   "keywords": [
@@ -49,6 +49,7 @@
     "test": "node scripts/run-bash-script.js scripts/round-trip-test.sh",
     "test:merge-safe": "node scripts/run-bash-script.js scripts/merge-safe-test.sh",
     "test:pack": "node scripts/run-bash-script.js scripts/pack-install-test.sh",
-    "verify": "npm test && npm run test:merge-safe && npm run test:pack"
+    "test:mcp": "node scripts/run-bash-script.js scripts/mcp-emit-test.sh",
+    "verify": "npm test && npm run test:merge-safe && npm run test:pack && npm run test:mcp"
   }
 }

@@ -180,6 +180,16 @@ function specFilesCheck() {
   };
 }
 
+function mcpSpecCheck() {
+  // Informational only — spec/mcp.yaml is OPTIONAL. Never fails.
+  const present = fs.existsSync(path.join(PKG_ROOT, 'spec', 'mcp.yaml'));
+  return {
+    name: 'mcp spec (optional)',
+    ok: true,
+    detail: present ? 'spec/mcp.yaml present (per-adapter MCP registration enabled)' : 'spec/mcp.yaml absent (no MCP registration emitted)',
+  };
+}
+
 function adapterEmittersCheck() {
   const missing = Object.keys(ADAPTERS).filter((adapter) => {
     return !fs.existsSync(path.join(ADAPTERS_DIR, adapter, 'emit.js'));
@@ -211,6 +221,7 @@ function runDoctor(argv) {
     commandCheck('git', 'git', ['--version']),
     usableBashCheck(),
     specFilesCheck(),
+    mcpSpecCheck(),
     adapterEmittersCheck(),
   ];
   const ok = checks.every((check) => check.ok);

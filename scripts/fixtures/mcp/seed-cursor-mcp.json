@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "user-existing": {
+      "command": "node",
+      "args": ["my-server.js"]
+    }
+  }
+}

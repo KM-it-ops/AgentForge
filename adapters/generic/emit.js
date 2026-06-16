@@ -342,6 +342,68 @@ function readSpec(name) {
   return data;
 }
 
+// ─── optional MCP module (spec/mcp.yaml) ─────────────────────────────────────
+// The generic adapter is document-only: it cannot auto-register MCP servers,
+// so it renders a portable reference table. Absent/empty => "" => byte-identical.
+const MCP_SPEC_PATH = process.env.AGENTFORGE_MCP_SPEC || null;
+
+function loadOptionalMcp() {
+  const p = MCP_SPEC_PATH || path.join(SPEC_DIR, "mcp.yaml");
+  if (!fs.existsSync(p)) return null;
+  const parsed = loadYAML(fs.readFileSync(p, "utf8"));
+  if (!parsed || typeof parsed !== "object") return null;
+  if (parsed.schema_version !== SUPPORTED_SCHEMA_VERSION) {
+    throw new Error(
+      `unsupported schema_version=${parsed.schema_version} in mcp.yaml (this adapter supports ${SUPPORTED_SCHEMA_VERSION})`
+    );
+  }
+  if (!Array.isArray(parsed.servers) || parsed.servers.length === 0) return null;
+  return parsed;
+}
+
+function mcpResolveServers(mcp, adapterKey) {
+  if (!mcp) return [];
+  return mcp.servers
+    .filter((s) => s && typeof s === "object" && s.name && s.enabled !== false)
+    .map((s) => {
+      const ov = (s.overrides && s.overrides[adapterKey]) || {};
+      const env = (ov.env !== undefined ? ov.env : s.env) || {};
+      return {
+        name: s.name,
+        register: ov.register !== false,
+        command: ov.command || s.command || null,
+        args: Array.isArray(ov.args) ? ov.args : Array.isArray(s.args) ? s.args : [],
+        env: env && typeof env === "object" && !Array.isArray(env) ? env : {},
+        approval_mode: ov.approval_mode || null,
+        note: ov.note || null,
+      };
+    })
+    .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+}
+
+function buildMcpBlock(mcp) {
+  const servers = mcpResolveServers(mcp, "generic");
+  if (!servers.length) return "";
+  const rows = servers
+    .map((s) => {
+      const cmd = [s.command, ...(s.args || [])].filter(Boolean).join(" ");
+      const note = s.note || "Register with your MCP-capable client.";
+      return `| \`${s.name}\` | \`${cmd}\` | ${note} |`;
+    })
+    .join("\n");
+  return [
+    "",
+    "## MCP Servers",
+    "",
+    "Portable MCP server registrations. Wire these into whatever MCP-capable client you use:",
+    "",
+    "| Server | Command | Notes |",
+    "|---|---|---|",
+    rows,
+    "",
+  ].join("\n");
+}
+
 // ─── template substitution ──────────────────────────────────────────────────
 function renderTemplate(tmplPath, vars) {
   let text = fs.readFileSync(tmplPath, "utf8").replace(/\r\n/g, "\n");
@@ -593,6 +655,7 @@ function main() {
     LOCAL_SKILLS: buildLocalSkillsSection(targetAbs),
     MEMORY_PROTOCOL: buildMemoryProtocol(memory),
     CONTEXT_DISCIPLINE: buildContextDiscipline(identity),
+    MCP_BLOCK: buildMcpBlock(loadOptionalMcp()),
     SETUP_CHECKLIST: checklist,
     GRACE_PERIOD_DAYS: String((automation.safety || {}).grace_period_days || 60),
     TELEMETRY_GAP: (((telemetry.adapter_notes || {}).generic) || {}).all || "manual instrumentation",
