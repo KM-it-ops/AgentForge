@@ -22,6 +22,7 @@ Default target is `~/.gemini` (the global Gemini config home; override with
 │   ├── gemini-weekly-report.sh
 │   ├── dead-skills-report.sh
 │   ├── sync-local-skill-router.js
+│   ├── watch-skills.js                # live-refreshes the GEMINI.md AUTO-LOCAL-SKILLS block
 │   ├── install-cron.sh
 │   └── installers/{install-cron.sh, install-task.ps1, README.md}
 └── .agentforge-emit-date           # pins the rendered date for idempotent re-emits
@@ -71,6 +72,10 @@ node adapters/gemini-cli/emit.js ~/.gemini
 
 # After dropping a new skill at <target>/skills/my-skill/SKILL.md
 node <target>/scripts/sync-local-skill-router.js
+
+# ...or keep the GEMINI.md skills block refreshed live while you edit
+node <target>/scripts/watch-skills.js <target>          # watch + refresh
+node <target>/scripts/watch-skills.js --once <target>   # one sync, then exit
 ```
 
 The emit script prints a JSON receipt: `{ target, checkpoint_sha, files_written,

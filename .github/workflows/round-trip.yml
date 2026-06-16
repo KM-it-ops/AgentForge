@@ -7,6 +7,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Run bundled JS actions (checkout, setup-node) on Node 24 — opts out of the
+# deprecated Node 20 action runtime ahead of the forced cutover.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   round-trip:
     strategy:
