@@ -17,7 +17,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SANDBOX_ROOT="${SANDBOX_ROOT:-${TMPDIR:-/tmp}/agentforge-roundtrip}"
-ADAPTERS=("claude-code" "codex" "generic" "cursor")
+ADAPTERS=("claude-code" "codex" "gemini-cli" "generic" "cursor" "aider")
 
 fail() {
   echo "FAIL: $*" >&2

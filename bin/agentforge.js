@@ -22,8 +22,10 @@ const ADAPTERS_DIR = path.join(PKG_ROOT, 'adapters');
 const ADAPTERS = {
   'claude-code': { defaultDir: path.join(os.homedir(), '.claude') },
   'codex':       { defaultDir: path.join(os.homedir(), '.codex') },
+  'gemini-cli':  { defaultDir: path.join(os.homedir(), '.gemini') },
   'generic':     { defaultDir: null },
   'cursor':      { defaultDir: null },
+  'aider':       { defaultDir: null },
 };
 
 function pkgVersion() {
@@ -47,14 +49,18 @@ Usage:
 Adapters:
   claude-code   Emit a Claude Code config tree (default dir: ~/.claude)
   codex         Emit a Codex CLI config tree (default dir: ~/.codex)
+  gemini-cli    Emit a Gemini CLI config tree: GEMINI.md + settings.json (default dir: ~/.gemini)
   generic       Emit a portable AGENTS.md + memory skeleton (--dir required)
   cursor        Emit a portable .cursorrules + .cursor/rules/*.mdc (--dir required)
+  aider         Emit a portable CONVENTIONS.md + .aider.conf.yml (--dir required)
 
 Examples:
   npx agentforge init claude-code
   npx agentforge init codex --dir ~/.codex-dev
+  npx agentforge init gemini-cli
   npx agentforge init cursor --dir ./my-cursor-config
   npx agentforge init generic --dir ./my-agent-config
+  npx agentforge init aider --dir ./my-aider-project
   npx agentforge doctor
 
 Docs: https://github.com/KM-it-ops/AgentForge

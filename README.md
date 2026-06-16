@@ -7,7 +7,7 @@
 
   <p>
     A configuration framework for agentic AI coding assistants. Author your posture once,
-    then emit platform-native files for Claude Code, Codex, Cursor, and generic agent workspaces.
+    then emit platform-native files for Claude Code, Codex, Gemini CLI, Cursor, Aider, and generic agent workspaces.
   </p>
 
   <p>
@@ -24,8 +24,8 @@
 
   <p>
     <img alt="Node >= 18" src="https://img.shields.io/badge/node-%3E%3D18-007f78">
-    <img alt="Adapters: 4" src="https://img.shields.io/badge/adapters-4-ca7a29">
-    <img alt="Version 0.2.0" src="https://img.shields.io/badge/version-0.2.0-21313b">
+    <img alt="Adapters: 6" src="https://img.shields.io/badge/adapters-6-ca7a29">
+    <img alt="Version 0.3.0" src="https://img.shields.io/badge/version-0.3.0-21313b">
     <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-121820">
   </p>
 </div>
@@ -50,7 +50,9 @@ flowchart LR
   Spec["spec/*.yaml<br/>identity, router, memory, telemetry"] --> Compiler["AgentForge compiler"]
   Compiler --> Claude["Claude Code<br/>CLAUDE.md + hooks"]
   Compiler --> Codex["Codex<br/>AGENTS.md + notify"]
+  Compiler --> Gemini["Gemini CLI<br/>GEMINI.md + settings.json"]
   Compiler --> Cursor["Cursor<br/>.cursor/rules/*.mdc"]
+  Compiler --> Aider["Aider<br/>CONVENTIONS.md + .aider.conf.yml"]
   Compiler --> Generic["Generic<br/>portable AGENTS.md"]
   Compiler --> Proof["doctor + verify<br/>pack/install checks"]
 ```
@@ -82,8 +84,10 @@ npm install -g .
 agentforge init claude-code
 
 # ...or another adapter:
-agentforge init codex                              # Codex CLI  -> ~/.codex/
+agentforge init codex                              # Codex CLI   -> ~/.codex/
+agentforge init gemini-cli                         # Gemini CLI  -> ~/.gemini/
 agentforge init cursor  --dir ./my-cursor-config   # Cursor rules
+agentforge init aider   --dir ./my-aider-project   # CONVENTIONS.md + .aider.conf.yml
 agentforge init generic --dir ./my-agent-config    # portable AGENTS.md
 
 # Check the local checkout has the tools AgentForge needs
@@ -147,9 +151,10 @@ cat docs/READINESS.md
 |---|---:|---|
 | Claude Code | 100% | Full adapter with identity, settings, hooks, telemetry helpers, and pruning scripts. |
 | Codex CLI | ~85% | Strong AGENTS.md-centered adapter with notify hooks and local skill routing. |
+| Gemini CLI | ~70% | `GEMINI.md` context file + merge-safe `settings.json` with native `mcpServers`, memory, skills, prune installers. No native lifecycle shell hooks (OpenTelemetry only). |
 | Cursor | ~55% | `.cursorrules`, `.cursor/rules/*.mdc`, weekly report scripts, and local skill watcher. |
 | Generic | ~40% | Portable AGENTS.md, memory notes, setup checklist, and helper scripts. |
-| Gemini CLI / Aider | Future | Deferred expansion paths are tracked in `docs/DEFERRED-MAP.md`. |
+| Aider | ~40% | `CONVENTIONS.md` posture loaded via `read:`, merge-safe `.aider.conf.yml` with `mcp-server:` registration. No skill loader, lifecycle hooks, or native memory. |
 
 ## What Ports Cleanly
 
@@ -177,8 +182,8 @@ cat docs/READINESS.md
 
 ## Status
 
-v0.2.0 is **published to npm** as [`@kmitops/agentforge`](https://www.npmjs.com/package/@kmitops/agentforge). It ships four adapters
-(Claude Code, Codex, Cursor, Generic), the `npx @kmitops/agentforge` CLI, round-trip CI on
+v0.3.0 is **published to npm** as [`@kmitops/agentforge`](https://www.npmjs.com/package/@kmitops/agentforge). It ships six adapters
+(Claude Code, Codex, Gemini CLI, Cursor, Aider, Generic), the `npx @kmitops/agentforge` CLI, round-trip CI on
 `ubuntu-latest` + `windows-latest` + `macos-latest` x Node 20 and 22,
 package-install readiness verification, a visual demo, and a platform-gap audit
 with concrete remediation paths. Future versions publish automatically on GitHub Release

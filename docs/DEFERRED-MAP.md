@@ -12,8 +12,10 @@
 
 | Item | Source | Effort | Priority | Blocked by |
 |---|---|---|---|---|
-| Gemini CLI adapter | v0.1 backlog | L | P2 | none; Cursor watcher provides the parity pattern |
-| Aider adapter | v0.1 backlog | L | P2 | none; Cursor watcher provides the parity pattern |
+| ~~Gemini CLI adapter~~ | ~~v0.1 backlog~~ | ~~L~~ | **shipped (v0.3)** — `GEMINI.md` + merge-safe `settings.json` (native `mcpServers`); 17 files; round-trip + merge-safe + pack-install + mcp green | — |
+| ~~Aider adapter~~ | ~~v0.1 backlog~~ | ~~L~~ | **shipped (v0.3)** — `CONVENTIONS.md` via `read:` + merge-safe `.aider.conf.yml` (`mcp-server:`); 11 files; all suites green | — |
+
+> Both adapters were built off the Cursor watcher/marker parity pattern. With them, AgentForge ships **6 adapters**. No open adapter backlog remains.
 
 ### codex gap items
 
@@ -69,6 +71,7 @@
 | Unified JSON receipt shape | flagship-improvement tranche | all four adapters emit `target`, `checkpoint_sha`, `files_written`, `files_changed`, and `details`; round-trip test asserts `files_changed: 0` for every adapter |
 | Installed-binstub doctor verification | flagship-improvement tranche | `scripts/pack-install-test.sh` now runs `agentforge doctor --json` from the installed package before adapter emits |
 | Cursor local skill watcher | flagship-improvement tranche | cursor adapter emits `.cursor/rules/local-skills.mdc` and ships `scripts/watch-skills.js --once` / watch mode |
+| Gemini CLI + Aider adapters | v0.3 (this batch) | closed the last two open-adapter backlog items; 6 adapters total. gemini-cli: `GEMINI.md` + merge-safe `settings.json` (native `mcpServers.context-mode`), 17 files. aider: `CONVENTIONS.md` via `read:` + merge-safe `.aider.conf.yml` (`mcp-server:`), 11 files. Both registered in `bin/agentforge.js`; all four verify suites extended to cover them |
 
 ## Topographic map
 
@@ -91,7 +94,9 @@ flowchart LR
   subgraph Adapters["Shipping adapters"]
     CC["claude-code<br/>100%"]:::shipped
     CX["codex<br/>~85%"]:::shipped
+    GM["gemini-cli<br/>~70% (new in v0.3)"]:::shipped
     CU["cursor<br/>~55% (new in v0.2)"]:::shipped
+    AI["aider<br/>~40% (new in v0.3)"]:::shipped
     GE["generic<br/>~40%"]:::shipped
   end
 
@@ -120,9 +125,9 @@ flowchart LR
     G4["generic-manual-memory-writes"]:::p2
   end
 
-  subgraph NewAdapters["New adapter backlog"]
-    GEM["Gemini CLI adapter"]:::p2
-    AID["Aider adapter"]:::p2
+  subgraph NewAdapters["New adapters (shipped v0.3)"]
+    GEM["Gemini CLI adapter<br/>(shipped — gemini-cli)"]:::shipped
+    AID["Aider adapter<br/>(shipped — aider)"]:::shipped
   end
 
   subgraph Shared["Shared infrastructure candidates (v0.3)"]
@@ -135,7 +140,7 @@ flowchart LR
 
   %% Spec feeds every adapter
   SPEC --> CC & CX & CU & GE
-  SPEC -.->|future| GEM & AID
+  SPEC --> GEM & AID
 
   %% Adapters consumed by CI
   CC & CX & CU & GE --> ROUND
@@ -160,6 +165,9 @@ flowchart LR
   WATCH -.->|closed| U5
   WATCH -.->|pattern for| GEM
   WATCH -.->|pattern for| AID
+  GEM & AID --> ROUND
+  GEM & AID --> PACK
+  CLI --> GEM & AID
   JSON -.->|consistency for| CC & CX & CU & GE
   MAC -.->|extends| CI
   PUB -.->|publishes| CLI
@@ -178,7 +186,7 @@ flowchart LR
 1. ~~**P1 codex cleanup batch**~~ — **done** (v0.2.1, commits `1ae6935` → `fc039c1`). Codex coverage ~85% → ~95%.
 2. ~~**Build `universal/lib/installers/`**~~ — **done** (v0.3). Both dependent gaps (`codex-windows-cron-not-executed`, `cursor-no-scheduled-task`) closed in the same commit batch.
 3. ~~**Build `scripts/watch-skills.js`**~~ — **done for Cursor**. Closes `cursor-no-auto-router-sync` and gives Gemini/Aider adapters a proven local-skill watcher pattern.
-4. **Gemini CLI adapter or Aider adapter** (~1–2 days each). At this point both have all shared infrastructure patterns available.
+4. ~~**Gemini CLI adapter or Aider adapter**~~ — **both done** (v0.3). Built off the Cursor watcher/marker parity pattern; gemini-cli ~70% (native `mcpServers`, merge-safe `settings.json`), aider ~40% (`read: CONVENTIONS.md`, merge-safe `.aider.conf.yml`). All four verify suites green.
 5. ~~**Unify JSON receipt shape**~~ — **done**. All four emitters now expose the same receipt keys and the round-trip test checks idempotency from every adapter receipt.
 6. ~~**macOS CI row**~~ — **done**. **npm publish workflow** remains deferred because it needs release-policy and token-handling decisions.
 

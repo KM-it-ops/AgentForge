@@ -27,8 +27,10 @@ expected_files() {
   case "$1" in
     claude-code) echo 12 ;;
     codex) echo 23 ;;
+    gemini-cli) echo 17 ;;  # GEMINI.md + settings.json (mcpServers.context-mode) + memory/skills/scripts/telemetry
     generic) echo 6 ;;
     cursor) echo 30 ;;  # +1: .cursor/mcp.json emitted from spec/mcp.yaml (context-mode)
+    aider) echo 11 ;;   # CONVENTIONS.md + .aider.conf.yml (read: + mcp-server) + memory/skills/scripts/telemetry
     *) fail "no expected file count for adapter: $1" ;;
   esac
 }
@@ -76,7 +78,7 @@ main() {
   echo "  installed binstub doctor OK"
 
   echo "=== emit each adapter via binstub ==="
-  for adapter in claude-code codex generic cursor; do
+  for adapter in claude-code codex gemini-cli generic cursor aider; do
     local sandbox="$WORK/sandbox-$adapter"
     rm -rf "$sandbox"
     mkdir -p "$sandbox"
@@ -101,7 +103,7 @@ main() {
   done
 
   echo
-  echo "Pack + install + doctor + emit verified for all 4 adapters."
+  echo "Pack + install + doctor + emit verified for all 6 adapters."
 }
 
 main "$@"
