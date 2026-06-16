@@ -60,7 +60,7 @@ flowchart LR
 | Canonical spec | `spec/identity.yaml`, `spec/router.yaml`, `spec/memory.yaml`, `spec/automation.yaml`, `spec/telemetry.yaml` |
 | Universal payload | Shared skills, memory templates, lessons, and installers under `universal/` |
 | Adapter emitters | Platform-specific generators under `adapters/` |
-| CLI | `agentforge init <adapter>` and `agentforge doctor` (`npx agentforge …` after npm publish) |
+| CLI | `agentforge init <adapter>` and `agentforge doctor` (or `npx @kmitops/agentforge …`) |
 | Proof | Round-trip tests, package install tests, readiness runbook, and visual demo |
 
 ## Prerequisites
@@ -71,7 +71,7 @@ flowchart LR
 
 ## Quick Start
 
-> **Heads up:** AgentForge is not yet published to npm, so install from a git checkout (below). Once it's on npm this collapses to `npx agentforge init <adapter>` with no clone needed.
+> **Published to npm as [`@kmitops/agentforge`](https://www.npmjs.com/package/@kmitops/agentforge).** Run `npx @kmitops/agentforge init <adapter>` with no clone needed, or install from a git checkout (below) to hack on it.
 
 ```bash
 git clone https://github.com/KM-it-ops/AgentForge.git
@@ -131,8 +131,8 @@ Set `AGENTFORGE_BASH` to a specific Bash executable if you want to override the 
 For a quick local readiness check without creating an adapter target, run:
 
 ```bash
-npx agentforge doctor
-npx agentforge doctor --json
+npx @kmitops/agentforge doctor
+npx @kmitops/agentforge doctor --json
 ```
 
 For the full current proof set, use the readiness runbook:
@@ -178,7 +178,7 @@ cat docs/READINESS.md
 ## Status
 
 v0.2.0 is the current release-candidate package version. It ships four adapters
-(Claude Code, Codex, Cursor, Generic), the `npx agentforge` CLI, round-trip CI on
+(Claude Code, Codex, Cursor, Generic), the `npx @kmitops/agentforge` CLI, round-trip CI on
 `ubuntu-latest` + `windows-latest` + `macos-latest` x Node 20 and 22,
 package-install readiness verification, a visual demo, and a platform-gap audit
 with concrete remediation paths. Public/npm release remains gated by
