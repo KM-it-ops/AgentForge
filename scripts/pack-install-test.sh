@@ -27,7 +27,7 @@ expected_files() {
   case "$1" in
     claude-code) echo 12 ;;
     codex) echo 23 ;;
-    gemini-cli) echo 17 ;;  # GEMINI.md + settings.json (mcpServers.context-mode) + memory/skills/scripts/telemetry
+    gemini-cli) echo 18 ;;  # GEMINI.md + settings.json (mcpServers.context-mode) + memory/skills/scripts (incl. watch-skills.js)/telemetry
     generic) echo 6 ;;
     cursor) echo 30 ;;  # +1: .cursor/mcp.json emitted from spec/mcp.yaml (context-mode)
     aider) echo 11 ;;   # CONVENTIONS.md + .aider.conf.yml (read: + mcp-server) + memory/skills/scripts/telemetry
