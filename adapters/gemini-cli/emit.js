@@ -764,11 +764,10 @@ function main() {
   const checkpoint = gitCheckpoint(target);
 
   const results = [];
-  const record = (entry) => {
-    // entry is either a boolean+path pair via record(path, changed), or an
-    // object {path, changed}. Normalize to {path, changed}.
-    results.push(entry);
-  };
+  // record() pushes a pre-built {path, changed} entry (used for memory files
+  // that report changed:false). recordPath(p, changed) builds the entry from a
+  // path + boolean. Both append to the same results[] receipt.
+  const record = (entry) => results.push(entry);
   const recordPath = (p, changed) => results.push({ path: p, changed: Boolean(changed) });
 
   // Build template variables.
@@ -873,7 +872,8 @@ function main() {
     "Gemini has no PostToolUse / SessionStart shell hook, so the auto-registered",
     "block in `GEMINI.md` is NOT refreshed automatically. Run",
     "`node scripts/sync-local-skill-router.js` by hand after adding or archiving",
-    "a skill to regenerate that block.",
+    "a skill to regenerate that block, or run `node scripts/watch-skills.js` to",
+    "keep it refreshed live while you edit (`--once` for a single sync).",
     "",
     "Archived skills live in `_archived/` and are excluded from",
     "`scripts/dead-skills-report.sh`.",

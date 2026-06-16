@@ -3,6 +3,27 @@
 All notable changes to AgentForge are tracked here. This project uses semantic
 versioning for public npm releases.
 
+## Unreleased
+
+### Added
+
+- **Gemini CLI live skill-watcher** (`adapters/gemini-cli/scripts/watch-skills.js`),
+  parity with the cursor adapter. Watches `skills/` and re-runs
+  `sync-local-skill-router.js` to keep the `GEMINI.md` AUTO-LOCAL-SKILLS block
+  current; `--once` does a single sync. Emitted file count for `gemini-cli` is
+  now **18** (was 17).
+
+### Changed
+
+- CI workflows (`publish`, `round-trip`, `gitleaks`) opt into the Node 24 action
+  runtime via `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`, ahead of GitHub's forced
+  cutover from the deprecated Node 20 runtime for bundled JS actions.
+
+### Fixed
+
+- Corrected a stale code comment on the `record`/`recordPath` helpers in the
+  gemini-cli emitter (cosmetic; no behavior change).
+
 ## 0.3.0
 
 Status: published to npm as `@kmitops/agentforge@0.3.0`.
