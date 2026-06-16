@@ -106,6 +106,33 @@ assert_contains "$S/AGENTS.md" "## MCP Servers" "generic present: MCP section"
 assert_contains "$S/AGENTS.md" "context-mode" "generic present: documents context-mode"
 note "present OK"
 
+echo "=== A/C: gemini-cli ==="
+# Gemini registers MCP natively in settings.json.mcpServers. Unlike claude-code,
+# context-mode is NOT plugin-managed for Gemini, so it IS registered.
+S="$SANDBOX_ROOT/gemini-absent"; setup_sandbox "$S"; emit_twice gemini-cli "$S" "$ABSENT"
+assert_absent_str "$S/settings.json" "context-mode" "gemini absent: no context-mode"
+note "absent OK"
+S="$SANDBOX_ROOT/gemini-empty"; setup_sandbox "$S"; emit_twice gemini-cli "$S" "$EMPTY"
+assert_absent_str "$S/settings.json" "context-mode" "gemini empty: no context-mode"
+note "empty OK"
+S="$SANDBOX_ROOT/gemini-present"; setup_sandbox "$S"; emit_twice gemini-cli "$S" "$PRESENT"
+node -e 'const o=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")); if(!o.mcpServers||!o.mcpServers["context-mode"]||o.mcpServers["context-mode"].command!=="npx"||!o.mcpServers["demo-server"]) process.exit(1)' "$S/settings.json" || fail "gemini present: settings.json mcpServers shape (context-mode + demo-server)"
+note "present OK"
+
+echo "=== A/C: aider ==="
+# Aider registers MCP via a `mcp-server:` list inside its managed block.
+S="$SANDBOX_ROOT/aider-absent"; setup_sandbox "$S"; emit_twice aider "$S" "$ABSENT"
+assert_absent_str "$S/.aider.conf.yml" "mcp-server" "aider absent: no mcp-server block"
+note "absent OK"
+S="$SANDBOX_ROOT/aider-empty"; setup_sandbox "$S"; emit_twice aider "$S" "$EMPTY"
+assert_absent_str "$S/.aider.conf.yml" "mcp-server" "aider empty: no mcp-server block"
+note "empty OK"
+S="$SANDBOX_ROOT/aider-present"; setup_sandbox "$S"; emit_twice aider "$S" "$PRESENT"
+assert_contains "$S/.aider.conf.yml" "mcp-server:" "aider present: mcp-server block"
+assert_contains "$S/.aider.conf.yml" "context-mode" "aider present: context-mode entry"
+assert_contains "$S/.aider.conf.yml" "demo-server" "aider present: demo-server entry"
+note "present OK"
+
 # ===========================================================================
 echo "=== D: cursor merge-safety ==="
 S="$SANDBOX_ROOT/cursor-merge"; setup_sandbox "$S"
@@ -113,6 +140,13 @@ mkdir -p "$S/.cursor"
 cp "$FIX/seed-cursor-mcp.json" "$S/.cursor/mcp.json"
 emit_twice cursor "$S" "$PRESENT"
 node -e 'const o=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")); if(!o.mcpServers["user-existing"]||!o.mcpServers["context-mode"]) process.exit(1)' "$S/.cursor/mcp.json" || fail "cursor merge: user server must survive + context-mode added"
+note "merge-safe OK"
+
+echo "=== D: gemini-cli merge-safety ==="
+S="$SANDBOX_ROOT/gemini-merge"; setup_sandbox "$S"
+printf '{\n  "theme": "user-theme-keep",\n  "mcpServers": { "user-existing": { "command": "user-cmd" } }\n}\n' > "$S/settings.json"
+emit_twice gemini-cli "$S" "$PRESENT"
+node -e 'const o=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")); if(o.theme!=="user-theme-keep"||!o.mcpServers["user-existing"]||!o.mcpServers["context-mode"]||!o.mcpServers["demo-server"]) process.exit(1)' "$S/settings.json" || fail "gemini merge: user theme + server must survive + context-mode/demo-server added"
 note "merge-safe OK"
 
 echo

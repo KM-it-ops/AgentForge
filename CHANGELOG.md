@@ -3,9 +3,36 @@
 All notable changes to AgentForge are tracked here. This project uses semantic
 versioning for public npm releases.
 
-## 0.2.0 - Release Candidate
+## 0.3.0
 
-Status: not published.
+Status: published to npm as `@kmitops/agentforge@0.3.0`.
+
+### Added
+
+- **Gemini CLI adapter** (`gemini-cli`, default dir `~/.gemini`). Emits a
+  `GEMINI.md` hierarchical context file and a **merge-safe** `settings.json`
+  with native `mcpServers`. `context-mode` is registered (unlike Claude Code,
+  Gemini does not manage it as a plugin). 17 emitted files.
+- **Aider adapter** (`aider`, project-scoped via `--dir`). Emits a
+  `CONVENTIONS.md` posture file loaded via the `read:` key and a merge-safe
+  `.aider.conf.yml` with a `mcp-server:` registration list (recent Aider builds;
+  older builds ignore it harmlessly). 11 emitted files.
+- Verify-suite coverage for both new adapters across round-trip, merge-safe,
+  pack-install (file counts 17 / 11), and the MCP-emit module test.
+
+### Changed
+
+- `settings.json` (Gemini) is merge-safe: AgentForge-managed keys are added only
+  when absent, `mcpServers` entries merge without clobbering same-named user
+  servers, and an unparseable user file is preserved with the managed shape
+  written to a `settings.agentforge.json` sidecar. `GEMINI.md` and
+  `.aider.conf.yml` use `AGENTFORGE:BEGIN`/`AGENTFORGE:END` managed blocks.
+- README, `docs/DEFERRED-MAP.md`, and `docs/PLATFORM-GAPS.md` updated for six
+  adapters; the open-adapter backlog is now empty.
+
+## 0.2.0
+
+Status: published to npm as `@kmitops/agentforge@0.2.0`.
 
 ### Added
 

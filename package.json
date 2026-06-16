@@ -1,13 +1,15 @@
 {
   "name": "@kmitops/agentforge",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A configuration framework for agentic AI coding assistants. One spec. Many adapters. The same posture in any agent.",
   "keywords": [
     "agent",
     "claude",
     "claude-code",
     "codex",
+    "gemini-cli",
     "cursor",
+    "aider",
     "ai-coding",
     "llm",
     "config",

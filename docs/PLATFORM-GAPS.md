@@ -1,12 +1,13 @@
 # AgentForge — Cross-Adapter Platform Gaps
 
-> Single source of truth for every documented platform gap across the four
-> shipping adapters (`claude-code`, `codex`, `generic`, `cursor`) plus
-> historically resolved gaps worth keeping in the audit trail. Update this file
-> whenever a new gap is surfaced in an adapter README, a verification report,
-> or an emit script comment. Each row carries a stable `Gap ID` so other docs
-> can link to it. Inputs reconciled: `docs/VERIFICATION-v0.1.0.md`,
-> `adapters/{claude-code,codex,generic,cursor}/README.md`,
+> Single source of truth for every documented platform gap across the six
+> shipping adapters (`claude-code`, `codex`, `gemini-cli`, `generic`, `cursor`,
+> `aider`) plus historically resolved gaps worth keeping in the audit trail.
+> Update this file whenever a new gap is surfaced in an adapter README, a
+> verification report, or an emit script comment. Each row carries a stable
+> `Gap ID` so other docs can link to it. Inputs reconciled:
+> `docs/VERIFICATION-v0.1.0.md`,
+> `adapters/{claude-code,codex,gemini-cli,generic,cursor,aider}/README.md`,
 > `adapters/cursor/emit.js`, and the `bin/agentforge.js` git history through
 > commit `a80964d`.
 
@@ -14,8 +15,10 @@
 
 - [claude-code adapter](#claude-code-adapter)
 - [codex adapter](#codex-adapter)
+- [gemini-cli adapter](#gemini-cli-adapter)
 - [generic adapter](#generic-adapter)
 - [cursor adapter](#cursor-adapter)
+- [aider adapter](#aider-adapter)
 - [CLI / cross-cutting (historical)](#cli--cross-cutting-historical)
 - [Recommended v0.2 cleanup batch](#recommended-v02-cleanup-batch)
 
@@ -103,6 +106,51 @@ The adapter sits between `generic` and `codex` on the coverage matrix.
 Cursor still has platform limitations, but two formerly deferred adapter-fix
 items now have shipping code paths: scheduled dead-skills reports and
 local-skill rule refresh through `scripts/watch-skills.js`.
+
+---
+
+## gemini-cli adapter
+
+From `adapters/gemini-cli/README.md` § "Platform gaps". Gemini CLI is a capable
+target — native `mcpServers` and a hierarchical `GEMINI.md` context file — but it
+exposes **no lifecycle shell hooks**, so automation is scheduler-driven rather
+than event-driven. New in v0.3.
+
+| Adapter | Gap ID | Description | User impact | Root cause | Remediation type | Concrete next step | Effort | Priority |
+|---|---|---|---|---|---|---|---|---|
+| gemini-cli | `gemini-no-lifecycle-hooks` | Gemini CLI has no SessionEnd / PreToolUse shell hook. Memory writes are a manual ritual and router refresh is not event-driven. | degraded | platform-limitation | docs-only | Documented in `adapters/gemini-cli/README.md` § "Platform gaps" and the emitted `telemetry/README.md`. The `GEMINI.md` memory pointer tells the agent where to write by hand. No code change. | S | P2 |
+| gemini-cli | `gemini-telemetry-otel-only` | Gemini's only telemetry surface is the OpenTelemetry block in `settings.json` — there is no per-skill PreToolUse instrumentation, so `dead-skills-report.sh` has no data unless the user bridges OTel spans into the jsonl sink. | degraded | platform-limitation | docs-only | Documented in the emitted `telemetry/README.md`. Optional v0.4 follow-up: a recipe bridging OTel → skill-invocation jsonl. | S | P2 |
+| gemini-cli | `gemini-no-skill-loader` | Gemini has no `skills/` auto-discovery contract; the emitter ships `skills/README.md` + the router table inside `GEMINI.md`, but skills are reasoned over inline, not auto-loaded. | degraded | platform-limitation | docs-only | Documented in the emitted `skills/README.md`. Run `scripts/sync-local-skill-router.js` after editing skills. No code change. | S | P2 |
+| gemini-cli | `gemini-no-native-scheduler` | Gemini has no native scheduled-task mechanism for the weekly prune. | cosmetic | platform-limitation | fixed | Closed via the shared `scripts/installers/` pair (cron + Task Scheduler) the adapter emits, same as codex/cursor. | S | n/a |
+
+### Notes
+
+`settings.json` is merge-safe (add-if-absent top-level keys + `mcpServers` merge,
+invalid-JSON sidecar) and `GEMINI.md` uses an `AGENTFORGE:BEGIN/END` managed
+block, so adoption never clobbers a user's primary Gemini config. The remaining
+gaps are platform limitations, not adapter defects.
+
+---
+
+## aider adapter
+
+From `adapters/aider/README.md` § "Platform gaps". Aider is a **minimal-posture**
+target: a conventions file loaded via `read:` plus a YAML config. Structurally
+the generic adapter with an Aider-native, merge-safe config writer. New in v0.3.
+
+| Adapter | Gap ID | Description | User impact | Root cause | Remediation type | Concrete next step | Effort | Priority |
+|---|---|---|---|---|---|---|---|---|
+| aider | `aider-no-skill-loader` | Aider has no `skills/` auto-discovery; the router table is carried inline in `CONVENTIONS.md` and reasoned over. | degraded | platform-limitation | docs-only | Documented in `adapters/aider/README.md` § "Platform gaps" and the emitted `skills/README.md`. Re-run `scripts/sync-local-skill-router.js` after skill edits. No code change. | S | P2 |
+| aider | `aider-no-lifecycle-hooks` | No SessionEnd / PreToolUse hooks — memory writes are a manual ritual. | cosmetic | platform-limitation | docs-only | Documented in `adapters/aider/README.md`. The `MEMORY.md` protocol tells the agent where to write. No code change. | S | P2 |
+| aider | `aider-no-telemetry-primitive` | No portable PreToolUse equivalent, so `dead-skills-report.sh` only has data if the user wires external instrumentation. | degraded | platform-limitation | docs-only | Documented in the emitted `telemetry/README.md`. No code change. | S | P2 |
+| aider | `aider-mcp-recent-builds-only` | The `mcp-server:` key is honored only by recent Aider builds; older builds ignore it harmlessly, so MCP registration is best-effort. | cosmetic | platform-limitation | docs-only | Documented in `adapters/aider/README.md` § "How Aider consumes the output". No code change — additive and forward-compatible. | S | P2 |
+
+### Notes
+
+`.aider.conf.yml` is merge-safe via an `# AGENTFORGE:BEGIN/END` managed block, so
+hand-authored keys (model, weak-model, dark-mode) survive every re-emit. Like the
+generic adapter, aider's gaps are intentional posture — it trades automation for
+a clean, portable on-ramp.
 
 ---
 

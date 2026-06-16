@@ -1,0 +1,46 @@
+### Optional automation hooks
+
+These wire the maintenance loop into your OS. None are required to get value
+from this file — but each one moves the aider adapter closer to the
+Claude-Code-grade posture.
+
+- **Confirm Aider loads this file.** The emitted `.aider.conf.yml` carries
+  `read: CONVENTIONS.md`, so Aider loads this posture automatically when run from
+  the project root. To verify, run `aider --read CONVENTIONS.md` once and check
+  that the conventions appear in context.
+- **Schedule the weekly dead-skills report.** Pick one:
+  - Linux/macOS cron: `0 15 * * 5 cd /path/to/agent-home && bash scripts/dead-skills-report.sh`
+  - Windows Task Scheduler: create a weekly trigger that runs
+    `bash.exe scripts/dead-skills-report.sh` (or `wsl bash …`) every Friday 3pm.
+  - On-demand: just `bash scripts/dead-skills-report.sh` whenever.
+- **Watch SKILL.md changes.** When you add or edit a skill, the
+  AUTO-LOCAL-SKILLS table in this file goes stale until you re-run the sync
+  script. Two ways to keep it fresh:
+  - Manual: `node scripts/sync-local-skill-router.js` after every skill edit.
+  - File-watcher: point `chokidar-cli`, `entr`, `fswatch`, or `inotifywait` at
+    `skills/**/SKILL.md` and fire the sync script on change.
+- **Log skill invocations to telemetry.** Aider has no tool-call hook, so there
+  is nothing to auto-instrument. If you bolt on an external watcher (an MCP
+  server, a shell wrapper around `aider`, or a parser over Aider's `.aider.chat.history.md`),
+  append a one-line JSON per skill use to `telemetry/skill-invocations.jsonl`:
+  `{"ts":"<iso>","skill":"<name>"}`. Without this, the dead-skills report has
+  nothing to compare against.
+- **Log user prompts (optional, for router pattern analysis).** Same idea —
+  append `{"ts":"<iso>","prompt":"<first-80-chars>"}` to
+  `telemetry/prompts.jsonl` from whatever watcher you wire up.
+
+### Aider specifics
+
+- **Config file.** `.aider.conf.yml` must use the `.yml` extension (not
+  `.yaml`). Aider searches your home dir, the git-repo root, and the current
+  working directory; the file emitted here lives at the project root.
+- **Posture via `read:`.** The `read: CONVENTIONS.md` key loads this file as
+  read-only context on every run. Equivalent to `aider --read CONVENTIONS.md`.
+- **MCP (recent builds).** Recent Aider builds support MCP via a `mcp-server:`
+  list. The emitter adds an AgentForge-managed block between
+  `# AGENTFORGE:BEGIN` / `# AGENTFORGE:END` markers when `spec/mcp.yaml` declares
+  servers. Older Aider builds ignore the key harmlessly.
+- **No skill loader, no hooks, no native memory.** The router and memory
+  protocol above are reasoned over inline. There is no auto-loader, no
+  SessionEnd hook, and no built-in memory index — those are documented limits,
+  not bugs.

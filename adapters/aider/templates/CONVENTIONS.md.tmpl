@@ -1,0 +1,81 @@
+# CONVENTIONS.md — Agent Coding Posture
+
+> Emitted by AgentForge's `aider` adapter. Aider loads this file as its coding
+> posture via `read: CONVENTIONS.md` in `.aider.conf.yml` (equivalently
+> `aider --read CONVENTIONS.md`).
+>
+> Substance is canonical (router, memory protocol, execution rules). Aider has
+> no skill loader, no lifecycle hooks, and no native memory store — memory
+> writes are a **manual** ritual. See "Honest Limitations" at the bottom.
+
+## Identity
+
+{{IDENTITY_BLOCK}}
+
+## Stack Defaults
+
+{{STACK_BLOCK}}
+
+## Execution Rules
+
+{{EXECUTION_RULES}}
+
+## Skill Router
+
+Match user intent against triggers; load **one** skill on demand. Don't pre-load.
+
+{{SKILL_ROUTER}}
+
+**Priority:** explicit `/slash` invocation wins. Else first-match wins. Else, no skill load.
+
+### Local skills
+
+{{LOCAL_SKILLS}}
+
+## Memory Protocol
+
+{{MEMORY_PROTOCOL}}
+
+## Context Discipline
+
+{{CONTEXT_DISCIPLINE}}
+{{MCP_BLOCK}}
+---
+
+## Manual Setup Checklist
+
+The aider adapter ships the substance (this file, the router, the memory
+protocol, the skills directory) plus the `.aider.conf.yml` that wires this file
+in via `read:`. The automation pieces below are **opt-in** and require user
+assembly because Aider exposes no skill loader, lifecycle hook, or scheduler.
+
+{{SETUP_CHECKLIST}}
+
+---
+
+## Honest Limitations
+
+This adapter is a minimal-posture adapter. It does **not** match Claude Code's
+coverage. Read this section before relying on it.
+
+- **No automatic telemetry.** {{TELEMETRY_GAP}}. Without telemetry, the weekly
+  dead-skills report has no data to work with — it will report "no telemetry"
+  until you instrument something (Aider has no `PreToolUse`-style hook).
+- **No skill loader.** Aider has no `skills/` directory contract. The router
+  table above is reasoned over inline; the `skills/` dir and its README ship the
+  SKILL.md frontmatter convention so the router can point at curated skills, but
+  Aider will not auto-load them.
+- **No lifecycle hooks.** No SessionEnd hook means memory entries are written by
+  hand. The memory protocol above documents where to write them.
+- **No native memory store.** Aider does not persist a memory index of its own.
+  `MEMORY.md` + `memory/<bucket>/` are plain files you maintain manually.
+- **No scheduled prune.** The weekly auto-prune is a script you run manually or
+  schedule via Windows Task Scheduler / cron / launchd / systemd timer. Grace
+  period is **{{GRACE_PERIOD_DAYS}} days** of zero invocations before a skill
+  becomes a prune candidate.
+- **Posture is loaded, not enforced.** `read: CONVENTIONS.md` makes Aider treat
+  this file as read-only context on every run; it does not give Aider hooks or a
+  router engine. The substance is here for the model to reason over.
+
+If you want Claude-Code-grade automation, use the `claude-code` adapter. The
+aider adapter trades automation for a clean, portable on-ramp into Aider.
