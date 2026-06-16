@@ -28,9 +28,10 @@ servers:
         register: false
         note: Plugin-managed (context-mode@context-mode); a manual mcpServers entry double-registers it.
       codex:
-        command: node
-        args:
-          - ./start.mjs
+        # Inherit the portable base command (npx -y context-mode). context-mode
+        # is an npm package; `node ./start.mjs` only resolves inside context-mode's
+        # own plugin dir, not a user's Codex cwd — it would fail to start there.
+        # Override only the Codex-specific bits.
         approval_mode: approve
         env:
           CONTEXT_MODE_PLATFORM: codex
