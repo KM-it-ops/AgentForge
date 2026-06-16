@@ -25,7 +25,7 @@
   <p>
     <img alt="Node >= 18" src="https://img.shields.io/badge/node-%3E%3D18-007f78">
     <img alt="Adapters: 6" src="https://img.shields.io/badge/adapters-6-ca7a29">
-    <img alt="Version 0.2.0" src="https://img.shields.io/badge/version-0.2.0-21313b">
+    <img alt="Version 0.3.0" src="https://img.shields.io/badge/version-0.3.0-21313b">
     <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-121820">
   </p>
 </div>
@@ -182,7 +182,7 @@ cat docs/READINESS.md
 
 ## Status
 
-v0.2.0 is **published to npm** as [`@kmitops/agentforge`](https://www.npmjs.com/package/@kmitops/agentforge). It ships six adapters
+v0.3.0 is **published to npm** as [`@kmitops/agentforge`](https://www.npmjs.com/package/@kmitops/agentforge). It ships six adapters
 (Claude Code, Codex, Gemini CLI, Cursor, Aider, Generic), the `npx @kmitops/agentforge` CLI, round-trip CI on
 `ubuntu-latest` + `windows-latest` + `macos-latest` x Node 20 and 22,
 package-install readiness verification, a visual demo, and a platform-gap audit
