@@ -177,12 +177,12 @@ cat docs/READINESS.md
 
 ## Status
 
-v0.2.0 is the current release-candidate package version. It ships four adapters
+v0.2.0 is **published to npm** as [`@kmitops/agentforge`](https://www.npmjs.com/package/@kmitops/agentforge). It ships four adapters
 (Claude Code, Codex, Cursor, Generic), the `npx @kmitops/agentforge` CLI, round-trip CI on
 `ubuntu-latest` + `windows-latest` + `macos-latest` x Node 20 and 22,
 package-install readiness verification, a visual demo, and a platform-gap audit
-with concrete remediation paths. Public/npm release remains gated by
-`docs/releases/v0.2-readiness.md`.
+with concrete remediation paths. Future versions publish automatically on GitHub Release
+via `.github/workflows/publish.yml`.
 
 ## Companion tools
 
