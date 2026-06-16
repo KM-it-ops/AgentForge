@@ -3,7 +3,9 @@
 All notable changes to AgentForge are tracked here. This project uses semantic
 versioning for public npm releases.
 
-## Unreleased
+## 0.3.1
+
+Status: published to npm as `@kmitops/agentforge@0.3.1`.
 
 ### Added
 
