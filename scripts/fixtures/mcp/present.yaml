@@ -1,0 +1,31 @@
+schema_version: 1
+
+# Test fixture for mcp-emit-test.sh — exercises both a plugin-managed server
+# (context-mode: register:false on claude-code/generic) and a normally
+# registered server (demo-server: registers everywhere). NOT the real spec.
+servers:
+  - name: context-mode
+    enabled: true
+    command: npx
+    args:
+      - "-y"
+      - context-mode
+    overrides:
+      claude-code:
+        register: false
+        note: Plugin-managed; a manual mcpServers entry double-registers.
+      codex:
+        command: node
+        args:
+          - ./start.mjs
+        approval_mode: approve
+        env:
+          CONTEXT_MODE_PLATFORM: codex
+      generic:
+        register: false
+        note: Portable reference — wire `npx -y context-mode` into your client.
+  - name: demo-server
+    enabled: true
+    command: demo-mcp
+    args:
+      - --serve

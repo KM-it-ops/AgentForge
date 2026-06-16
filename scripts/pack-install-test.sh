@@ -28,7 +28,7 @@ expected_files() {
     claude-code) echo 12 ;;
     codex) echo 23 ;;
     generic) echo 6 ;;
-    cursor) echo 29 ;;
+    cursor) echo 30 ;;  # +1: .cursor/mcp.json emitted from spec/mcp.yaml (context-mode)
     *) fail "no expected file count for adapter: $1" ;;
   esac
 }

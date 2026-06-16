@@ -24,6 +24,8 @@ const os = require("os");
 const { execSync } = require("child_process");
 
 const SCHEMA_VERSION = 1;
+// Optional MCP module path (overridable for tests via AGENTFORGE_MCP_SPEC).
+const MCP_SPEC_PATH = process.env.AGENTFORGE_MCP_SPEC || null;
 const ADAPTER_DIR = __dirname;
 const REPO_ROOT = path.resolve(ADAPTER_DIR, "..", "..");
 const SPEC_DIR = path.join(REPO_ROOT, "spec");
@@ -366,6 +368,82 @@ function loadSpec() {
 function abort(msg) {
   console.error(`\n[agentforge:cursor] ABORT: ${msg}\n`);
   process.exit(2);
+}
+
+// ---------------------------------------------------------------------------
+// Optional MCP module (spec/mcp.yaml) — fork-free per-adapter MCP registration.
+// Absent / empty / `servers: []` => null => no MCP output (round-trip stays green).
+// ---------------------------------------------------------------------------
+function loadOptionalMcp() {
+  const p = MCP_SPEC_PATH || path.join(SPEC_DIR, "mcp.yaml");
+  let text;
+  try {
+    text = fs.readFileSync(p, "utf8");
+  } catch (_) {
+    return null;
+  }
+  const parsed = parseYaml(text);
+  if (!parsed || typeof parsed !== "object") return null;
+  if (parsed.schema_version !== SCHEMA_VERSION) {
+    abort(`schema_version mismatch in mcp.yaml: expected ${SCHEMA_VERSION}, got ${parsed.schema_version}`);
+  }
+  if (!Array.isArray(parsed.servers) || parsed.servers.length === 0) return null;
+  return parsed;
+}
+
+function mcpResolveServers(mcp, adapterKey) {
+  if (!mcp) return [];
+  return mcp.servers
+    .filter((s) => s && typeof s === "object" && s.name && s.enabled !== false)
+    .map((s) => {
+      const ov = (s.overrides && s.overrides[adapterKey]) || {};
+      const env = (ov.env !== undefined ? ov.env : s.env) || {};
+      return {
+        name: s.name,
+        register: ov.register !== false,
+        command: ov.command || s.command || null,
+        args: Array.isArray(ov.args) ? ov.args : Array.isArray(s.args) ? s.args : [],
+        env: env && typeof env === "object" && !Array.isArray(env) ? env : {},
+        approval_mode: ov.approval_mode || null,
+        note: ov.note || null,
+      };
+    })
+    .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+}
+
+function mcpSortedEnv(env) {
+  const out = {};
+  for (const k of Object.keys(env).sort()) out[k] = env[k];
+  return out;
+}
+
+function mcpEntry(s) {
+  const e = { command: s.command, args: s.args };
+  const env = mcpSortedEnv(s.env);
+  if (Object.keys(env).length) e.env = env;
+  return e;
+}
+
+// Merge-safe: preserve a user's existing .cursor/mcp.json servers; only add
+// AgentForge-managed servers that are not already present.
+function writeMcpJson(target, servers) {
+  const p = path.join(target, ".cursor", "mcp.json");
+  let obj = { mcpServers: {} };
+  try {
+    const existing = JSON.parse(fs.readFileSync(p, "utf8"));
+    if (existing && typeof existing === "object") {
+      obj = existing;
+      if (!obj.mcpServers || typeof obj.mcpServers !== "object") obj.mcpServers = {};
+    }
+  } catch (_) {
+    /* missing or invalid -> fresh */
+  }
+  for (const s of servers) {
+    if (!Object.prototype.hasOwnProperty.call(obj.mcpServers, s.name)) {
+      obj.mcpServers[s.name] = mcpEntry(s);
+    }
+  }
+  return writeIfChanged(p, JSON.stringify(obj, null, 2) + "\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -821,6 +899,13 @@ function main() {
       if (!fs.statSync(src).isFile()) continue;
       results.push(copyScript(src, path.join(target, "scripts", "installers", f)));
     }
+  }
+
+  // 12. .cursor/mcp.json — optional MCP server registrations (spec/mcp.yaml).
+  //     Only written when the optional module declares registerable servers.
+  const cursorServers = mcpResolveServers(loadOptionalMcp(), "cursor").filter((s) => s.register);
+  if (cursorServers.length) {
+    results.push(writeMcpJson(target, cursorServers));
   }
 
   // ---------------------------------------------------------------------------
