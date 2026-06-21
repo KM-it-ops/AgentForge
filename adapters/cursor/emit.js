@@ -28,10 +28,11 @@ const SCHEMA_VERSION = 1;
 const MCP_SPEC_PATH = process.env.AGENTFORGE_MCP_SPEC || null;
 const ADAPTER_DIR = __dirname;
 const REPO_ROOT = path.resolve(ADAPTER_DIR, "..", "..");
-const SPEC_DIR = path.join(REPO_ROOT, "spec");
+const SPEC_DIR = process.env.AGENTFORGE_SPEC_DIR || path.join(REPO_ROOT, "spec");
 const TEMPLATES_DIR = path.join(ADAPTER_DIR, "templates");
 const SCRIPTS_DIR = path.join(ADAPTER_DIR, "scripts");
 const UNIVERSAL_INSTALLERS_DIR = path.join(REPO_ROOT, "universal", "lib", "installers");
+const { buildMcpRitualBlock } = require(path.join(REPO_ROOT, "universal", "memory", "render-mcp-ritual.js"));
 
 // ---------------------------------------------------------------------------
 // YAML loading — js-yaml when available, miniYaml fallback otherwise.
@@ -755,6 +756,7 @@ function main() {
   const contextDiscipline = buildContextDiscipline(spec.identity);
   const skillRouter = buildRouterTable(spec.router);
   const memoryProtocol = buildMemoryProtocol(spec.memory);
+  const mcpRitualBlock = buildMcpRitualBlock(spec.memory);
 
   const results = [];
 
@@ -786,6 +788,8 @@ function main() {
     SKILL_ROUTER: skillRouter,
   }, "rule-router.mdc.tmpl");
   results.push(writeIfChanged(path.join(target, ".cursor", "rules", "router.mdc"), routerMdc));
+
+  // 3b. shared-brain-memory.mdc removed — memory-mcp stays in mcp.json; no always-apply ritual rule.
 
   // 4. .cursor/rules/local-skills.mdc — local SKILL.md discovery table.
   results.push(writeIfChanged(path.join(target, ".cursor", "rules", "local-skills.mdc"), buildLocalSkillsRule(target)));

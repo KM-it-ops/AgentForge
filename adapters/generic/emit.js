@@ -18,7 +18,7 @@ const { execSync } = require("child_process");
 
 const ADAPTER_DIR = __dirname;
 const REPO_ROOT = path.resolve(ADAPTER_DIR, "..", "..");
-const SPEC_DIR = path.join(REPO_ROOT, "spec");
+const SPEC_DIR = process.env.AGENTFORGE_SPEC_DIR || path.join(REPO_ROOT, "spec");
 const TEMPLATES_DIR = path.join(ADAPTER_DIR, "templates");
 const SCRIPTS_DIR = path.join(ADAPTER_DIR, "scripts");
 const SUPPORTED_SCHEMA_VERSION = 1;

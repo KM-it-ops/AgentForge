@@ -2,7 +2,7 @@ name: publish
 
 # Publishes AgentForge to npm when a GitHub Release is published.
 # Requires repository secret NPM_TOKEN (an npm automation/granular token with
-# publish rights to the `agentforge` package). Uses npm provenance, so the
+# publish rights to the `@kmitops/agentforge` package). Uses npm provenance, so the
 # published package is cryptographically linked to this repo + workflow run.
 
 on:

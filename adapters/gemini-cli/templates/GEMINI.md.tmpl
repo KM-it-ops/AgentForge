@@ -37,10 +37,11 @@ When a project contains `.specify/`, it is source-of-truth: `/speckit.constituti
 Pairs with superpowers: `brainstorming` → `/speckit.specify` → `test-driven-development` → `/speckit.implement`.
 
 ## Memory Protocol (LLM-Wiki second brain)
-- `MEMORY.md` is the always-loaded index; `memory/hot.md` is the top-of-session warm cache. Both are **generated** — never hand-edit them.
-- `memory/{user,feedback,project,reference}/` hold one fact per file (YAML frontmatter `name`/`description`/`metadata.type`, `[[wikilinks]]`); load on demand by topic.
-- After adding/editing a memory file, regenerate via the brain toolkit when present (`tools/brain`: `npm run index` + `npm run hot`) and run `npm run lint` (must be 0 errors). Run-logs go to `logs/`, JSONL telemetry to `telemetry/` — never `memory/`.
-- One learning per file, no duplicates; verify a recalled fact against current state before acting.
+- Canonical shared vault: **`C:\AI\brain`** via memory-mcp (all agents). Local `MEMORY.md` / `memory/` under this agent home are optional skeletons only.
+- `memory/{user,feedback,project,reference}/` at `C:\AI\brain` hold one fact per file (YAML frontmatter, `[[wikilinks]]`); load via MCP on demand.
+- `MEMORY.md` and `memory/hot.md` at `C:\AI\brain` are **generated** — never hand-edit. Prefer `memory_write` MCP (auto index/hot/lint).
+- Run-logs → `logs/`; telemetry → `telemetry/` — never `memory/`. One learning per file; verify facts before acting.
+{{MCP_RITUAL_BLOCK}}
 
 ## Context Discipline
 {{context_discipline_block}}
