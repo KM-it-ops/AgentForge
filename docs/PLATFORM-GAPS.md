@@ -20,7 +20,7 @@
 - [cursor adapter](#cursor-adapter)
 - [aider adapter](#aider-adapter)
 - [CLI / cross-cutting (historical)](#cli--cross-cutting-historical)
-- [Recommended v0.2 cleanup batch](#recommended-v02-cleanup-batch)
+- [Historical cleanup batch](#historical-cleanup-batch)
 
 ---
 
@@ -74,7 +74,7 @@ unless we change the adapter's posture.
 |---|---|---|---|---|---|---|---|---|
 | generic | `generic-no-hooks-no-automation` | No portable hook API across the editors generic targets (Cursor older builds, Aider, Gemini CLI, Codex CLI, Copilot Chat). Adapter emits no hooks and no scheduled task. | degraded | platform-limitation | docs-only | Already documented in `adapters/generic/README.md` § "What you must wire up manually" bullets 1, 3, 4 and the per-editor recommendations table. No code change. Confirm the doc covers SessionEnd memory writes, telemetry capture, and weekly prune wiring. | S | P2 |
 | generic | `generic-no-skill-loader` | No automatic SKILL.md auto-discovery on editor startup. User must re-run `sync-local-skill-router.js` after each skill edit. | degraded | platform-limitation | docs-only | Already documented in `adapters/generic/README.md` § bullet 2, with the chokidar-cli / entr / fswatch / inotifywait suggestions. No code change. | S | P2 |
-| generic | `generic-no-telemetry-primitive` | Editors targeted by the generic adapter have no portable PreToolUse equivalent, so `dead-skills-report.sh` only has data if the user wires an external instrumentation path (MCP server, model-call wrapper, custom hook). | degraded | platform-limitation | docs-only | Documented in `adapters/generic/README.md` § bullet 1 and `<target>/telemetry/README.md`. Optional follow-up: link a tiny example MCP server stub in a new `docs/RECIPES/telemetry-mcp.md`; defer to v0.3. | S | P2 |
+| generic | `generic-no-telemetry-primitive` | Editors targeted by the generic adapter have no portable PreToolUse equivalent, so `dead-skills-report.sh` only has data if the user wires an external instrumentation path (MCP server, model-call wrapper, custom hook). | degraded | platform-limitation | docs-only | Documented in `adapters/generic/README.md` § bullet 1 and `<target>/telemetry/README.md`. Optional follow-up: link a tiny example MCP server stub in a new `docs/RECIPES/telemetry-mcp.md`. | S | P2 |
 | generic | `generic-manual-memory-writes` | No SessionEnd hook → memory writes are a manual ritual after meaningful sessions. | cosmetic | platform-limitation | docs-only | Documented in `adapters/generic/README.md` § bullet 4. No code change. | S | P2 |
 
 ### Notes
@@ -94,12 +94,12 @@ The adapter sits between `generic` and `codex` on the coverage matrix.
 
 | Adapter | Gap ID | Description | User impact | Root cause | Remediation type | Concrete next step | Effort | Priority |
 |---|---|---|---|---|---|---|---|---|
-| cursor | `cursor-no-telemetry` | Cursor exposes no `PreToolUse` / `UserPromptSubmit` / `SessionEnd` equivalents. `telemetry/skill-invocations.jsonl` exists only if the user wires an external watcher. | degraded | platform-limitation | docs-only | Already documented in `adapters/cursor/README.md` § "Platform gaps" bullet 1 and the emitted `telemetry/README.md` (see `adapters/cursor/emit.js` lines 690–712). Optional v0.3 follow-up: ship a reference MCP server in `adapters/cursor/extras/mcp-telemetry/` that bridges Cursor tool calls into the jsonl sink. | S | P2 |
+| cursor | `cursor-no-telemetry` | Cursor exposes no `PreToolUse` / `UserPromptSubmit` / `SessionEnd` equivalents. `telemetry/skill-invocations.jsonl` exists only if the user wires an external watcher. | degraded | platform-limitation | docs-only | Already documented in `adapters/cursor/README.md` § "Platform gaps" bullet 1 and the emitted `telemetry/README.md`. Optional follow-up: ship a reference MCP server in `adapters/cursor/extras/mcp-telemetry/` that bridges Cursor tool calls into the jsonl sink. | S | P2 |
 | cursor | `cursor-no-skill-loader` | Cursor has no `skills/` directory contract. The emitter ships `skills/README.md` with the SKILL.md frontmatter convention, but Cursor itself won't auto-load skills — the rule system is the routing layer. | degraded | platform-limitation | docs-only | Documented in `adapters/cursor/README.md` § "Platform gaps" bullet 2 and the emitted `skills/README.md` (see `adapters/cursor/emit.js` lines 666–687). No code change. | S | P2 |
 | cursor | `cursor-no-lifecycle-hooks` | No SessionEnd hook means memory writes are a manual ritual; matches generic adapter posture. | cosmetic | platform-limitation | docs-only | Documented in `adapters/cursor/README.md` § "Platform gaps" bullet 3. The emitted identity rule's memory pointer (`adapters/cursor/templates/rule-identity.mdc.tmpl`) already documents the protocol so the agent knows where to write by hand. No code change. | S | P2 |
 | cursor | `cursor-no-scheduled-task` | Cursor previously had no auto-install path for its `dead-skills-report.sh` — users wired it into cron / Task Scheduler / launchd / systemd by hand per OS. | degraded | platform-limitation | fixed | Closed in v0.3 work. Cursor now ships `scripts/install-cron.sh` (thin wrapper) + `scripts/cursor-weekly-report.sh` (the actual scheduled job — runs `dead-skills-report.sh` weekly and appends to `memory/feedback/dead-skills-report-<date>.md` since Cursor has no headless binary to spawn for auto-prune). Wrapper delegates to the same `universal/lib/installers/` pair the codex adapter uses. | S | n/a |
 | cursor | `cursor-no-auto-router-sync` | When the user adds or edits a `skills/<name>/SKILL.md`, Cursor needs a refreshed local-skill rule for discovery. | degraded | adapter-choice | fixed | Closed in the flagship-readiness batch: the cursor adapter now emits `.cursor/rules/local-skills.mdc` and ships `scripts/watch-skills.js`, which refreshes that rule from `skills/*/SKILL.md` with `--once` or watches continuously via `node:fs.watch`. | M | n/a |
-| cursor | `cursor-cursorrules-deprecated` | `.cursorrules` is deprecated upstream but kept emitted alongside the modular `.cursor/rules/*.mdc` tree because integrations and older Cursor builds still read it. Two views kept in sync by the emitter. | cosmetic | platform-limitation | docs-only | Documented in `adapters/cursor/README.md` § "Platform gaps" bullet 6. Re-evaluate at v0.3 — if Cursor removes `.cursorrules` support, remove the emission in `adapters/cursor/emit.js` lines 598–608 and the `cursorrules.tmpl` template. | S | P2 |
+| cursor | `cursor-cursorrules-deprecated` | `.cursorrules` is deprecated upstream but kept emitted alongside the modular `.cursor/rules/*.mdc` tree because integrations and older Cursor builds still read it. Two views kept in sync by the emitter. | cosmetic | platform-limitation | docs-only | Documented in `adapters/cursor/README.md` § "Platform gaps" bullet 6. Re-evaluate in a future adapter audit if Cursor removes `.cursorrules` support. | S | P2 |
 
 ### Notes
 
@@ -158,7 +158,7 @@ a clean, portable on-ramp.
 
 | Adapter | Gap ID | Description | User impact | Root cause | Remediation type | Concrete next step | Effort | Priority |
 |---|---|---|---|---|---|---|---|---|
-| (cli) | `cli-init-cwd-footgun` | `bin/agentforge.js runInit` called `path.resolve('')` which returns `process.cwd()`, so the `!target` guard never tripped for adapters with `defaultDir: null` (generic, cursor). A missing `--dir` silently emitted into the current working directory instead of exiting 2 with the documented error. | blocker | adapter-choice | fixed | Resolved in commit `a80964d` — `bin/agentforge.js runInit` now checks the resolved-dir argument *before* calling `path.resolve`, so missing `--dir` exits 2 with the actionable message. Verified by the round-trip + pack-install tests on all 4 adapters. | S | n/a |
+| (cli) | `cli-init-cwd-footgun` | `bin/agentforge.js runInit` called `path.resolve('')` which returns `process.cwd()`, so the `!target` guard never tripped for adapters with `defaultDir: null` (generic, cursor). A missing `--dir` silently emitted into the current working directory instead of exiting 2 with the documented error. | blocker | adapter-choice | fixed | Resolved in commit `a80964d` — `bin/agentforge.js runInit` now checks the resolved-dir argument *before* calling `path.resolve`, so missing `--dir` exits 2 with the actionable message. Verified by the then-current round-trip + pack-install tests. | S | n/a |
 
 ### Notes
 
@@ -168,10 +168,12 @@ so the fix improved both. No further action.
 
 ---
 
-## Recommended v0.2 cleanup batch
+## Historical Cleanup Batch
 
-Items the v0.2 ship should clear. Grouped by adapter. P0 = ship-blocker, P1 =
-v0.2-ship target, P2 = deferred to v0.3+ (or accepted as documented).
+Items originally scoped for the v0.2/v0.3 cleanup cycle. They are kept here as
+an audit trail now that the public package is live as `@kmitops/agentforge@0.3.1`.
+P0 = ship-blocker, P1 = v0.2-ship target, P2 = accepted platform limitation,
+upstream-only item, or future hardening work.
 
 ### codex (6 items — 4 P1 closed in v0.2 cleanup batch, 2 P2 remain)
 
@@ -186,8 +188,8 @@ Codex coverage after v0.2.1 P1 batch + v0.3 installers: ~85% → ~98%.
 
 ### generic (0 P0/P1 items)
 
-All four generic gaps are intentional posture. Already documented. No v0.2
-work required.
+All four generic gaps are intentional posture. Already documented. No release
+blocker remains.
 
 ### cursor (0 P0/P1 items)
 
@@ -206,11 +208,10 @@ No gaps.
 
 ### Rationale for the cut line
 
-P2 items now fall mostly into upstream-only or intentionally manual posture:
+Remaining P2 items fall mostly into upstream-only or intentionally manual posture:
 AgentForge can't ship `codex-skill-unknown` without the platform vendor moving
 first, while Cursor telemetry, skill-loader, and lifecycle gaps need external
 platform support or user instrumentation. The four cursor P2 docs-only
 rows are *already documented* in the adapter README and the emitted
-`telemetry/README.md` / `skills/README.md` — they need no v0.2 action. The
-P1 batch above is scoped at roughly half a day of work and clears every codex
-gap that AgentForge can address without an upstream change.
+`telemetry/README.md` / `skills/README.md`. The P1 batch above cleared every
+codex gap that AgentForge can address without an upstream change.

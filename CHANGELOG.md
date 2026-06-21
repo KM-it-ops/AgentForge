@@ -89,16 +89,13 @@ Status: published to npm as `@kmitops/agentforge@0.2.0`.
 - `agentforge doctor` now checks Node, npm, git, usable Bash, required spec
   files, and adapter emitters.
 - Windows command-shim execution now runs through shell handling where needed.
-- README and readiness docs now point maintainers at the v0.2 release readiness
-  packet before any public/npm release action.
+- README and readiness docs pointed maintainers at the v0.2 release readiness
+  packet for the original release-candidate decision.
 
-### Release Gates
+### Historical Release Gates
 
-- Do not publish this version to npm until the checklist in
-  `docs/releases/v0.2-readiness.md` is complete.
-- Do not create a GitHub release, tag, or npm publish without explicit owner
-  approval.
-- Fresh pushed commit and CI-green evidence must be recorded before release.
+These gates applied before the first public npm release. Current release status
+is tracked in the top-level status entries and `docs/READINESS.md`.
 
 ## 0.1.1 - Previous Local Package Baseline
 

@@ -15,7 +15,7 @@
     &nbsp;|&nbsp;
     <a href="docs/READINESS.md">Readiness proof</a>
     &nbsp;|&nbsp;
-    <a href="docs/releases/v0.2-readiness.md">v0.2 release packet</a>
+    <a href="CHANGELOG.md">Changelog</a>
     &nbsp;|&nbsp;
     <a href="docs/PLATFORM-GAPS.md">Platform gaps</a>
     &nbsp;|&nbsp;
@@ -25,7 +25,7 @@
   <p>
     <img alt="Node >= 18" src="https://img.shields.io/badge/node-%3E%3D18-007f78">
     <img alt="Adapters: 6" src="https://img.shields.io/badge/adapters-6-ca7a29">
-    <img alt="Version 0.3.0" src="https://img.shields.io/badge/version-0.3.0-21313b">
+    <img alt="Version 0.3.1" src="https://img.shields.io/badge/version-0.3.1-21313b">
     <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-121820">
   </p>
 </div>
@@ -73,7 +73,7 @@ flowchart LR
 
 ## Quick Start
 
-> **Published to npm as [`@kmitops/agentforge`](https://www.npmjs.com/package/@kmitops/agentforge).** Run `npx @kmitops/agentforge init <adapter>` with no clone needed, or install from a git checkout (below) to hack on it.
+> **Published to npm as [`@kmitops/agentforge@0.3.1`](https://www.npmjs.com/package/@kmitops/agentforge).** Run `npx @kmitops/agentforge init <adapter>` with no clone needed, or install from a git checkout (below) to hack on it.
 
 ```bash
 git clone https://github.com/KM-it-ops/AgentForge.git
@@ -120,6 +120,33 @@ http://127.0.0.1:41738/docs/demo/
 You can also open `docs/demo/index.html` directly from the filesystem when you do not need a
 local server. The demo shows how one AgentForge spec flows into Claude Code, Codex, Cursor,
 and Generic outputs, plus the verification checks that prove the repo is ready.
+
+## AgentForge Studio
+
+Interactive compile playground in `studio/` — edit YAML spec, pick an adapter, preview real emitted files, run doctor checks. Stateless (no auth, no DB); safe compile uses temp dirs only.
+
+```bash
+cd studio
+npm install
+npm run dev
+```
+
+Open http://localhost:3000 — select **cursor**, **Compile**, inspect `.cursor/rules/*.mdc`. From the repo root, parent `npm run verify` stays independent of Studio.
+
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Local UI (see `studio/README.md`) |
+| `npm run test` | Vitest (compile/doctor/schema wrappers) |
+| `npm run test:e2e` | Playwright smoke + basic a11y |
+| `npm run build` | Production build (Vercel) |
+
+Deploy from the **repo root** (not `studio/` alone — `/api/spec` and compile need `adapters/`, `spec/`, `bin/`):
+
+```bash
+npx vercel --prod --yes
+```
+
+Root `vercel.json` runs `npm run build --prefix studio`. Live: https://agentforgestudio-alpha.vercel.app — see `studio/README.md` and `docs/solutions/2026-06-21-studio-vercel-monorepo-deploy.md`. API routes spawn real `adapters/*/emit.js` with `AGENTFORGE_SPEC_DIR` — never `agentforge init`.
 
 ## Verify Locally
 
@@ -182,12 +209,13 @@ cat docs/READINESS.md
 
 ## Status
 
-v0.3.0 is **published to npm** as [`@kmitops/agentforge`](https://www.npmjs.com/package/@kmitops/agentforge). It ships six adapters
+v0.3.1 is **live on npm** as [`@kmitops/agentforge`](https://www.npmjs.com/package/@kmitops/agentforge). It ships six adapters
 (Claude Code, Codex, Gemini CLI, Cursor, Aider, Generic), the `npx @kmitops/agentforge` CLI, round-trip CI on
 `ubuntu-latest` + `windows-latest` + `macos-latest` x Node 20 and 22,
 package-install readiness verification, a visual demo, and a platform-gap audit
-with concrete remediation paths. Future versions publish automatically on GitHub Release
-via `.github/workflows/publish.yml`.
+with concrete remediation paths. npm publishing is an active release path through
+`.github/workflows/publish.yml`, which runs verification and publishes with provenance
+on GitHub Release publication.
 
 ## Companion tools
 
