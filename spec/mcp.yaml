@@ -35,25 +35,24 @@ servers:
         register: false
         note: Portable reference — wire `npx -y context-mode` into your MCP-capable client.
   - name: memory
-    enabled: true
+    enabled: false
     command: node
     args:
-      - "C:\\Users\\alkur\\.claude\\tools\\memory-mcp\\node_modules\\tsx\\dist\\cli.mjs"
-      - "C:\\Users\\alkur\\.claude\\tools\\memory-mcp\\src\\server.ts"
+      - "{HOME}/.agentforge/tools/memory-mcp/server.js"
     env:
-      CLAUDE_DIR: "C:\\AI\\brain"
-      BRAIN_DIR: "C:\\Users\\alkur\\.claude\\tools\\brain"
+      CLAUDE_DIR: "{HOME}/.agentforge/brain"
+      BRAIN_DIR: "{HOME}/.agentforge/brain"
     overrides:
       claude-code:
         register: false
-        note: Registered in ~/.claude.json mcpServers.memory with CLAUDE_DIR=C:\AI\brain — do not double-register.
+        note: Enable after you install memory-mcp locally and set paths in a forked spec/mcp.yaml.
       codex:
         register: false
-        note: Live [mcp_servers.memory] in CodexHome/config.toml is hand-maintained; AgentForge emit must not clobber it.
+        note: Wire [mcp_servers.memory] in your Codex config after local setup — see spec/CUSTOMIZE.md.
       cursor:
-        register: true
+        register: false
       gemini-cli:
-        register: true
+        register: false
       generic:
         register: false
-        note: Wire memory-mcp stdio with CLAUDE_DIR=C:\AI\brain — see ~/.claude/docs/agents/shared-brain-ritual.md
+        note: Wire memory-mcp stdio with CLAUDE_DIR pointing at your brain directory — see spec/CUSTOMIZE.md.

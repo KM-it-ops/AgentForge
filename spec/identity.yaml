@@ -7,14 +7,13 @@
 schema_version: 1
 
 user:
-  name: 'Mahmoud ("Michael") Kurdi'
-  address_as: Boss
-  location: Charlotte, NC
-  os: Windows 11 + Linux dual-boot
-  base_path: 'C:\AI'
-  role: AI Systems Architect + Cybersecurity Professional
-  certifications:
-    - CompTIA Security+
+  name: 'Your Name'
+  address_as: User
+  location: Your City, Region
+  os: Your OS (e.g. Windows 11, macOS, Linux)
+  base_path: '~/projects'
+  role: Your role (e.g. Software Engineer, Security Analyst)
+  certifications: []
 
 # Stack defaults. The agentic-prompt-architect skill is authoritative for any non-trivial build.
 # This block is the casual shorthand surfaced in the identity file.

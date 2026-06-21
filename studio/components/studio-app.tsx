@@ -182,6 +182,31 @@ export function StudioApp() {
         </div>
       </header>
 
+      <Alert className="mx-4 mt-4 max-w-[1680px] border-amber-500/30 bg-amber-500/10 lg:mx-auto">
+        <AlertDescription className="text-sm">
+          <strong>Demo spec only.</strong> YAML here uses public placeholders — not a personal config.
+          Clone the repo, edit <code className="text-xs">spec/*.yaml</code>, then{" "}
+          <code className="text-xs">agentforge init &lt;adapter&gt;</code>.{" "}
+          <a
+            className="text-primary underline-offset-4 hover:underline"
+            href="https://km-it-ops.github.io/AgentForge/docs/demo/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Visual demo
+          </a>{" "}
+          ·{" "}
+          <a
+            className="text-primary underline-offset-4 hover:underline"
+            href="https://github.com/KM-it-ops/AgentForge/blob/main/spec/CUSTOMIZE.md"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Customize guide
+          </a>
+        </AlertDescription>
+      </Alert>
+
       {loadState === "error" && loadError && (
         <Alert variant="destructive" className="mx-4 mt-4 max-w-[1680px] lg:mx-auto">
           <AlertDescription className="flex flex-wrap items-center justify-between gap-2">

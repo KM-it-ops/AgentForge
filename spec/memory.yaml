@@ -37,7 +37,7 @@ protocol:
 # Full doc on disk if needed: ~/.claude/docs/agents/shared-brain-ritual.md
 mcp_ritual:
   enabled: false
-  brain_path: 'C:\AI\brain'
+  brain_path: '{HOME}/.agentforge/brain'
   mcp_server_name: memory
 
 # Index file (MEMORY.md) template.
