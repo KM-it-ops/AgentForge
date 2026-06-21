@@ -52,6 +52,7 @@
     "test:merge-safe": "node scripts/run-bash-script.js scripts/merge-safe-test.sh",
     "test:pack": "node scripts/run-bash-script.js scripts/pack-install-test.sh",
     "test:mcp": "node scripts/run-bash-script.js scripts/mcp-emit-test.sh",
-    "verify": "npm test && npm run test:merge-safe && npm run test:pack && npm run test:mcp"
+    "test:spec-public": "node scripts/run-bash-script.js scripts/check-spec-public.sh",
+    "verify": "npm run test:spec-public && npm test && npm run test:merge-safe && npm run test:pack && npm run test:mcp"
   }
 }
