@@ -28,13 +28,32 @@ servers:
         register: false
         note: Plugin-managed (context-mode@context-mode); a manual mcpServers entry double-registers it.
       codex:
-        # Inherit the portable base command (npx -y context-mode). context-mode
-        # is an npm package; `node ./start.mjs` only resolves inside context-mode's
-        # own plugin dir, not a user's Codex cwd — it would fail to start there.
-        # Override only the Codex-specific bits.
         approval_mode: approve
         env:
           CONTEXT_MODE_PLATFORM: codex
       generic:
         register: false
         note: Portable reference — wire `npx -y context-mode` into your MCP-capable client.
+  - name: memory
+    enabled: true
+    command: node
+    args:
+      - "C:\\Users\\alkur\\.claude\\tools\\memory-mcp\\node_modules\\tsx\\dist\\cli.mjs"
+      - "C:\\Users\\alkur\\.claude\\tools\\memory-mcp\\src\\server.ts"
+    env:
+      CLAUDE_DIR: "C:\\AI\\brain"
+      BRAIN_DIR: "C:\\Users\\alkur\\.claude\\tools\\brain"
+    overrides:
+      claude-code:
+        register: false
+        note: Registered in ~/.claude.json mcpServers.memory with CLAUDE_DIR=C:\AI\brain — do not double-register.
+      codex:
+        register: false
+        note: Live [mcp_servers.memory] in CodexHome/config.toml is hand-maintained; AgentForge emit must not clobber it.
+      cursor:
+        register: true
+      gemini-cli:
+        register: true
+      generic:
+        register: false
+        note: Wire memory-mcp stdio with CLAUDE_DIR=C:\AI\brain — see ~/.claude/docs/agents/shared-brain-ritual.md

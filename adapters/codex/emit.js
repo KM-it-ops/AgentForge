@@ -27,10 +27,11 @@ const { execFileSync } = require('child_process');
 // Paths
 // ---------------------------------------------------------------------------
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
-const SPEC_DIR = path.join(REPO_ROOT, 'spec');
+const SPEC_DIR = process.env.AGENTFORGE_SPEC_DIR || path.join(REPO_ROOT, 'spec');
 const TEMPLATES_DIR = path.join(__dirname, 'templates');
 const ADAPTER_SCRIPTS_DIR = path.join(__dirname, 'scripts');
 const UNIVERSAL_INSTALLERS_DIR = path.join(REPO_ROOT, 'universal', 'lib', 'installers');
+const { buildMcpRitualBlock } = require(path.join(REPO_ROOT, 'universal', 'memory', 'render-mcp-ritual.js'));
 
 const SPEC_SCHEMA_VERSION = 1;
 
@@ -570,6 +571,7 @@ function renderIdentityFile(spec) {
     self_healing_eos: sh_eos,
     embedded_skills_block,
     date: new Date().toISOString().slice(0, 10),
+    MCP_RITUAL_BLOCK: buildMcpRitualBlock(spec.memory),
   };
 
   return renderTemplate(tmpl, vars);

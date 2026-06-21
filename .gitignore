@@ -23,6 +23,9 @@ Thumbs.db
 .env.*
 !.env.example
 
+# Vercel CLI link metadata (local only; Git integration uses dashboard)
+.vercel/
+
 # Internal planning / agent handoff artifacts — not for public consumption
 docs/goals/
 *GOALBUDDY*

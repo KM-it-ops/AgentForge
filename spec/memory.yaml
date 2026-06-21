@@ -33,6 +33,13 @@ protocol:
     - 'Regenerate MEMORY.md so it reflects every memory/ file (no drift)'
     - 'Verify a recalled fact against current state before acting on it'
 
+# Optional memory-mcp pointer (lean — no session ritual injection).
+# Full doc on disk if needed: ~/.claude/docs/agents/shared-brain-ritual.md
+mcp_ritual:
+  enabled: false
+  brain_path: 'C:\AI\brain'
+  mcp_server_name: memory
+
 # Index file (MEMORY.md) template.
 # Adapter substitutes {bucket_links} with per-bucket markdown.
 index_template: |

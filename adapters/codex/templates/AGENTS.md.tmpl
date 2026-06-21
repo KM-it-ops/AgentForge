@@ -38,11 +38,11 @@ When a project contains `.specify/`, it is source-of-truth: `/speckit.constituti
 
 Pair the `tdd` skill block with `/speckit.implement` for TDD-driven execution.
 
-## Memory Protocol (LLM-Wiki second brain)
-- `MEMORY.md` (in `~/.codex/`) is the always-loaded index — keep it in sync with every file under `memory/` (regenerate from the bucket files; do not let it drift).
-- `memory/{user,feedback,project,reference}/` hold one fact per file (YAML frontmatter `name`/`description`/`metadata.type`, `[[wikilinks]]`); load on demand when the user's intent matches a stored topic.
-- Run-logs go to `~/.codex/logs/`, JSONL telemetry to `~/.codex/telemetry/` — never `memory/`. One learning per file, no duplicates.
-- Verify a recalled fact against current state before acting on it.
+## Memory Protocol (shared brain — memory-mcp)
+- Canonical vault: **`C:\AI\brain`** (all agents). `~/.codex/MEMORY.md` is a local skeleton only — durable facts go in the shared brain via MCP.
+- `memory/{user,feedback,project,reference}/` at `C:\AI\brain` hold one fact per file; load via `memory_search` / `memory_read` on demand.
+- Run-logs → `~/.codex/logs/`; telemetry → `~/.codex/telemetry/` — never `memory/`. Verify facts before acting.
+{{MCP_RITUAL_BLOCK}}
 
 ## Context Discipline
 {{context_discipline_block}}

@@ -1,0 +1,50 @@
+name: Studio
+
+on:
+  push:
+    paths:
+      - "studio/**"
+      - "adapters/**"
+      - "spec/**"
+      - "bin/**"
+      - ".github/workflows/studio.yml"
+  pull_request:
+    paths:
+      - "studio/**"
+      - "adapters/**"
+      - "spec/**"
+      - "bin/**"
+      - ".github/workflows/studio.yml"
+
+jobs:
+  studio:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: studio
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: studio/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm run test
+
+      - name: Install Playwright browser
+        run: npx playwright install chromium --with-deps
+
+      - name: E2E smoke
+        run: npm run test:e2e
+
+      - name: Build
+        run: npm run build --prefix studio
