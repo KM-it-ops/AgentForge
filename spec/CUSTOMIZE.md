@@ -43,3 +43,12 @@ or platform paths before running `agentforge init`.
 
 Deploy Studio yourself only if you want a private or team playground; the static demo plus
 clone-and-edit is the intended public funnel.
+
+## Maintainers: keep spec public-safe
+
+**Do not commit** real names, cities, Windows profile paths (`C:\Users\...`), or private
+brain/MCP paths into `spec/*.yaml`. Use `{HOME}` and generic placeholders; keep your real
+posture in a local fork or uncommitted edits only.
+
+`npm run test:spec-public` (also run as part of `npm run verify`) fails if forbidden
+patterns reappear under `spec/`.
