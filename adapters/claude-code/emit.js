@@ -20,9 +20,10 @@ const SCHEMA_VERSION = 1;
 const MCP_SPEC_PATH = process.env.AGENTFORGE_MCP_SPEC || null;
 const ADAPTER_DIR = __dirname;
 const REPO_ROOT = path.resolve(ADAPTER_DIR, "..", "..");
-const SPEC_DIR = path.join(REPO_ROOT, "spec");
+const SPEC_DIR = process.env.AGENTFORGE_SPEC_DIR || path.join(REPO_ROOT, "spec");
 const TEMPLATES_DIR = path.join(ADAPTER_DIR, "templates");
 const SCRIPTS_DIR = path.join(ADAPTER_DIR, "scripts");
+const { buildMcpRitualBlock } = require(path.join(REPO_ROOT, "universal", "memory", "render-mcp-ritual.js"));
 
 // ---------------------------------------------------------------------------
 // Minimal YAML loader (subset sufficient for our spec files).
@@ -876,6 +877,7 @@ function main() {
     ...idVars,
     ...rtVars,
     date: dateStr,
+    MCP_RITUAL_BLOCK: buildMcpRitualBlock(spec.memory),
   };
 
   // CLAUDE.md

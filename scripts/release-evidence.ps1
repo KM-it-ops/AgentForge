@@ -1,5 +1,5 @@
 param(
-  [string]$OutputPath = ".test-output/release-evidence-v0.2.json",
+  [string]$OutputPath = ".test-output/release-evidence-current.json",
   [string]$NpmPath = "C:\Program Files\nodejs\npm.cmd",
   [string]$NodeJsPath = "C:\Program Files\nodejs",
   [switch]$SkipVerify
@@ -68,7 +68,9 @@ $gitLsRemote = Invoke-Captured "git -c credential.helper= -c core.askPass= ls-re
 
 $doctor = Invoke-Captured "node bin/agentforge.js doctor --json" { node bin/agentforge.js doctor --json }
 $packDryRun = Invoke-Captured "$NpmPath pack --dry-run --json" { & $NpmPath pack --dry-run --json }
-$npmView = Invoke-Captured "$NpmPath view agentforge --json" { & $NpmPath view agentforge --json }
+$npmView = Invoke-Captured "$NpmPath view @kmitops/agentforge version name dist-tags.latest --json" {
+  & $NpmPath view @kmitops/agentforge version name dist-tags.latest --json
+}
 
 $verify = if ($SkipVerify) {
   [ordered]@{
@@ -105,7 +107,8 @@ $result = [ordered]@{
   generatedAt = (Get-Date).ToString("o")
   repoRoot = $repoRoot
   noCredentialBoundary = "This script does not login, publish, tag, push, create GitHub releases, or pass credentials."
-  expectedVersion = "0.2.0"
+  expectedPackage = "@kmitops/agentforge"
+  expectedVersion = "0.3.1"
   checks = [ordered]@{
     gitRemote = $gitRemote
     gitHead = $gitHead
@@ -128,8 +131,10 @@ $result = [ordered]@{
     publicGithubCommitsVisible = $githubCommits.ok
     publicGithubActionsVisible = $githubActions.ok
     packIncludesChangelog = $packFiles -contains "CHANGELOG.md"
-    packIncludesReleasePacket = $packFiles -contains "docs/releases/v0.2-readiness.md"
-    remainingOwnerGate = "Fresh GitHub remote/Actions evidence and release approvals are still required if public GitHub checks are blocked."
+    registryPackage = "@kmitops/agentforge"
+    registryLatestExpected = "0.3.1"
+    packIncludesArchivedReleasePacket = $packFiles -contains "docs/releases/v0.2-readiness.md"
+    remainingOwnerGate = "Fresh GitHub remote/Actions evidence and owner approval are required before publishing any future version."
   }
 }
 

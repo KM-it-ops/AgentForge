@@ -33,6 +33,7 @@ const REPO_ROOT = path.resolve(ADAPTER_DIR, "..", "..");
 const SPEC_DIR = path.join(REPO_ROOT, "spec");
 const TEMPLATES_DIR = path.join(ADAPTER_DIR, "templates");
 const SCRIPTS_DIR = path.join(ADAPTER_DIR, "scripts");
+const { buildMcpRitualBlock } = require(path.join(REPO_ROOT, "universal", "memory", "render-mcp-ritual.js"));
 const UNIVERSAL_INSTALLERS_DIR = path.join(REPO_ROOT, "universal", "lib", "installers");
 
 // ---------------------------------------------------------------------------
@@ -779,6 +780,7 @@ function main() {
     ...idVars,
     ...rtVars,
     date: dateStr,
+    MCP_RITUAL_BLOCK: buildMcpRitualBlock(spec.memory),
   };
 
   // GEMINI.md — stable date across re-emits via a persisted date marker.

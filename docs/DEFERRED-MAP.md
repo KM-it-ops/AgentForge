@@ -1,9 +1,9 @@
 # AgentForge — Deferred-Items Map
 
-> Topographic view of every open deferred item across AgentForge as of v0.2,
+> Topographic view of every open deferred item across AgentForge as of v0.3.1,
 > with the dependency edges that determine which order they should ship in.
 > Derived from `docs/VERIFICATION-v0.1.0.md` (pre-v0.2 backlog),
-> `docs/PLATFORM-GAPS.md` (17-row cross-adapter audit), and the final v0.2
+> `docs/PLATFORM-GAPS.md` (cross-adapter audit), and the final v0.2
 > reviewer's notes. Update this file at every minor-version cut.
 
 ## The list
@@ -54,24 +54,24 @@
 |---|---|---|---|---|
 | ~~`universal/lib/installers/`~~ | `universal/lib/installers/` | ~~M~~ | **shipped (v0.3)** | closed `codex-windows-cron-not-executed`, `cursor-no-scheduled-task`; claude-code refactor to use it = follow-up |
 | ~~`scripts/watch-skills.js` (file-watcher fallback for sync-local-skill-router.js)~~ | `adapters/cursor/scripts/watch-skills.js` | ~~M~~ | **closed** | closed `cursor-no-auto-router-sync`; provides a parity pattern for Gemini/Aider |
-| ~~Unified JSON summary shape across all 4 adapters~~ | ~~per-adapter `emit.js`~~ | ~~S~~ | **closed** | downstream tooling can parse `target`, `checkpoint_sha`, `files_written`, `files_changed`, and `details` from every adapter |
+| ~~Unified JSON summary shape across all six adapters~~ | ~~per-adapter `emit.js`~~ | ~~S~~ | **closed** | downstream tooling can parse `target`, `checkpoint_sha`, `files_written`, `files_changed`, and `details` from every adapter |
 | ~~macOS CI matrix row (`macos-latest`)~~ | `.github/workflows/round-trip.yml` | ~~S~~ | **closed** | catches launchd/`/tmp` differences before users hit them |
-| npm publish workflow + tag automation | new `.github/workflows/publish.yml` | S | P2 | `npx agentforge init …` against the real registry |
+| ~~npm publish workflow~~ | `.github/workflows/publish.yml` | ~~S~~ | **shipped** | publishes scoped package `@kmitops/agentforge` on GitHub Release publication |
 
 ### Historical (closed — kept for audit trail)
 
 | Item | Closed in | Notes |
 |---|---|---|
 | Cursor adapter | v0.2 (commits `fe82089` → `1dae552`) | 23 emitted files, idempotent |
-| `npx agentforge` wrapper | v0.1.1 (commit `e2dbaee`) | bin/agentforge.js + pack-install CI |
+| `npx @kmitops/agentforge` wrapper | v0.1.1 (commit `e2dbaee`) + scoped npm package | bin/agentforge.js + pack-install CI; public package live as `@kmitops/agentforge@0.3.1` |
 | Round-trip CI | post-v0.1.0 (commit `79257f6`) + flagship-improvement tranche | matrix ubuntu+windows+macOS x node 20+22 |
 | `cli-init-cwd-footgun` | v0.2 (commit `a80964d`) | found during Task 2, fixed in-scope |
 | P1 codex cleanup batch (4 items) | v0.2.1 (`1ae6935` → `fc039c1`) | codex coverage ~85% → ~95%; backstop review applied 2 Important fixes (`set -e` defense + word-bounded flag regex) |
 | `universal/lib/installers/` shared module | v0.3 (this batch) | closed `codex-windows-cron-not-executed` + `cursor-no-scheduled-task` simultaneously; thin-wrapper pattern documented in `universal/lib/installers/README.md` |
-| Unified JSON receipt shape | flagship-improvement tranche | all four adapters emit `target`, `checkpoint_sha`, `files_written`, `files_changed`, and `details`; round-trip test asserts `files_changed: 0` for every adapter |
+| Unified JSON receipt shape | flagship-improvement tranche | all six adapters emit `target`, `checkpoint_sha`, `files_written`, `files_changed`, and `details`; round-trip test asserts `files_changed: 0` for every adapter |
 | Installed-binstub doctor verification | flagship-improvement tranche | `scripts/pack-install-test.sh` now runs `agentforge doctor --json` from the installed package before adapter emits |
 | Cursor local skill watcher | flagship-improvement tranche | cursor adapter emits `.cursor/rules/local-skills.mdc` and ships `scripts/watch-skills.js --once` / watch mode |
-| Gemini CLI + Aider adapters | v0.3 (this batch) | closed the last two open-adapter backlog items; 6 adapters total. gemini-cli: `GEMINI.md` + merge-safe `settings.json` (native `mcpServers.context-mode`), 17 files. aider: `CONVENTIONS.md` via `read:` + merge-safe `.aider.conf.yml` (`mcp-server:`), 11 files. Both registered in `bin/agentforge.js`; all four verify suites extended to cover them |
+| Gemini CLI + Aider adapters | v0.3 (this batch) | closed the last two open-adapter backlog items; 6 adapters total. gemini-cli: `GEMINI.md` + merge-safe `settings.json` (native `mcpServers.context-mode`), 18 files as of v0.3.1. aider: `CONVENTIONS.md` via `read:` + merge-safe `.aider.conf.yml` (`mcp-server:`), 11 files. Both registered in `bin/agentforge.js`; all verify suites cover them |
 
 ## Topographic map
 
@@ -83,9 +83,9 @@ flowchart LR
   classDef shared fill:#7a3b8f,color:#fff,stroke:#3f1d4a,stroke-width:1px
   classDef upstream fill:#8f3b3b,color:#fff,stroke:#4a1d1d,stroke-width:1px
 
-  subgraph Core["Core (shipped through v0.2)"]
+  subgraph Core["Core (shipped through v0.3.1)"]
     SPEC["spec/*.yaml<br/>(5 files)"]:::shipped
-    CLI["bin/agentforge.js<br/>npx agentforge init"]:::shipped
+    CLI["bin/agentforge.js<br/>npx @kmitops/agentforge init"]:::shipped
     ROUND["scripts/round-trip-test.sh"]:::shipped
     PACK["scripts/pack-install-test.sh"]:::shipped
     CI[".github/workflows/round-trip.yml<br/>matrix: ubuntu+windows+macOS × node 20+22"]:::shipped
@@ -135,20 +135,19 @@ flowchart LR
     WATCH["scripts/watch-skills.js<br/>(closed cursor watcher)"]:::shipped
     JSON["unified JSON receipt shape<br/>(closed)"]:::shipped
     MAC["macOS CI matrix row<br/>(closed)"]:::shipped
-    PUB["npm publish workflow"]:::shared
+    PUB["npm publish workflow<br/>(shipped; publishes @kmitops/agentforge)"]:::shipped
   end
 
   %% Spec feeds every adapter
-  SPEC --> CC & CX & CU & GE
-  SPEC --> GEM & AID
+  SPEC --> CC & CX & CU & GE & GEM & AID
 
   %% Adapters consumed by CI
-  CC & CX & CU & GE --> ROUND
-  CC & CX & CU & GE --> PACK
+  CC & CX & CU & GE & GEM & AID --> ROUND
+  CC & CX & CU & GE & GEM & AID --> PACK
   ROUND & PACK --> CI
 
   %% CLI dispatches to every adapter
-  CLI --> CC & CX & CU & GE
+  CLI --> CC & CX & CU & GE & GEM & AID
 
   %% Codex gap → codex
   C1 & C3 & C4 & C5 & C2 & C6 -.->|fixes| CX
@@ -165,17 +164,14 @@ flowchart LR
   WATCH -.->|closed| U5
   WATCH -.->|pattern for| GEM
   WATCH -.->|pattern for| AID
-  GEM & AID --> ROUND
-  GEM & AID --> PACK
-  CLI --> GEM & AID
-  JSON -.->|consistency for| CC & CX & CU & GE
+  JSON -.->|consistency for| CC & CX & CU & GE & GEM & AID
   MAC -.->|extends| CI
   PUB -.->|publishes| CLI
 ```
 
 ## How to read the map
 
-- **Green nodes** are shipped through v0.2 — the existing surface.
+- **Green nodes** are shipped through v0.3.1 — the existing surface.
 - **Orange nodes** are the v0.2 P1 cleanup batch (4 codex items, ~5 hours total). These have zero blockers and clear the codex coverage from ~85% toward parity with claude-code.
 - **Grey nodes** are P2 items deferred to v0.3+.
 - **Purple nodes** are shared-infrastructure candidates. The dotted "unblocks" edges from purple back into the gap clusters are the load-bearing reason to land shared infra *before* the individual gap fixes — otherwise we duplicate code across adapters and pay the refactor cost later.
@@ -185,9 +181,10 @@ flowchart LR
 
 1. ~~**P1 codex cleanup batch**~~ — **done** (v0.2.1, commits `1ae6935` → `fc039c1`). Codex coverage ~85% → ~95%.
 2. ~~**Build `universal/lib/installers/`**~~ — **done** (v0.3). Both dependent gaps (`codex-windows-cron-not-executed`, `cursor-no-scheduled-task`) closed in the same commit batch.
-3. ~~**Build `scripts/watch-skills.js`**~~ — **done for Cursor**. Closes `cursor-no-auto-router-sync` and gives Gemini/Aider adapters a proven local-skill watcher pattern.
-4. ~~**Gemini CLI adapter or Aider adapter**~~ — **both done** (v0.3). Built off the Cursor watcher/marker parity pattern; gemini-cli ~70% (native `mcpServers`, merge-safe `settings.json`), aider ~40% (`read: CONVENTIONS.md`, merge-safe `.aider.conf.yml`). All four verify suites green.
-5. ~~**Unify JSON receipt shape**~~ — **done**. All four emitters now expose the same receipt keys and the round-trip test checks idempotency from every adapter receipt.
-6. ~~**macOS CI row**~~ — **done**. **npm publish workflow** remains deferred because it needs release-policy and token-handling decisions.
+3. ~~**Build `scripts/watch-skills.js`**~~ — **done for Cursor and Gemini CLI**. Closes `cursor-no-auto-router-sync` and keeps Gemini's `GEMINI.md` local-skill block current.
+4. ~~**Gemini CLI adapter or Aider adapter**~~ — **both done** (v0.3). Built off the Cursor watcher/marker parity pattern; gemini-cli ~70% (native `mcpServers`, merge-safe `settings.json`), aider ~40% (`read: CONVENTIONS.md`, merge-safe `.aider.conf.yml`). All verify suites green.
+5. ~~**Unify JSON receipt shape**~~ — **done**. All six emitters now expose the same receipt keys and the round-trip test checks idempotency from every adapter receipt.
+6. ~~**macOS CI row**~~ — **done**.
+7. ~~**npm publish workflow + public registry package**~~ — **done**. `@kmitops/agentforge@0.3.1` is live on npm, and `.github/workflows/publish.yml` is the future release path.
 
-The cut line between v0.2 ship-now and v0.3 backlog is drawn at step 1. Steps 2–3 are the right v0.3 starter set because they unblock the most downstream work for the least code.
+The old v0.2/v0.3 cut line is closed. Remaining items in this file are platform limitations, docs-only posture notes, or future hardening work rather than blockers for public npm availability.
