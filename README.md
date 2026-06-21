@@ -13,6 +13,9 @@
   <p>
     <a href="docs/demo/index.html"><strong>Open demo</strong></a>
     &nbsp;|&nbsp;
+    <a href="https://km-it-ops.github.io/AgentForge/docs/demo/">Live demo</a>
+    &nbsp;|&nbsp;
+    <a href="spec/CUSTOMIZE.md">Customize spec</a>
     <a href="docs/READINESS.md">Readiness proof</a>
     &nbsp;|&nbsp;
     <a href="CHANGELOG.md">Changelog</a>
@@ -103,9 +106,9 @@ Re-running is idempotent. Every install creates a git-tracked checkpoint so roll
 pwsh ./bootstrap/bootstrap.ps1 -Auto    # Windows PowerShell
 ```
 
-## Visual Demo
+## Visual Demo (recommended)
 
-Run the local demo when you want to show the project at a glance:
+The public funnel is the **static visual demo** — no server-side compile, no personal data in YAML.
 
 ```bash
 npm run demo
@@ -117,13 +120,15 @@ Keep that command running, then visit:
 http://127.0.0.1:41738/docs/demo/
 ```
 
-You can also open `docs/demo/index.html` directly from the filesystem when you do not need a
-local server. The demo shows how one AgentForge spec flows into Claude Code, Codex, Cursor,
-and Generic outputs, plus the verification checks that prove the repo is ready.
+**Live:** https://km-it-ops.github.io/AgentForge/docs/demo/ (GitHub Pages)
 
-## AgentForge Studio
+The demo explains one spec → many adapters, then walks through **clone → edit `spec/*.yaml` → `agentforge init`**. See [`spec/CUSTOMIZE.md`](spec/CUSTOMIZE.md).
 
-Interactive compile playground in `studio/` — edit YAML spec, pick an adapter, preview real emitted files, run doctor checks. Stateless (no auth, no DB); safe compile uses temp dirs only.
+You can also open `docs/demo/index.html` directly from the filesystem when you do not need a local server.
+
+## AgentForge Studio (optional)
+
+Power-user compile playground in `studio/` — preview emitted files in the browser. Uses the same **placeholder** spec as the repo; not required for the core workflow.
 
 ```bash
 cd studio

@@ -136,9 +136,42 @@
             </p>
             <div class="detail-actions">
               <button type="button" id="run-demo">Run visual proof</button>
+              <a href="https://github.com/KM-it-ops/AgentForge/blob/main/spec/CUSTOMIZE.md">Customize spec</a>
               <a href="../READINESS.md">Open readiness runbook</a>
             </div>
           </article>
+        </section>
+
+        <section class="start-panel" aria-labelledby="start-title">
+          <div>
+            <h2 id="start-title">Try it yourself</h2>
+            <p>
+              The YAML above is placeholder data. Clone the repo, edit <code>spec/*.yaml</code>
+              with your name and paths, then emit platform-native config locally.
+            </p>
+          </div>
+          <ol class="start-steps">
+            <li>
+              <strong>Clone</strong>
+              <code>git clone https://github.com/KM-it-ops/AgentForge.git</code>
+            </li>
+            <li>
+              <strong>Edit spec</strong>
+              <span>Start with <code>spec/identity.yaml</code> — see <a href="https://github.com/KM-it-ops/AgentForge/blob/main/spec/CUSTOMIZE.md">CUSTOMIZE.md</a></span>
+            </li>
+            <li>
+              <strong>Emit</strong>
+              <code>npx @kmitops/agentforge init cursor --dir ./my-config</code>
+            </li>
+            <li>
+              <strong>Verify</strong>
+              <code>npm run verify</code> from the repo root
+            </li>
+          </ol>
+          <p class="start-note">
+            Optional: run <code>npm run demo</code> locally for this page, or deploy Studio from the repo
+            if you want your own compile playground — not required for the core workflow.
+          </p>
         </section>
       </section>
     </main>
