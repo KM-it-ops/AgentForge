@@ -1,20 +1,8 @@
 name: Studio
 
+# Retired 2026-10 (succeeded by Proofhouse): manual dispatch only.
 on:
-  push:
-    paths:
-      - "studio/**"
-      - "adapters/**"
-      - "spec/**"
-      - "bin/**"
-      - ".github/workflows/studio.yml"
-  pull_request:
-    paths:
-      - "studio/**"
-      - "adapters/**"
-      - "spec/**"
-      - "bin/**"
-      - ".github/workflows/studio.yml"
+  workflow_dispatch:
 
 jobs:
   studio:

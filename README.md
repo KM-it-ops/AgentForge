@@ -1,5 +1,12 @@
 # AgentForge
 
+> [!WARNING]
+> **Retired 2026-10 — succeeded by [Proofhouse](https://github.com/KM-it-ops/Proofhouse).**
+> This repository is archived and frozen at tag `v0.3.1-final`. The npm package
+> `@kmitops/agentforge` is deprecated, and the hosted Studio and Pages demo are offline.
+> What AgentForge proved is recorded in Proofhouse's
+> [lineage notes](https://github.com/KM-it-ops/Proofhouse/blob/main/docs/lineage/agentforge.md).
+
 <div align="center">
   <img src="docs/demo/demo-desktop.png" alt="AgentForge visual demo showing one YAML spec flowing into Claude Code, Codex, Cursor, and Generic adapters" width="100%">
 
@@ -12,8 +19,6 @@
 
   <p>
     <a href="docs/demo/index.html"><strong>Open demo</strong></a>
-    &nbsp;|&nbsp;
-    <a href="https://km-it-ops.github.io/AgentForge/docs/demo/">Live demo</a>
     &nbsp;|&nbsp;
     <a href="spec/CUSTOMIZE.md">Customize spec</a>
     <a href="docs/READINESS.md">Readiness proof</a>
@@ -40,7 +45,6 @@ across real engineering workflows. It currently includes:
 
 - **AgentForge Core** - portable configuration adapters for AI coding assistants.
 - **AgentForge Benchmarks** - reproducible evaluations of AI agents on applied software tasks.
-- **ATT&CKLens Benchmark** - the first defensive cybersecurity benchmark in the suite.
 
 ## What It Does
 
@@ -120,8 +124,6 @@ Keep that command running, then visit:
 http://127.0.0.1:41738/docs/demo/
 ```
 
-**Live:** https://km-it-ops.github.io/AgentForge/docs/demo/ (GitHub Pages)
-
 The demo explains one spec → many adapters, then walks through **clone → edit `spec/*.yaml` → `agentforge init`**. See [`spec/CUSTOMIZE.md`](spec/CUSTOMIZE.md).
 
 You can also open `docs/demo/index.html` directly from the filesystem when you do not need a local server.
@@ -151,7 +153,7 @@ Deploy from the **repo root** (not `studio/` alone — `/api/spec` and compile n
 npx vercel --prod --yes
 ```
 
-Root `vercel.json` runs `npm run build --prefix studio`. Live: https://agentforgestudio-alpha.vercel.app — see `studio/README.md` and `docs/solutions/2026-06-21-studio-vercel-monorepo-deploy.md`. API routes spawn real `adapters/*/emit.js` with `AGENTFORGE_SPEC_DIR` — never `agentforge init`.
+Root `vercel.json` runs `npm run build --prefix studio`. The hosted deployment is offline since the 2026-10 retirement — see `studio/README.md` and `docs/solutions/2026-06-21-studio-vercel-monorepo-deploy.md`. API routes spawn real `adapters/*/emit.js` with `AGENTFORGE_SPEC_DIR` — never `agentforge init`.
 
 ## Verify Locally
 
@@ -218,13 +220,8 @@ v0.3.1 is **live on npm** as [`@kmitops/agentforge`](https://www.npmjs.com/packa
 (Claude Code, Codex, Gemini CLI, Cursor, Aider, Generic), the `npx @kmitops/agentforge` CLI, round-trip CI on
 `ubuntu-latest` + `windows-latest` + `macos-latest` x Node 20 and 22,
 package-install readiness verification, a visual demo, and a platform-gap audit
-with concrete remediation paths. npm publishing is an active release path through
-`.github/workflows/publish.yml`, which runs verification and publishes with provenance
-on GitHub Release publication.
-
-## Companion tools
-
-- **[AgentForge Developer Toolkit](https://github.com/KM-it-ops/agentforge-devtoolkit)** — an optional, standalone Windows-first PowerShell module for discover-first Node project environment workflows (`node-scout`). Previously vendored here under `AgentForge.DevToolkit/`; now lives in its own repo so AgentForge stays a pure JS/Node configuration framework. AgentForge does not depend on it.
+with concrete remediation paths. Since the 2026-10 retirement, the package is deprecated on npm
+and the release, Pages and Studio workflows run only on manual dispatch.
 
 ## License
 

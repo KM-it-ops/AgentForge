@@ -5,9 +5,8 @@ name: publish
 # publish rights to the `@kmitops/agentforge` package). Uses npm provenance, so the
 # published package is cryptographically linked to this repo + workflow run.
 
+# Retired 2026-10 (succeeded by Proofhouse): manual dispatch only.
 on:
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       dry_run:

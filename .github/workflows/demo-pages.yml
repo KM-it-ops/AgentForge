@@ -1,12 +1,7 @@
 name: demo-pages
 
+# Retired 2026-10 (succeeded by Proofhouse): manual dispatch only.
 on:
-  push:
-    branches: [main]
-    paths:
-      - "docs/demo/**"
-      - "spec/CUSTOMIZE.md"
-      - ".github/workflows/demo-pages.yml"
   workflow_dispatch:
 
 permissions:
