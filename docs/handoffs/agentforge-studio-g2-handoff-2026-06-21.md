@@ -1,7 +1,7 @@
 # Handoff: AgentForge Studio MVP — G2 signed off
 
 **Created:** 2026-06-21  
-**Boss:** Mahmoud (Michael) Al Kurdi (`KM-it-ops`)  
+**Boss:** Mahmoud Al Kurdi (`KM-it-ops`)  
 **Status:** **G2 APPROVED** — production happy path verified by Boss on live URL  
 **Repo:** `C:\AI\AgentForge` (canonical) · `@kmitops/agentforge@0.3.1`
 
